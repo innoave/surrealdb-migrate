@@ -5,6 +5,13 @@ edition = "2021"
 authors = ["haraldmaida"]
 license = "MIT/Apache-2.0"
 
+description = """
+Evolve a SurrealDB database over time by applying migrations. `surrealdb-migrate` is a commandline
+tool and lib to define and run migrations on the database. It provides version control for a
+[SurrealDB] database in a project.
+"""
+keywords = ["database", "migrations", "version-control", "cli2"]
+
 [dependencies]
 thiserror = "2"
 time = { version = "0.3", features = ["macros", "formatting", "parsing"] }
