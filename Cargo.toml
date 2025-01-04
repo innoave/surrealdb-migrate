@@ -62,3 +62,9 @@ must_use_candidate = "allow"
 unwrap_used = "deny"
 missing_errors_doc = "allow"  # remove when working on docs
 missing_panics_doc = "allow"  # remove when working on docs
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.dev.package.proptest]
+overflow-checks = false
