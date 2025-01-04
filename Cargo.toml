@@ -63,6 +63,13 @@ unwrap_used = "deny"
 missing_errors_doc = "allow"  # remove when working on docs
 missing_panics_doc = "allow"  # remove when working on docs
 
+[profile.release]
+lto = true
+strip = true
+opt-level = 3
+panic = 'abort'
+codegen-units = 1
+
 [profile.dev.package."*"]
 opt-level = 3
 
