@@ -1,0 +1,21 @@
+name: surrealdb-migrate
+
+services:
+  database:
+    container_name: surrealdb-migrate-database
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: surrealdb
+    env_file:
+      - .env
+    entrypoint:
+      - /surreal
+      - start
+      - --user
+      - $DB_ROOT_USER
+      - --pass
+      - $DB_ROOT_PASS
+      - memory
+    ports:
+      - "8000:8000"
