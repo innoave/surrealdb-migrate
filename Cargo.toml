@@ -10,7 +10,7 @@ Evolve a SurrealDB database over time by applying migrations. `surrealdb-migrate
 tool and lib to define and run migrations on the database. It provides version control for a
 [SurrealDB] database in a project.
 """
-keywords = ["database", "migrations", "version-control", "cli2"]
+keywords = ["database", "migrations", "version-control", "cli"]
 
 [features]
 proptest-support = ["dep:proptest"]
