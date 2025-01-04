@@ -12,11 +12,19 @@ tool and lib to define and run migrations on the database. It provides version c
 """
 keywords = ["database", "migrations", "version-control", "cli2"]
 
+[features]
+proptest-support = ["dep:proptest"]
+
 [dependencies]
+crc32fast = "1"
 thiserror = "2"
 time = { version = "0.3", features = ["macros", "formatting", "parsing"] }
 
+# optional
+proptest = { version = "1", optional = true }
+
 [dev-dependencies]
+proptest = "1"
 speculoos = "0.11"
 
 [lints.rust]

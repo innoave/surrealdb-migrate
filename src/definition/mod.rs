@@ -11,9 +11,10 @@ pub trait ParseMigration {
     fn parse_migration(&self) -> Result<Migration, Self::Err>;
 }
 
-const SCRIPT_FILE_EXTENSION: &str = ".surql";
-const UP_SCRIPT_FILE_EXTENSION: &str = ".up.surql";
-const DOWN_SCRIPT_FILE_EXTENSION: &str = ".down.surql";
+pub const DEFAULT_MIGRATIONS_FOLDER: &str = "migrations";
+pub const SCRIPT_FILE_EXTENSION: &str = ".surql";
+pub const UP_SCRIPT_FILE_EXTENSION: &str = ".up.surql";
+pub const DOWN_SCRIPT_FILE_EXTENSION: &str = ".down.surql";
 
 fn parse_migration(path: &Path, filename: &str) -> Result<Migration, Error> {
     if !filename.ends_with(SCRIPT_FILE_EXTENSION) {

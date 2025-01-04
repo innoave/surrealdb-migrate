@@ -1,3 +1,4 @@
+use crate::checksum::Checksum;
 use std::path::PathBuf;
 use time::{Duration, OffsetDateTime, PrimitiveDateTime};
 
@@ -20,6 +21,7 @@ pub struct Migration {
 pub struct Execution {
     pub id: PrimitiveDateTime,
     pub applied_at: OffsetDateTime,
+    pub checksum: Checksum,
     pub execution_time: Duration,
     pub success: bool,
 }
