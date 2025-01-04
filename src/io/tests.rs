@@ -15,7 +15,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
         .collect::<Vec<_>>();
 
     assert_that!(migrations).equals_iterator(
-        &vec![
+        &[
             Ok(Migration {
                 id: datetime!(2025-01-03 14:05:20),
                 title: "define_quote_table".to_string(),
@@ -36,7 +36,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
             }),
         ]
         .iter(),
-    )
+    );
 }
 
 #[test]
@@ -60,7 +60,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
         .collect::<Vec<_>>();
 
     assert_that!(migrations).equals_iterator(
-        &vec![
+        &[
             Ok(Migration {
                 id: datetime!(2025-01-03 14:05:20),
                 title: "define_quote_table".to_string(),
@@ -81,5 +81,5 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             }),
         ]
         .iter(),
-    )
+    );
 }

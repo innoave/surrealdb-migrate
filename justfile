@@ -13,20 +13,20 @@ default:
 
 # build the crate for debugging
 build:
-    cargo build
+    cargo build --all-features
 
 # check syntax in all targets
 check:
-    cargo check --all-targets
+    cargo check --all-targets --all-features
 
 # linting code using Clippy
 lint:
-    cargo clippy
+    cargo clippy --all-targets --all-features
 
 # run the tests
 test:
-    cargo test
+    cargo test --all-features
 
 # build the crate for release
 build-release:
-    cargo build --release
+    cargo build --release --all-features

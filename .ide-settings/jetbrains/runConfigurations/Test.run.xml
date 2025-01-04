@@ -6,7 +6,7 @@
     <envs />
     <option name="emulateTerminal" value="false" />
     <option name="channel" value="DEFAULT" />
-    <option name="requiredFeatures" value="true" />
+    <option name="requiredFeatures" value="false" />
     <option name="allFeatures" value="true" />
     <option name="withSudo" value="false" />
     <option name="buildTarget" value="REMOTE" />
