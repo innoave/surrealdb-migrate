@@ -3,6 +3,7 @@ mod fixtures;
 use crate::fixtures::db::{
     db_password, db_username, ns_password, ns_username, root_password, root_username,
 };
+use crate::fixtures::load_environment_variables;
 use fixtures::db::initialize_database;
 use speculoos::prelude::*;
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
@@ -10,7 +11,7 @@ use surrealdb_migrate::db::connect_to_database;
 
 #[tokio::test]
 async fn can_connect_to_database_as_root_user() {
-    dotenvy::dotenv().expect("failed to load .env file");
+    load_environment_variables();
     let config = DbClientConfig::default()
         .with_auth_level(DbAuthLevel::Root)
         .with_username(root_username())
@@ -22,7 +23,7 @@ async fn can_connect_to_database_as_root_user() {
 
 #[tokio::test]
 async fn can_connect_to_database_as_namespace_user() {
-    dotenvy::dotenv().expect("failed to load .env file");
+    load_environment_variables();
     initialize_database().await;
 
     let config = DbClientConfig::default()
@@ -36,7 +37,7 @@ async fn can_connect_to_database_as_namespace_user() {
 
 #[tokio::test]
 async fn can_connect_to_database_as_database_user() {
-    dotenvy::dotenv().expect("failed to load .env file");
+    load_environment_variables();
     initialize_database().await;
 
     let config = DbClientConfig::default()
