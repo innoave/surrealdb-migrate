@@ -148,9 +148,9 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::InvalidDate(Parse::ParseFromDescription(
-            ParseFromDescription::InvalidComponent("month"),
-        )));
+        assert_that!(migration).is_err_containing(DefinitionError::InvalidDate(
+            Parse::ParseFromDescription(ParseFromDescription::InvalidComponent("month")),
+        ));
     }
 
     #[test]
@@ -159,9 +159,9 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::InvalidTime(Parse::ParseFromDescription(
-            ParseFromDescription::InvalidComponent("hour"),
-        )));
+        assert_that!(migration).is_err_containing(DefinitionError::InvalidTime(
+            Parse::ParseFromDescription(ParseFromDescription::InvalidComponent("hour")),
+        ));
     }
 
     #[test]
@@ -170,7 +170,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::MissingTitle);
+        assert_that!(migration).is_err_containing(DefinitionError::MissingTitle);
     }
 
     #[test]
@@ -179,7 +179,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::AmbiguousDirection);
+        assert_that!(migration).is_err_containing(DefinitionError::AmbiguousDirection);
     }
 
     #[test]
@@ -188,7 +188,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::NoFilename);
+        assert_that!(migration).is_err_containing(DefinitionError::NoFilename);
     }
 
     #[test]
@@ -197,6 +197,6 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(Error::NoFilename);
+        assert_that!(migration).is_err_containing(DefinitionError::NoFilename);
     }
 }

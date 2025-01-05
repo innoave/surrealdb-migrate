@@ -1,6 +1,6 @@
 use crate::definition::ParseMigration;
+use crate::error::Error;
 use crate::migration::Migration;
-use crate::Error;
 use std::fs;
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;
@@ -57,7 +57,7 @@ impl Iterator for MigDirIter<'_> {
                         Err(err) => return Some(Err(Error::ReadingMigrationFile(err.to_string()))),
                     }
                     let file_path = self.base_dir.join(entry.file_name());
-                    Some(file_path.parse_migration())
+                    Some(file_path.parse_migration().map_err(Error::from))
                 },
                 Err(err) => Some(Err(Error::ReadingMigrationFile(err.to_string()))),
             };

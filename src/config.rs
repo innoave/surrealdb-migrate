@@ -1,5 +1,8 @@
 use std::borrow::Cow;
 
+pub const DEFAULT_MIGRATIONS_FOLDER: &str = "migrations";
+pub const DEFAULT_MIGRATIONS_TABLE: &str = "migrations";
+
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DbAuthLevel {
     Root,

@@ -1,10 +1,15 @@
 use crate::config::{DbAuthLevel, DbClientConfig};
+use crate::error::Error;
+use crate::migration::MigrationsTableInfo;
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
 use surrealdb::engine::any::{connect, Any};
 use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
 use surrealdb::Surreal;
+
+const TABLE_VERSION_KEY: &str = "version:";
 
 pub type DbError = surrealdb::Error;
 
@@ -77,3 +82,57 @@ pub async fn connect_to_database(config: DbClientConfig<'_>) -> Result<DbConnect
 
     Ok(DbConnection::new(client, token))
 }
+
+pub async fn find_migrations_table_info(
+    table_name: &str,
+    db: &DbConnection,
+) -> Result<MigrationsTableInfo, Error> {
+    let mut db_info = db
+        .query("INFO FOR DB")
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+    let tables: Option<HashMap<String, String>> = db_info
+        .take("tables")
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+    let mut tables = tables.ok_or_else(|| Error::FetchingTableDefinitions(String::new()))?;
+    if tables.is_empty() {
+        return Ok(MigrationsTableInfo::NoTables);
+    }
+    tables
+        .remove(table_name)
+        .map_or(Ok(MigrationsTableInfo::Missing), |definition| {
+            let version = extract_table_definition_version(&definition);
+            Ok(MigrationsTableInfo::Table {
+                name: table_name.to_owned(),
+                version,
+                definition,
+            })
+        })
+}
+
+fn extract_table_definition_version(table_definition: &str) -> Option<String> {
+    table_definition
+        .find(TABLE_VERSION_KEY)
+        .and_then(|start| {
+            table_definition
+                .char_indices()
+                .skip(start)
+                .find_map(|(i, c)| {
+                    if c == '\'' {
+                        Some((start + TABLE_VERSION_KEY.len(), i))
+                    } else {
+                        None
+                    }
+                })
+        })
+        .map(|(start, end)| {
+            table_definition
+                .chars()
+                .skip(start)
+                .take(end - start)
+                .collect::<String>()
+        })
+}
+
+#[cfg(test)]
+mod tests;

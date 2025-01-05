@@ -1,6 +1,6 @@
+use crate::config::DEFAULT_MIGRATIONS_FOLDER;
 use crate::definition::{
-    DEFAULT_MIGRATIONS_FOLDER, DOWN_SCRIPT_FILE_EXTENSION, SCRIPT_FILE_EXTENSION,
-    UP_SCRIPT_FILE_EXTENSION,
+    DOWN_SCRIPT_FILE_EXTENSION, SCRIPT_FILE_EXTENSION, UP_SCRIPT_FILE_EXTENSION,
 };
 use crate::migration::{Direction, Migration};
 use proptest::prelude::*;

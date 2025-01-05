@@ -1,6 +1,6 @@
 use super::*;
+use crate::error::Error;
 use crate::migration::{Direction, Migration};
-use crate::Error;
 use speculoos::prelude::*;
 use std::path::Path;
 use time::macros::datetime;

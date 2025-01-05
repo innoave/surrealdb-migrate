@@ -1,3 +1,4 @@
+use crate::fixtures::load_environment_variables;
 use std::env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
@@ -60,4 +61,16 @@ pub async fn initialize_database() {
             .await
             .expect("failed to prepare test playground in database");
     }
+}
+
+pub async fn connect_to_test_database_as_database_user() -> DbConnection {
+    load_environment_variables();
+    initialize_database().await;
+
+    let config = DbClientConfig::default()
+        .with_username(db_username())
+        .with_password(db_password());
+    connect_to_database(config)
+        .await
+        .expect("failed to connect to test database")
 }

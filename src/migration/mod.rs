@@ -25,3 +25,14 @@ pub struct Execution {
     pub execution_time: Duration,
     pub success: bool,
 }
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MigrationsTableInfo {
+    NoTables,
+    Missing,
+    Table {
+        name: String,
+        version: Option<String>,
+        definition: String,
+    },
+}
