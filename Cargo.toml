@@ -29,6 +29,7 @@ proptest = { version = "1", optional = true }
 dotenvy = "0.15"
 proptest = "1"
 speculoos = "0.11"
+testcontainers-modules = { version = "0.11", features = ["surrealdb"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [lints.rust]

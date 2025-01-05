@@ -14,5 +14,6 @@ pub mod proptest_support;
 #[cfg(test)]
 mod dummy_extern_uses {
     use dotenvy as _;
+    use testcontainers_modules as _;
     use tokio as _;
 }

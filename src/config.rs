@@ -3,16 +3,15 @@ use std::borrow::Cow;
 pub const DEFAULT_MIGRATIONS_FOLDER: &str = "migrations";
 pub const DEFAULT_MIGRATIONS_TABLE: &str = "migrations";
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DbAuthLevel {
     Root,
     Namespace,
-    #[default]
     Database,
 }
 
 #[must_use]
-#[derive(Default, Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DbClientConfig<'a> {
     /// Address of the database instance.
     ///
@@ -25,7 +24,7 @@ pub struct DbClientConfig<'a> {
 
     /// Namespace to use on the database instance.
     ///
-    /// Default: `"playground"`
+    /// Default: `"test"`
     pub namespace: Option<Cow<'a, str>>,
 
     /// Database to use inside the database instance.
@@ -35,7 +34,7 @@ pub struct DbClientConfig<'a> {
 
     /// The kind of the system user used for authentication.
     ///
-    /// Default: `Database`
+    /// Default: `Root`
     pub auth_level: DbAuthLevel,
 
     /// Username used to authenticate to the database instance.
@@ -58,12 +57,22 @@ pub struct DbClientConfig<'a> {
     pub capacity: Option<usize>,
 }
 
+impl Default for DbClientConfig<'_> {
+    fn default() -> Self {
+        Self {
+            address: None,
+            namespace: None,
+            database: None,
+            auth_level: DbAuthLevel::Root,
+            username: None,
+            password: None,
+            capacity: None,
+        }
+    }
+}
+
 #[allow(clippy::missing_const_for_fn)]
 impl<'a> DbClientConfig<'a> {
-    pub fn empty() -> Self {
-        Self::default()
-    }
-
     pub fn with_address(mut self, address: impl Into<Cow<'a, str>>) -> Self {
         self.address = Some(address.into());
         self
@@ -106,7 +115,7 @@ impl<'a> DbClientConfig<'a> {
     }
 
     pub fn namespace_or_default(&self) -> &str {
-        self.namespace.as_ref().map_or("playground", |v| v.as_ref())
+        self.namespace.as_ref().map_or("test", |v| v.as_ref())
     }
 
     pub fn database_or_default(&self) -> &str {

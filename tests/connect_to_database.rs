@@ -1,21 +1,37 @@
 mod fixtures;
 
 use crate::fixtures::db::{
-    db_password, db_username, ns_password, ns_username, root_password, root_username,
+    client_config_for_testcontainer, db_password, db_username, ns_password, ns_username,
+    start_surrealdb_testcontainer,
 };
 use crate::fixtures::load_environment_variables;
 use fixtures::db::initialize_database;
 use speculoos::prelude::*;
-use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
+use surrealdb_migrate::config::DbAuthLevel;
 use surrealdb_migrate::db::connect_to_database;
+
+#[tokio::test]
+async fn test_surrealdb_version() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_database(config)
+        .await
+        .expect("failed to connect to SurrealDb testcontainer");
+
+    let db_version = db.version().await.expect("failed to get SurrealDB version");
+
+    assert_that!(db_version.major).is_equal_to(2);
+    assert_that!(db_version.minor).is_equal_to(1);
+}
 
 #[tokio::test]
 async fn can_connect_to_database_as_root_user() {
     load_environment_variables();
-    let config = DbClientConfig::default()
-        .with_auth_level(DbAuthLevel::Root)
-        .with_username(root_username())
-        .with_password(root_password());
+    let db_server = start_surrealdb_testcontainer().await;
+
+    let config = client_config_for_testcontainer(&db_server)
+        .await
+        .with_auth_level(DbAuthLevel::Root);
     let db = connect_to_database(config).await;
 
     assert_that!(db).is_ok();
@@ -24,9 +40,12 @@ async fn can_connect_to_database_as_root_user() {
 #[tokio::test]
 async fn can_connect_to_database_as_namespace_user() {
     load_environment_variables();
-    initialize_database().await;
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    initialize_database(&config).await;
 
-    let config = DbClientConfig::default()
+    let config = config
+        .with_namespace("playground")
         .with_auth_level(DbAuthLevel::Namespace)
         .with_username(ns_username())
         .with_password(ns_password());
@@ -38,9 +57,14 @@ async fn can_connect_to_database_as_namespace_user() {
 #[tokio::test]
 async fn can_connect_to_database_as_database_user() {
     load_environment_variables();
-    initialize_database().await;
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    initialize_database(&config).await;
 
-    let config = DbClientConfig::default()
+    let config = config
+        .with_namespace("playground")
+        .with_database("test")
+        .with_auth_level(DbAuthLevel::Database)
         .with_username(db_username())
         .with_password(db_password());
     let db = connect_to_database(config).await;

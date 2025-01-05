@@ -7,7 +7,6 @@ alias c := check
 alias l := lint
 alias t := test
 alias tl := test-lib
-alias db := start-test-db
 
 # list recipies
 default:
@@ -40,7 +39,3 @@ build-release:
 # clean the workspace
 clean:
     cargo clean
-
-# start the test DB in Docker container
-start-test-db:
-    docker compose up
