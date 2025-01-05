@@ -1,9 +1,10 @@
 [package]
 name = "surrealdb-migrate"
 version = "0.1.0"
-edition = "2021"
 authors = ["haraldmaida"]
 license = "MIT/Apache-2.0"
+edition = "2021"
+rust-version = "1.80.1"
 
 description = """
 Evolve a SurrealDB database over time by applying migrations. `surrealdb-migrate` is a commandline
@@ -17,6 +18,7 @@ proptest-support = ["dep:proptest"]
 
 [dependencies]
 crc32fast = "1"
+surrealdb = "2.1"
 thiserror = "2"
 time = { version = "0.3", features = ["macros", "formatting", "parsing"] }
 
@@ -24,8 +26,10 @@ time = { version = "0.3", features = ["macros", "formatting", "parsing"] }
 proptest = { version = "1", optional = true }
 
 [dev-dependencies]
+dotenvy = "0.15"
 proptest = "1"
 speculoos = "0.11"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -71,7 +75,7 @@ panic = 'abort'
 codegen-units = 1
 
 [profile.dev.package."*"]
-opt-level = 3
+opt-level = 2
 
 [profile.dev.package.proptest]
 overflow-checks = false

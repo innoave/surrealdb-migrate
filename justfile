@@ -6,6 +6,8 @@ alias b := build
 alias c := check
 alias l := lint
 alias t := test
+alias tl := test-lib
+alias db := start-test-db
 
 # list recipies
 default:
@@ -27,6 +29,18 @@ lint:
 test:
     cargo test --all-features
 
+# run the lib tests only
+test-lib:
+    cargo test --lib --all-features
+
 # build the crate for release
 build-release:
     cargo build --release --all-features
+
+# clean the workspace
+clean:
+    cargo clean
+
+# start the test DB in Docker container
+start-test-db:
+    docker compose up

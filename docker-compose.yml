@@ -7,8 +7,6 @@ services:
       context: .
       dockerfile: Dockerfile
       target: surrealdb
-    env_file:
-      - .env
     entrypoint:
       - /surreal
       - start
