@@ -150,7 +150,7 @@ fn extract_table_definition_version(table_definition: &str) -> Option<String> {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
-struct MigrationExecution {
+struct MigrationExecutionData {
     key: String,
     title: String,
     script_path: String,
@@ -167,7 +167,7 @@ pub async fn insert_migration_execution(
 ) -> Result<(), Error> {
     let key = execution.key.format(MIGRATION_KEY_FORMAT_STR).to_string();
 
-    let content = MigrationExecution {
+    let content = MigrationExecutionData {
         key: key.clone(),
         title: migration.title,
         script_path: migration.script_path.to_string_lossy().into(),
@@ -176,13 +176,13 @@ pub async fn insert_migration_execution(
         execution_time: sql::Duration::from(execution.execution_time),
     };
 
-    let response: Option<MigrationExecution> = db
+    let response: Option<MigrationExecutionData> = db
         .create((migrations_table, key.clone()))
         .content(content)
         .await
         .map_err(|err| Error::DbQuery(err.to_string()))?;
 
-    response.ok_or_else(|| Error::ExecutionNotInserted(key.to_string()))?;
+    _ = response.ok_or_else(|| Error::ExecutionNotInserted(key.to_string()))?;
     Ok(())
 }
 
