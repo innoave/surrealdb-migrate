@@ -21,7 +21,7 @@ async fn define_migrations_table_in_empty_database() {
 
     let result = define_migrations_table("my_migrations", &db).await;
 
-    assert!(result.is_ok());
+    assert_that!(result).is_ok();
 
     let tables: Option<HashMap<String, String>> = db
         .query("INFO FOR DB")
