@@ -6,9 +6,12 @@ tool and lib to define and run migrations on the database. It provides version c
 
 ## Defining migrations
 
-A migration is identified by a timestamp and a title and whether it is a forward migration (up) or
-a backward migration (down). To make the definition of a migration complete we write some
-[SurrealQL] queries that describe what is to be changed in the database.
+A migration is identified by a key and a title and whether it is a forward migration (up) or
+a backward migration (down). For a complete migration definition we also need a migration script to
+describe what has to be changed in the database.
+
+The key of a migration is built from a date and a time, when the migration was created. A
+migration script is any [SurrealQL] script.
 
 Flat folder structure:
 
@@ -44,8 +47,37 @@ A migration is defined by:
 The status of a migration is tracked by their execution:
 
 * applied at
+* checksum
 * execution time
 * success (yes/no)
+
+## Transactions
+
+Each migration script is executed in one database transaction.
+
+If a migration script fails and leaves the database in an inconsistent state it is up to the user
+to revert the failed migration manually or by applying a down-script.
+
+## Features and functionality
+
+Milestone 0.1 (first public release):
+
+* [X] Read migrations from the filesystem
+* [X] Store migration executions in the migrations table in the database
+* [X] Create the migrations table if it does not exist
+* [ ] Apply migrations to a database
+* [ ] Verify order of migrations (optional: opt-out)
+* [ ] Verify checksum of applied migrations (optional: opt-out)
+* [ ] Revert migrations using "down"-scripts
+* [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
+* [ ] Create scaffold for defining migrations on the filesystem
+* [ ] Create new migration definitions in the migrations folder - templates!?
+* [ ] Command line application (CLI)
+
+Milestone 1.0:
+
+* [ ] Traversing subfolders of the `migrations` directory
+* [ ] Support for branching of databases for development
 
 [SurrealDB]: https://surrealdb.com
 
