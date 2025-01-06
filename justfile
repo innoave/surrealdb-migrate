@@ -26,11 +26,11 @@ lint:
 
 # run the tests
 test:
-    cargo test --all-features
+    cargo test
 
 # run the lib tests only
 test-lib:
-    cargo test --lib --all-features
+    cargo test --lib
 
 # build the crate for release
 build-release:

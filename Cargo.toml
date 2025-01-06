@@ -14,14 +14,19 @@ tool and lib to define and run migrations on the database. It provides version c
 keywords = ["database", "migrations", "version-control", "cli"]
 
 [features]
+default = ["protocol-ws", "rustls"]
+native-tls = ["surrealdb/native-tls"]
+protocol-http = ["surrealdb/protocol-http"]
+protocol-ws = ["surrealdb/protocol-ws"]
 proptest-support = ["dep:proptest"]
+rustls = ["surrealdb/rustls"]
 
 [dependencies]
 chrono = "0.4"
 crc32fast = "1"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
-surrealdb = "2.1"
+surrealdb = { version = "2.1", default-features = false }
 thiserror = "2"
 
 # optional
