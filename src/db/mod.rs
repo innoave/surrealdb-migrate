@@ -9,7 +9,9 @@ use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
 use surrealdb::Surreal;
 
-const TABLE_VERSION_KEY: &str = "version:";
+pub const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../../surql/define_migrations_table.surql");
+
+pub const TABLE_VERSION_KEY: &str = "version:";
 
 pub type DbError = surrealdb::Error;
 
