@@ -1,13 +1,17 @@
-use crate::config::{DbAuthLevel, DbClientConfig};
+#![allow(clippy::ref_option)]
+
+use crate::checksum::Checksum;
+use crate::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
 use crate::error::Error;
-use crate::migration::MigrationsTableInfo;
+use crate::migration::{Execution, Migration, MigrationsTableInfo};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
 use surrealdb::engine::any::{connect, Any};
 use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
-use surrealdb::Surreal;
+use surrealdb::{sql, Surreal};
 
 pub const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../../surql/define_migrations_table.surql");
 
@@ -56,7 +60,7 @@ impl Deref for DbConnection {
     }
 }
 
-pub async fn connect_to_database(config: DbClientConfig<'_>) -> Result<DbConnection, DbError> {
+pub async fn connect_to_database(config: &DbClientConfig<'_>) -> Result<DbConnection, DbError> {
     let client = connect(config.address_or_default()).await?;
 
     let token = match config.auth_level() {
@@ -143,6 +147,43 @@ fn extract_table_definition_version(table_definition: &str) -> Option<String> {
                 .take(end - start)
                 .collect::<String>()
         })
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+struct MigrationExecution {
+    key: String,
+    title: String,
+    script_path: String,
+    checksum: Checksum,
+    applied_at: sql::Datetime,
+    execution_time: sql::Duration,
+}
+
+pub async fn insert_migration_execution(
+    migration: Migration,
+    execution: Execution,
+    migrations_table: &str,
+    db: &DbConnection,
+) -> Result<(), Error> {
+    let key = execution.key.format(MIGRATION_KEY_FORMAT_STR).to_string();
+
+    let content = MigrationExecution {
+        key: key.clone(),
+        title: migration.title,
+        script_path: migration.script_path.to_string_lossy().into(),
+        checksum: execution.checksum,
+        applied_at: sql::Datetime::from(execution.applied_at),
+        execution_time: sql::Duration::from(execution.execution_time),
+    };
+
+    let response: Option<MigrationExecution> = db
+        .create((migrations_table, key.clone()))
+        .content(content)
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    response.ok_or_else(|| Error::ExecutionNotInserted(key.to_string()))?;
+    Ok(())
 }
 
 #[cfg(test)]

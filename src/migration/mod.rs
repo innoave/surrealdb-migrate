@@ -1,8 +1,10 @@
 use crate::checksum::Checksum;
+use chrono::{DateTime, NaiveDateTime, Utc};
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use time::{Duration, OffsetDateTime, PrimitiveDateTime};
+use std::time::Duration;
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     #[default]
     Up,
@@ -11,7 +13,7 @@ pub enum Direction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Migration {
-    pub id: PrimitiveDateTime,
+    pub key: NaiveDateTime,
     pub title: String,
     pub direction: Direction,
     pub script_path: PathBuf,
@@ -19,8 +21,8 @@ pub struct Migration {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Execution {
-    pub id: PrimitiveDateTime,
-    pub applied_at: OffsetDateTime,
+    pub key: NaiveDateTime,
+    pub applied_at: DateTime<Utc>,
     pub checksum: Checksum,
     pub execution_time: Duration,
     pub success: bool,

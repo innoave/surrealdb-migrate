@@ -1,16 +1,27 @@
 use crate::migration::{Direction, Migration};
 use crc32fast::Hasher;
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::borrow::Borrow;
 use std::ffi::OsStr;
 use std::fmt::{Display, Formatter};
+use std::num::ParseIntError;
 use std::ops::Deref;
+use std::str::FromStr;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(SerializeDisplay, DeserializeFromStr, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Checksum(u32);
 
 impl Display for Checksum {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl FromStr for Checksum {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        u32::from_str(s).map(Self)
     }
 }
 

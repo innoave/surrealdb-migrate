@@ -1,9 +1,8 @@
 use crate::error::DefinitionError;
 use crate::migration::{Direction, Migration};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
-use time::macros::format_description;
-use time::{Date, PrimitiveDateTime, Time};
 
 pub trait ParseMigration {
     type Err;
@@ -35,15 +34,15 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
         return Err(DefinitionError::MissingDate);
     }
     let date_substr = &filename[0..8];
-    let date = Date::parse(date_substr, format_description!("[year][month][day]"))
-        .map_err(DefinitionError::InvalidDate)?;
+    let date = NaiveDate::parse_from_str(date_substr, "%Y%m%d")
+        .map_err(|err| DefinitionError::InvalidDate(err.to_string()))?;
     if len < 15 + ext_len || &filename[8..9] != "_" {
         return Err(DefinitionError::MissingTime);
     }
     let time_substr = &filename[9..15];
-    let time = Time::parse(time_substr, format_description!("[hour][minute][second]"))
-        .map_err(DefinitionError::InvalidTime)?;
-    let id = PrimitiveDateTime::new(date, time);
+    let time = NaiveTime::parse_from_str(time_substr, "%H%M%S")
+        .map_err(|err| DefinitionError::InvalidTime(err.to_string()))?;
+    let key = NaiveDateTime::new(date, time);
     if len < 17 + ext_len || &filename[15..16] != "_" {
         return Err(DefinitionError::MissingTitle);
     }
@@ -52,7 +51,7 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
     script_path.push(filename);
 
     Ok(Migration {
-        id,
+        key,
         title: title.to_string(),
         direction,
         script_path,

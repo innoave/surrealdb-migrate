@@ -1,47 +1,43 @@
-use crate::config::DEFAULT_MIGRATIONS_FOLDER;
+use crate::config::{DEFAULT_MIGRATIONS_FOLDER, MIGRATION_KEY_FORMAT_STR};
 use crate::definition::{
     DOWN_SCRIPT_FILE_EXTENSION, SCRIPT_FILE_EXTENSION, UP_SCRIPT_FILE_EXTENSION,
 };
 use crate::migration::{Direction, Migration};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use proptest::prelude::*;
 use proptest::string::string_regex;
 use std::path::PathBuf;
-use time::macros::format_description;
-use time::{Date, Month, PrimitiveDateTime, Time};
 
-fn any_month() -> impl Strategy<Value = Month> {
-    prop_oneof![
-        Just(Month::January),
-        Just(Month::February),
-        Just(Month::March),
-        Just(Month::April),
-        Just(Month::May),
-        Just(Month::June),
-        Just(Month::July),
-        Just(Month::August),
-        Just(Month::September),
-        Just(Month::October),
-        Just(Month::November),
-        Just(Month::December),
-    ]
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn days_in_month(year: i32, month: u32) -> u32 {
+    let current_month =
+        NaiveDate::from_ymd_opt(year, month, 1).expect("year or month out of range");
+    let (next_year, next_month) = match month {
+        12 => (year + 1, 1),
+        _ => (year, month + 1),
+    };
+    let next_month = NaiveDate::from_ymd_opt(next_year, next_month, 1)
+        .expect("next_year or next_month out of range");
+    next_month.signed_duration_since(current_month).num_days() as u32
 }
 
-pub fn any_id() -> impl Strategy<Value = PrimitiveDateTime> {
-    (1970..=9999, any_month())
+pub fn any_key() -> impl Strategy<Value = NaiveDateTime> {
+    (1970..=9999, 1..=12_u32)
         .prop_flat_map(|(year, month)| {
             (
                 Just(year),
                 Just(month),
-                1..=time::util::days_in_month(month, year),
-                1..=23_u8,
-                1..=59_u8,
-                1..=59_u8,
+                1..=days_in_month(year, month),
+                1..=23_u32,
+                1..=59_u32,
+                1..=59_u32,
             )
         })
         .prop_map(|(year, month, day, hour, minute, second)| {
-            PrimitiveDateTime::new(
-                Date::from_calendar_date(year, month, day).expect("invalid calendar date"),
-                Time::from_hms(hour, minute, second).expect("invalid time"),
+            NaiveDateTime::new(
+                NaiveDate::from_ymd_opt(year, month, day).expect("year, month or day out of range"),
+                NaiveTime::from_hms_opt(hour, minute, second)
+                    .expect("hour, minute or second out of range"),
             )
         })
 }
@@ -55,13 +51,9 @@ pub fn any_direction() -> impl Strategy<Value = Direction> {
 }
 
 pub fn any_filename() -> impl Strategy<Value = String> {
-    (any_id(), any_title(), any_direction(), any::<bool>()).prop_map(
-        |(id, title, direction, include_direction)| {
-            let mut filename = id
-                .format(format_description!(
-                    "[year][month][day]_[hour][minute][second]"
-                ))
-                .expect("invalid filename");
+    (any_key(), any_title(), any_direction(), any::<bool>()).prop_map(
+        |(key, title, direction, include_direction)| {
+            let mut filename = key.format(MIGRATION_KEY_FORMAT_STR).to_string();
             filename.push('_');
             filename.push_str(&title);
             match (include_direction, direction) {
@@ -92,9 +84,9 @@ pub fn any_script_path() -> impl Strategy<Value = PathBuf> {
 }
 
 pub fn any_migration() -> impl Strategy<Value = Migration> {
-    (any_id(), any_title(), any_direction(), any_script_path()).prop_map(
-        |(id, title, direction, script_path)| Migration {
-            id,
+    (any_key(), any_title(), any_direction(), any_script_path()).prop_map(
+        |(key, title, direction, script_path)| Migration {
+            key,
             title,
             direction,
             script_path,

@@ -42,7 +42,7 @@ pub async fn start_surrealdb_testcontainer() -> ContainerAsync<SurrealDb> {
 
 pub async fn connect_as_root_user(config: &DbClientConfig<'_>) -> Result<DbConnection, DbError> {
     let config = config.clone().with_auth_level(DbAuthLevel::Root);
-    connect_to_database(config).await
+    connect_to_database(&config).await
 }
 
 pub async fn client_config_for_testcontainer(
@@ -92,7 +92,7 @@ pub async fn connect_to_test_database_as_database_user(config: DbClientConfig<'_
         .with_username(db_username())
         .with_password(db_password());
 
-    connect_to_database(config)
+    connect_to_database(&config)
         .await
         .expect("failed to connect to test database")
 }

@@ -14,7 +14,7 @@ use surrealdb_migrate::db::connect_to_database;
 async fn test_surrealdb_version() {
     let db_server = start_surrealdb_testcontainer().await;
     let config = client_config_for_testcontainer(&db_server).await;
-    let db = connect_to_database(config)
+    let db = connect_to_database(&config)
         .await
         .expect("failed to connect to SurrealDb testcontainer");
 
@@ -32,7 +32,7 @@ async fn can_connect_to_database_as_root_user() {
     let config = client_config_for_testcontainer(&db_server)
         .await
         .with_auth_level(DbAuthLevel::Root);
-    let db = connect_to_database(config).await;
+    let db = connect_to_database(&config).await;
 
     assert_that!(db).is_ok();
 }
@@ -49,7 +49,7 @@ async fn can_connect_to_database_as_namespace_user() {
         .with_auth_level(DbAuthLevel::Namespace)
         .with_username(ns_username())
         .with_password(ns_password());
-    let db = connect_to_database(config).await;
+    let db = connect_to_database(&config).await;
 
     assert_that!(db).is_ok();
 }
@@ -67,7 +67,7 @@ async fn can_connect_to_database_as_database_user() {
         .with_auth_level(DbAuthLevel::Database)
         .with_username(db_username())
         .with_password(db_password());
-    let db = connect_to_database(config).await;
+    let db = connect_to_database(&config).await;
 
     assert_that!(db).is_ok();
 }

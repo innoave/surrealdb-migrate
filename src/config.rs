@@ -3,6 +3,8 @@ use std::borrow::Cow;
 pub const DEFAULT_MIGRATIONS_FOLDER: &str = "migrations";
 pub const DEFAULT_MIGRATIONS_TABLE: &str = "migrations";
 
+pub const MIGRATION_KEY_FORMAT_STR: &str = "%Y%m%d_%H%M%S";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DbAuthLevel {
     Root,

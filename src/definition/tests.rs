@@ -1,7 +1,7 @@
 use super::*;
 use crate::migration::Direction;
+use crate::test_dsl::key;
 use speculoos::prelude::*;
-use time::macros::datetime;
 
 mod str {
     use super::*;
@@ -13,8 +13,8 @@ mod str {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -27,8 +27,8 @@ mod str {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -41,8 +41,8 @@ mod str {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -55,8 +55,8 @@ mod str {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Down,
             script_path: path.into(),
         });
@@ -73,8 +73,8 @@ mod string {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -84,7 +84,6 @@ mod string {
 mod path {
     use super::*;
     use std::path::Path;
-    use time::error::{Parse, ParseFromDescription};
 
     #[test]
     fn parse_migration_from_valid_file_path() {
@@ -93,8 +92,8 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -107,8 +106,8 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -121,8 +120,8 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Down,
             script_path: path.into(),
         });
@@ -135,8 +134,8 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_ok_containing(Migration {
-            id: datetime!(2025-01-03 14:08:30),
-            title: "define_some_table".to_string(),
+            key: key("20250103_140830"),
+            title: "define_some_table".into(),
             direction: Direction::Up,
             script_path: path.into(),
         });
@@ -148,9 +147,8 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::InvalidDate(
-            Parse::ParseFromDescription(ParseFromDescription::InvalidComponent("month")),
-        ));
+        assert_that!(migration)
+            .is_err_containing(DefinitionError::InvalidDate("input is out of range".into()));
     }
 
     #[test]
@@ -160,7 +158,7 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration).is_err_containing(DefinitionError::InvalidTime(
-            Parse::ParseFromDescription(ParseFromDescription::InvalidComponent("hour")),
+            "input contains invalid characters".into(),
         ));
     }
 
