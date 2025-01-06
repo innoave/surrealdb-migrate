@@ -85,6 +85,15 @@ pub async fn connect_to_database(config: DbClientConfig<'_>) -> Result<DbConnect
     Ok(DbConnection::new(client, token))
 }
 
+pub async fn define_migrations_table(table_name: &str, db: &DbConnection) -> Result<(), Error> {
+    db.query(DEFINE_MIGRATIONS_TABLE.replace("$migrations_table", table_name))
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?
+        .check()
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+    Ok(())
+}
+
 pub async fn find_migrations_table_info(
     table_name: &str,
     db: &DbConnection,

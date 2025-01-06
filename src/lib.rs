@@ -2,7 +2,7 @@ pub mod checksum;
 pub mod config;
 pub mod db;
 pub mod definition;
-mod error;
+pub mod error;
 pub mod io;
 pub mod migration;
 
