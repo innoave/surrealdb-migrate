@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
 
-#[derive(Default, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Direction {
-    #[default]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MigrationKind {
+    Baseline,
     Up,
     Down,
 }
@@ -15,17 +15,19 @@ pub enum Direction {
 pub struct Migration {
     pub key: NaiveDateTime,
     pub title: String,
-    pub direction: Direction,
+    pub kind: MigrationKind,
     pub script_path: PathBuf,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Execution {
     pub key: NaiveDateTime,
+    pub applied_rank: i64,
+    pub applied_by: String,
     pub applied_at: DateTime<Utc>,
     pub checksum: Checksum,
     pub execution_time: Duration,
-    pub success: bool,
+    pub successful: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

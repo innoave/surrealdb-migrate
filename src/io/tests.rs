@@ -1,6 +1,6 @@
 use super::*;
 use crate::error::Error;
-use crate::migration::{Direction, Migration};
+use crate::migration::{Migration, MigrationKind};
 use crate::test_dsl::key;
 use speculoos::prelude::*;
 use std::path::Path;
@@ -19,7 +19,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
             Ok(Migration {
                 key: key("20250103_140520"),
                 title: "define_quote_table".into(),
-                direction: Direction::Up,
+                kind: MigrationKind::Up,
                 script_path: Path::new(
                     "fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
                 )
@@ -28,7 +28,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
             Ok(Migration {
                 key: key("20250103_140521"),
                 title: "create_some_quotes".into(),
-                direction: Direction::Up,
+                kind: MigrationKind::Up,
                 script_path: Path::new(
                     "fixtures/basic/migrations/20250103_140521_create_some_quotes.surql",
                 )
@@ -64,7 +64,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             Ok(Migration {
                 key: key("20250103_140520"),
                 title: "define_quote_table".into(),
-                direction: Direction::Up,
+                kind: MigrationKind::Up,
                 script_path: Path::new(
                     "fixtures/with_subdir/migrations/20250103_140520_define_quote_table.surql",
                 )
@@ -73,7 +73,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             Ok(Migration {
                 key: key("20250103_140521"),
                 title: "create_some_quotes".into(),
-                direction: Direction::Up,
+                kind: MigrationKind::Up,
                 script_path: Path::new(
                     "fixtures/with_subdir/migrations/20250103_140521_create_some_quotes.surql",
                 )

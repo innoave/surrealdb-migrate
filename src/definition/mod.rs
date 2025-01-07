@@ -1,5 +1,5 @@
 use crate::error::DefinitionError;
-use crate::migration::{Direction, Migration};
+use crate::migration::{Migration, MigrationKind};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -20,10 +20,10 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
     }
     let up = filename.ends_with(UP_SCRIPT_FILE_EXTENSION);
     let down = filename.ends_with(DOWN_SCRIPT_FILE_EXTENSION);
-    let (direction, ext_len) = match (up, down) {
-        (false, false) => (Direction::Up, SCRIPT_FILE_EXTENSION.len()),
-        (true, false) => (Direction::Up, UP_SCRIPT_FILE_EXTENSION.len()),
-        (false, true) => (Direction::Down, DOWN_SCRIPT_FILE_EXTENSION.len()),
+    let (kind, ext_len) = match (up, down) {
+        (false, false) => (MigrationKind::Up, SCRIPT_FILE_EXTENSION.len()),
+        (true, false) => (MigrationKind::Up, UP_SCRIPT_FILE_EXTENSION.len()),
+        (false, true) => (MigrationKind::Down, DOWN_SCRIPT_FILE_EXTENSION.len()),
         (true, true) => return Err(DefinitionError::AmbiguousDirection),
     };
     if filename.contains(".up.") && filename.contains(".down.") {
@@ -53,7 +53,7 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
     Ok(Migration {
         key,
         title: title.to_string(),
-        direction,
+        kind,
         script_path,
     })
 }

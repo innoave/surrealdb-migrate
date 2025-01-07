@@ -3,7 +3,7 @@
 use crate::checksum::Checksum;
 use crate::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
 use crate::error::Error;
-use crate::migration::{Execution, Migration, MigrationsTableInfo};
+use crate::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -149,14 +149,18 @@ fn extract_table_definition_version(table_definition: &str) -> Option<String> {
         })
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize)]
 struct MigrationExecutionData {
+    applied_rank: i64,
     key: String,
     title: String,
+    kind: MigrationKind,
     script_path: String,
     checksum: Checksum,
     applied_at: sql::Datetime,
+    applied_by: String,
     execution_time: sql::Duration,
+    successful: bool,
 }
 
 pub async fn insert_migration_execution(
@@ -168,12 +172,16 @@ pub async fn insert_migration_execution(
     let key = execution.key.format(MIGRATION_KEY_FORMAT_STR).to_string();
 
     let content = MigrationExecutionData {
+        applied_rank: execution.applied_rank,
         key: key.clone(),
         title: migration.title,
+        kind: migration.kind,
         script_path: migration.script_path.to_string_lossy().into(),
         checksum: execution.checksum,
         applied_at: sql::Datetime::from(execution.applied_at),
+        applied_by: execution.applied_by,
         execution_time: sql::Duration::from(execution.execution_time),
+        successful: execution.successful,
     };
 
     let response: Option<MigrationExecutionData> = db

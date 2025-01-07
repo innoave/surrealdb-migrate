@@ -6,18 +6,34 @@ use crate::fixtures::db::{
     start_surrealdb_testcontainer,
 };
 use crate::test_dsl::{datetime, key};
+use serde::{Deserialize, Serialize};
 use speculoos::prelude::*;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
-use surrealdb_migrate::checksum::hash_migration_script;
-use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
+use surrealdb::sql;
+use surrealdb_migrate::checksum::{hash_migration_script, Checksum};
+use surrealdb_migrate::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
 use surrealdb_migrate::db::{
     define_migrations_table, find_migrations_table_info, insert_migration_execution,
     DEFINE_MIGRATIONS_TABLE,
 };
 use surrealdb_migrate::error::Error;
-use surrealdb_migrate::migration::{Direction, Execution, Migration, MigrationsTableInfo};
+use surrealdb_migrate::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+struct MigrationExecutionData {
+    applied_rank: i64,
+    key: String,
+    title: String,
+    kind: MigrationKind,
+    script_path: String,
+    checksum: Checksum,
+    applied_at: sql::Datetime,
+    applied_by: String,
+    execution_time: sql::Duration,
+    successful: bool,
+}
 
 #[tokio::test]
 async fn define_migrations_table_in_empty_database() {
@@ -147,23 +163,46 @@ async fn insert_migration_execution_first_record() {
 
     let migration = Migration {
         key,
-        title: "define_some_tables".to_string(),
-        direction: Direction::Up,
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
         script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
     };
 
+    let checksum = hash_migration_script(&migration, &[]);
+
     let execution = Execution {
         key,
+        applied_rank: 1,
+        applied_by: "some.user".into(),
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
-        checksum: hash_migration_script(&migration, &[]),
+        checksum,
         execution_time: Duration::from_millis(380),
-        success: true,
+        successful: true,
     };
 
     let result =
         insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
 
     assert_that!(result).is_ok();
+
+    let exec_key = key.format(MIGRATION_KEY_FORMAT_STR).to_string();
+    let stored_execution: Option<MigrationExecutionData> = db
+        .select((DEFAULT_MIGRATIONS_TABLE, exec_key))
+        .await
+        .expect("failed to select inserted migration execution");
+
+    assert_that!(stored_execution).is_equal_to(Some(MigrationExecutionData {
+        applied_rank: 1,
+        key: "20250103_153309".into(),
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: "migrations/20250103_153309_define_some_tables.surql".into(),
+        checksum,
+        applied_at: datetime("2025-01-06 07:12:50+01:00").into(),
+        applied_by: "some.user".into(),
+        execution_time: Duration::from_millis(380).into(),
+        successful: true,
+    }));
 }
 
 #[tokio::test]
@@ -180,16 +219,18 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
     let migration = Migration {
         key,
         title: "define_some_tables".to_string(),
-        direction: Direction::Up,
+        kind: MigrationKind::Up,
         script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
     };
 
     let execution = Execution {
         key,
+        applied_rank: 2,
+        applied_by: "some.user".to_string(),
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
         checksum: hash_migration_script(&migration, &[]),
         execution_time: Duration::from_millis(380),
-        success: true,
+        successful: true,
     };
 
     let result = insert_migration_execution(

@@ -1,4 +1,4 @@
-use crate::migration::{Direction, Migration};
+use crate::migration::{Migration, MigrationKind};
 use crc32fast::Hasher;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::borrow::Borrow;
@@ -54,9 +54,10 @@ pub fn hash_migration_script(migration: &Migration, script_content: &[u8]) -> Ch
             .unwrap_or_else(|| OsStr::new(""))
             .as_encoded_bytes(),
     );
-    hasher.update(match migration.direction {
-        Direction::Up => &[1],
-        Direction::Down => &[2],
+    hasher.update(match migration.kind {
+        MigrationKind::Baseline => &[0],
+        MigrationKind::Up => &[1],
+        MigrationKind::Down => &[2],
     });
     hasher.update(script_content);
     Checksum(hasher.finalize())

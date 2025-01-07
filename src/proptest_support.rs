@@ -2,7 +2,7 @@ use crate::config::{DEFAULT_MIGRATIONS_FOLDER, MIGRATION_KEY_FORMAT_STR};
 use crate::definition::{
     DOWN_SCRIPT_FILE_EXTENSION, SCRIPT_FILE_EXTENSION, UP_SCRIPT_FILE_EXTENSION,
 };
-use crate::migration::{Direction, Migration};
+use crate::migration::{Migration, MigrationKind};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use proptest::prelude::*;
 use proptest::string::string_regex;
@@ -43,11 +43,11 @@ pub fn any_key() -> impl Strategy<Value = NaiveDateTime> {
 }
 
 pub fn any_title() -> impl Strategy<Value = String> {
-    string_regex(r"[\w][\w\-]{0,200}").expect("invalid regex for title")
+    string_regex(r"[\w][\w\-_ ]{0,200}").expect("invalid regex for title")
 }
 
-pub fn any_direction() -> impl Strategy<Value = Direction> {
-    prop_oneof![Just(Direction::Up), Just(Direction::Down),]
+pub fn any_direction() -> impl Strategy<Value = MigrationKind> {
+    prop_oneof![Just(MigrationKind::Up), Just(MigrationKind::Down),]
 }
 
 pub fn any_filename() -> impl Strategy<Value = String> {
@@ -57,8 +57,8 @@ pub fn any_filename() -> impl Strategy<Value = String> {
             filename.push('_');
             filename.push_str(&title);
             match (include_direction, direction) {
-                (true, Direction::Up) => filename.push_str(UP_SCRIPT_FILE_EXTENSION),
-                (true, Direction::Down) => filename.push_str(DOWN_SCRIPT_FILE_EXTENSION),
+                (true, MigrationKind::Down) => filename.push_str(DOWN_SCRIPT_FILE_EXTENSION),
+                (true, _) => filename.push_str(UP_SCRIPT_FILE_EXTENSION),
                 (false, _) => filename.push_str(SCRIPT_FILE_EXTENSION),
             }
             filename
@@ -85,10 +85,10 @@ pub fn any_script_path() -> impl Strategy<Value = PathBuf> {
 
 pub fn any_migration() -> impl Strategy<Value = Migration> {
     (any_key(), any_title(), any_direction(), any_script_path()).prop_map(
-        |(key, title, direction, script_path)| Migration {
+        |(key, title, kind, script_path)| Migration {
             key,
             title,
-            direction,
+            kind,
             script_path,
         },
     )

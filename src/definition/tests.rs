@@ -1,5 +1,5 @@
 use super::*;
-use crate::migration::Direction;
+use crate::migration::MigrationKind;
 use crate::test_dsl::key;
 use speculoos::prelude::*;
 
@@ -15,7 +15,7 @@ mod str {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -29,7 +29,7 @@ mod str {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -43,7 +43,7 @@ mod str {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -57,7 +57,7 @@ mod str {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Down,
+            kind: MigrationKind::Down,
             script_path: path.into(),
         });
     }
@@ -75,7 +75,7 @@ mod string {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -94,7 +94,7 @@ mod path {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -108,7 +108,7 @@ mod path {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
@@ -122,7 +122,7 @@ mod path {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Down,
+            kind: MigrationKind::Down,
             script_path: path.into(),
         });
     }
@@ -136,7 +136,7 @@ mod path {
         assert_that!(migration).is_ok_containing(Migration {
             key: key("20250103_140830"),
             title: "define_some_table".into(),
-            direction: Direction::Up,
+            kind: MigrationKind::Up,
             script_path: path.into(),
         });
     }
