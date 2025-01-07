@@ -218,7 +218,7 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
 
     let migration = Migration {
         key,
-        title: "define_some_tables".to_string(),
+        title: "define some tables".to_string(),
         kind: MigrationKind::Up,
         script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
     };

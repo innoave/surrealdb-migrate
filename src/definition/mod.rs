@@ -46,7 +46,7 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
     if len < 17 + ext_len || &filename[15..16] != "_" {
         return Err(DefinitionError::MissingTitle);
     }
-    let title = &filename[16..len - ext_len];
+    let title = &filename[16..len - ext_len].replace('_', " ");
     let mut script_path = PathBuf::from(path);
     script_path.push(filename);
 
