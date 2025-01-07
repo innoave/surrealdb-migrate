@@ -79,6 +79,7 @@ Milestone 1.0:
 * [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
 * [ ] Create new migration definitions in the migrations folder - templates!?
 * [ ] Traversing subfolders of the `migrations` directory
+* [ ] Support for baseline of non-empty databases (or snapshots!?)
 * [ ] Support for branching of databases for development
 
 [SurrealDB]: https://surrealdb.com
