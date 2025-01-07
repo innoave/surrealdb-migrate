@@ -69,13 +69,15 @@ Milestone 0.1 (first public release):
 * [ ] Verify order of migrations (optional: opt-out)
 * [ ] Verify checksum of applied migrations (optional: opt-out)
 * [ ] Revert migrations using "down"-scripts
-* [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
 * [ ] Create scaffold for defining migrations on the filesystem
-* [ ] Create new migration definitions in the migrations folder - templates!?
+* [ ] Configure lib and CLI using environment variables
 * [ ] Command line application (CLI)
 
 Milestone 1.0:
 
+* [ ] Configure lib and CLI via a "hierarchy" of config-files (TOML) - workdir -> homedir -> appdir
+* [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
+* [ ] Create new migration definitions in the migrations folder - templates!?
 * [ ] Traversing subfolders of the `migrations` directory
 * [ ] Support for branching of databases for development
 
