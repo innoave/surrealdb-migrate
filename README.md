@@ -76,6 +76,7 @@ Milestone 0.1 (first public release):
 Milestone 1.0:
 
 * [ ] Configure lib and CLI via a "hierarchy" of config-files (TOML) - workdir -> homedir -> appdir
+* [ ] Dry run for migrate and revert
 * [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
 * [ ] Create new migration definitions in the migrations folder - templates!?
 * [ ] Traversing subfolders of the `migrations` directory
