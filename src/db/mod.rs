@@ -3,11 +3,15 @@
 use crate::checksum::Checksum;
 use crate::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
 use crate::error::Error;
-use crate::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
+use crate::migration::{
+    ApplicableMigration, Execution, Migration, MigrationKind, MigrationsTableInfo,
+};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
+use std::time::Instant;
 use surrealdb::engine::any::{connect, Any};
 use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
@@ -160,7 +164,6 @@ struct MigrationExecutionData {
     applied_at: sql::Datetime,
     applied_by: String,
     execution_time: sql::Duration,
-    successful: bool,
 }
 
 pub async fn insert_migration_execution(
@@ -181,7 +184,6 @@ pub async fn insert_migration_execution(
         applied_at: sql::Datetime::from(execution.applied_at),
         applied_by: execution.applied_by,
         execution_time: sql::Duration::from(execution.execution_time),
-        successful: execution.successful,
     };
 
     let response: Option<MigrationExecutionData> = db
@@ -192,6 +194,46 @@ pub async fn insert_migration_execution(
 
     _ = response.ok_or_else(|| Error::ExecutionNotInserted(key.to_string()))?;
     Ok(())
+}
+
+pub async fn apply_migration_in_transaction(
+    migration: &ApplicableMigration,
+    username: &str,
+    db: &DbConnection,
+) -> Result<Execution, Error> {
+    let applied_at = Utc::now();
+    let start = Instant::now();
+
+    let script_content = &migration.script_content;
+    let query = within_transaction(script_content);
+
+    let mut response = db
+        .query(query)
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    let script_errors = response.take_errors();
+    if script_errors.is_empty() {
+        let execution_time = Instant::now().duration_since(start);
+        Ok(Execution {
+            key: migration.key,
+            applied_rank: migration.rank,
+            applied_by: username.into(),
+            applied_at,
+            checksum: migration.checksum,
+            execution_time,
+        })
+    } else {
+        let errors = script_errors
+            .into_iter()
+            .map(|(index, err)| (index, err.to_string()))
+            .collect();
+        Err(Error::DbScript(errors))
+    }
+}
+
+pub fn within_transaction(query: &str) -> String {
+    format!("BEGIN TRANSACTION;\n\n{query}\n\nCOMMIT TRANSACTION;")
 }
 
 #[cfg(test)]

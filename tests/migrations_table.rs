@@ -32,7 +32,6 @@ struct MigrationExecutionData {
     applied_at: sql::Datetime,
     applied_by: String,
     execution_time: sql::Duration,
-    successful: bool,
 }
 
 #[tokio::test]
@@ -177,7 +176,6 @@ async fn insert_migration_execution_first_record() {
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
         checksum,
         execution_time: Duration::from_millis(380),
-        successful: true,
     };
 
     let result =
@@ -201,7 +199,6 @@ async fn insert_migration_execution_first_record() {
         applied_at: datetime("2025-01-06 07:12:50+01:00").into(),
         applied_by: "some.user".into(),
         execution_time: Duration::from_millis(380).into(),
-        successful: true,
     }));
 }
 
@@ -230,7 +227,6 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
         checksum: hash_migration_script(&migration, &[]),
         execution_time: Duration::from_millis(380),
-        successful: true,
     };
 
     let result = insert_migration_execution(

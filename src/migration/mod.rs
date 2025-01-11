@@ -19,6 +19,13 @@ pub struct Migration {
     pub script_path: PathBuf,
 }
 
+pub struct ApplicableMigration {
+    pub key: NaiveDateTime,
+    pub rank: i64,
+    pub checksum: Checksum,
+    pub script_content: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Execution {
     pub key: NaiveDateTime,
@@ -27,7 +34,6 @@ pub struct Execution {
     pub applied_at: DateTime<Utc>,
     pub checksum: Checksum,
     pub execution_time: Duration,
-    pub successful: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

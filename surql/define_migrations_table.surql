@@ -12,8 +12,6 @@ DEFINE FIELD checksum ON migrations TYPE string;
 DEFINE FIELD applied_at ON migrations TYPE datetime;
 DEFINE FIELD applied_by ON migrations TYPE string;
 DEFINE FIELD execution_time ON migrations TYPE duration;
-DEFINE FIELD successful ON migrations TYPE bool;
 
 DEFINE INDEX rank_idx on TABLE migrations FIELDS applied_rank UNIQUE;
 DEFINE INDEX key_idx ON TABLE migrations FIELDS key UNIQUE;
-DEFINE INDEX successful_idx on TABLE migrations FIELDS successful;

@@ -1,5 +1,9 @@
+use std::collections::HashMap;
+
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 pub enum Error {
+    #[error("db script execution failed: {0:?}")]
+    DbScript(HashMap<usize, String>),
     #[error("database query failed: {0}")]
     DbQuery(String),
     #[error(transparent)]

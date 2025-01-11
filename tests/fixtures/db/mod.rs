@@ -1,7 +1,7 @@
 use crate::fixtures::load_environment_variables;
 use std::env;
-use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
-use surrealdb_migrate::db::{connect_to_database, DbConnection, DbError};
+use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig, DEFAULT_MIGRATIONS_TABLE};
+use surrealdb_migrate::db::{connect_to_database, define_migrations_table, DbConnection, DbError};
 use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -95,4 +95,10 @@ pub async fn connect_to_test_database_as_database_user(config: DbClientConfig<'_
     connect_to_database(&config)
         .await
         .expect("failed to connect to test database")
+}
+
+pub async fn define_default_migrations_table(db: &DbConnection) {
+    define_migrations_table(DEFAULT_MIGRATIONS_TABLE, db)
+        .await
+        .expect("failed to define migrations table");
 }
