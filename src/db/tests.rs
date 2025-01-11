@@ -1,5 +1,5 @@
 use super::*;
-use speculoos::prelude::*;
+use assertor::*;
 
 mod extract_table_definition_version {
     use super::*;

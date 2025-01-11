@@ -6,8 +6,8 @@ use crate::fixtures::db::{
     start_surrealdb_testcontainer,
 };
 use crate::test_dsl::{datetime, key};
+use assertor::*;
 use serde::{Deserialize, Serialize};
-use speculoos::prelude::*;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -70,7 +70,7 @@ async fn define_migrations_table_in_database_with_existing_migrations_table() {
 
     let result = define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).is_err_containing(Error::DbQuery(
+    assert_that!(result).err().is_equal_to(Error::DbQuery(
         "The table 'migrations' already exists".into(),
     ));
 }
@@ -83,7 +83,9 @@ async fn find_migrations_table_info_in_empty_database() {
 
     let result = find_migrations_table_info(DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).is_ok_containing(MigrationsTableInfo::NoTables);
+    assert_that!(result)
+        .ok()
+        .is_equal_to(MigrationsTableInfo::NoTables);
 }
 
 #[tokio::test]
@@ -101,7 +103,9 @@ async fn find_migrations_table_info_in_database_with_no_migrations_table_but_not
 
     let result = find_migrations_table_info(DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).is_ok_containing(MigrationsTableInfo::Missing);
+    assert_that!(result)
+        .ok()
+        .is_equal_to(MigrationsTableInfo::Missing);
 }
 
 #[tokio::test]
@@ -121,7 +125,7 @@ async fn find_migrations_table_info_in_database_with_migrations_table_existing()
 
     let result = find_migrations_table_info(table_name, &db).await;
 
-    assert_that!(result).is_ok_containing(MigrationsTableInfo::Table {
+    assert_that!(result).ok().is_equal_to(MigrationsTableInfo::Table {
         name: table_name.into(),
         version: Some("1.0".into()),
         definition: "DEFINE TABLE my_migrations TYPE NORMAL SCHEMAFULL COMMENT 'version:1.0' PERMISSIONS FOR select FULL, FOR create, update, delete NONE".into(),
@@ -146,7 +150,9 @@ async fn find_migrations_table_info_in_database_with_migrations_table_existing_b
 
     let result = find_migrations_table_info(table_name, &db).await;
 
-    assert_that!(result).is_ok_containing(MigrationsTableInfo::Missing);
+    assert_that!(result)
+        .ok()
+        .is_equal_to(MigrationsTableInfo::Missing);
 }
 
 #[tokio::test]
@@ -248,5 +254,5 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
     let result =
         insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).is_err_containing(Error::DbQuery("There was a problem with the database: Database record `migrations:20250103_153309` already exists".to_string()));
+    assert_that!(result).err().is_equal_to(Error::DbQuery("There was a problem with the database: Database record `migrations:20250103_153309` already exists".to_string()));
 }

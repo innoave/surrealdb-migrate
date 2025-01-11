@@ -6,8 +6,8 @@ use crate::fixtures::db::{
     define_default_migrations_table, start_surrealdb_testcontainer,
 };
 use crate::test_dsl::key;
+use assertor::*;
 use chrono::Utc;
-use speculoos::prelude::*;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -58,7 +58,7 @@ async fn apply_migration_in_transaction_schema_migration() {
     assert_that!(execution.key).is_equal_to(key);
     assert_that!(execution.applied_rank).is_equal_to(1);
     assert_that!(execution.applied_by).is_equal_to("some.user".to_string());
-    assert_that!(execution.applied_at).is_greater_than_or_equal_to(start);
+    assert_that!(execution.applied_at).is_at_least(start);
     assert_that!(execution.checksum).is_equal_to(checksum);
     assert_that!(execution.execution_time).is_greater_than(Duration::from_millis(0));
 
@@ -70,6 +70,6 @@ async fn apply_migration_in_transaction_schema_migration() {
         .expect("failed to get tables info");
 
     assert_that!(db_info)
-        .is_some()
+        .some()
         .contains_key("quote".to_string());
 }

@@ -1,7 +1,7 @@
 use super::*;
 use crate::migration::MigrationKind;
 use crate::test_dsl::key;
-use speculoos::prelude::*;
+use assertor::*;
 
 mod str {
     use super::*;
@@ -12,7 +12,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -26,7 +26,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -40,7 +40,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -54,7 +54,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Down,
@@ -72,7 +72,7 @@ mod string {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -91,7 +91,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -105,7 +105,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -119,7 +119,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Down,
@@ -133,7 +133,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_ok_containing(Migration {
+        assert_that!(migration).has_ok(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -148,7 +148,7 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration)
-            .is_err_containing(DefinitionError::InvalidDate("input is out of range".into()));
+            .has_err(DefinitionError::InvalidDate("input is out of range".into()));
     }
 
     #[test]
@@ -157,7 +157,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::InvalidTime(
+        assert_that!(migration).has_err(DefinitionError::InvalidTime(
             "input contains invalid characters".into(),
         ));
     }
@@ -168,7 +168,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::MissingTitle);
+        assert_that!(migration).has_err(DefinitionError::MissingTitle);
     }
 
     #[test]
@@ -177,7 +177,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::AmbiguousDirection);
+        assert_that!(migration).has_err(DefinitionError::AmbiguousDirection);
     }
 
     #[test]
@@ -186,7 +186,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::NoFilename);
+        assert_that!(migration).has_err(DefinitionError::NoFilename);
     }
 
     #[test]
@@ -195,6 +195,6 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).is_err_containing(DefinitionError::NoFilename);
+        assert_that!(migration).has_err(DefinitionError::NoFilename);
     }
 }
