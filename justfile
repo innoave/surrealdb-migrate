@@ -39,3 +39,7 @@ build-release:
 # clean the workspace
 clean:
     cargo clean
+
+# generate and open docs locally
+docl:
+    cargo doc --all-features --open
