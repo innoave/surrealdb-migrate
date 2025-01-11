@@ -25,6 +25,7 @@ rustls = ["surrealdb/rustls"]
 [dependencies]
 chrono = "0.4"
 crc32fast = "1"
+indexmap = "2"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
 surrealdb = { version = "2.1", default-features = false }

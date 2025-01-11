@@ -11,6 +11,16 @@ pub enum MigrationKind {
     Down,
 }
 
+impl MigrationKind {
+    pub fn is_backward(&self) -> bool {
+        *self == Self::Down
+    }
+
+    pub fn is_forward(&self) -> bool {
+        !self.is_backward()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Migration {
     pub key: NaiveDateTime,
@@ -19,11 +29,20 @@ pub struct Migration {
     pub script_path: PathBuf,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScriptContent {
+    pub key: NaiveDateTime,
+    pub kind: MigrationKind,
+    pub content: String,
+    pub checksum: Checksum,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApplicableMigration {
     pub key: NaiveDateTime,
-    pub rank: i64,
-    pub checksum: Checksum,
+    pub kind: MigrationKind,
     pub script_content: String,
+    pub checksum: Checksum,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

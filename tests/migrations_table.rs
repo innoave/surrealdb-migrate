@@ -167,7 +167,10 @@ async fn insert_migration_execution_first_record() {
         script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
     };
 
-    let checksum = hash_migration_script(&migration, &[]);
+    let checksum = hash_migration_script(
+        &migration,
+        r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#,
+    );
 
     let execution = Execution {
         key,
@@ -225,7 +228,10 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
         applied_rank: 2,
         applied_by: "some.user".to_string(),
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
-        checksum: hash_migration_script(&migration, &[]),
+        checksum: hash_migration_script(
+            &migration,
+            r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#,
+        ),
         execution_time: Duration::from_millis(380),
     };
 

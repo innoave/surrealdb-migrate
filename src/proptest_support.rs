@@ -1,3 +1,4 @@
+use crate::checksum::Checksum;
 use crate::config::{DEFAULT_MIGRATIONS_FOLDER, MIGRATION_KEY_FORMAT_STR};
 use crate::definition::{
     DOWN_SCRIPT_FILE_EXTENSION, SCRIPT_FILE_EXTENSION, UP_SCRIPT_FILE_EXTENSION,
@@ -7,6 +8,10 @@ use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use proptest::prelude::*;
 use proptest::string::string_regex;
 use std::path::PathBuf;
+
+pub fn any_checksum() -> impl Strategy<Value = Checksum> {
+    (0..=0x_FFFF_FFFF_u32).prop_map(Checksum)
+}
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn days_in_month(year: i32, month: u32) -> u32 {
@@ -81,6 +86,11 @@ pub fn any_script_path() -> impl Strategy<Value = PathBuf> {
             path.push(filename);
             path
         })
+}
+
+pub fn any_script_content() -> impl Strategy<Value = String> {
+    string_regex(r#"(([\w][\w\-_ \(\)\[\]\{\}#'"]){1,100};\n){1,12}"#)
+        .expect("invalid regex for script content")
 }
 
 pub fn any_migration() -> impl Strategy<Value = Migration> {

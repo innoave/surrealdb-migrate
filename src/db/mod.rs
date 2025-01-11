@@ -199,13 +199,21 @@ pub async fn insert_migration_execution(
 pub async fn apply_migration_in_transaction(
     migration: &ApplicableMigration,
     username: &str,
+    migrations_table: &str,
     db: &DbConnection,
 ) -> Result<Execution, Error> {
     let applied_at = Utc::now();
     let start = Instant::now();
 
     let script_content = &migration.script_content;
-    let query = within_transaction(script_content);
+    let query = format!(
+        "\
+BEGIN TRANSACTION;
+{script_content}
+COMMIT TRANSACTION;
+RETURN SELECT math::max(applied_rank) AS max_rank FROM {migrations_table} GROUP ALL;
+"
+    );
 
     let mut response = db
         .query(query)
@@ -214,10 +222,19 @@ pub async fn apply_migration_in_transaction(
 
     let script_errors = response.take_errors();
     if script_errors.is_empty() {
+        let num_stmts = response.num_statements();
+        let result: Option<i64> = response
+            .take(num_stmts - 1)
+            .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+        let max_rank = result.unwrap_or(0);
+        let applied_rank = max_rank + 1;
+
         let execution_time = Instant::now().duration_since(start);
+
         Ok(Execution {
             key: migration.key,
-            applied_rank: migration.rank,
+            applied_rank,
             applied_by: username.into(),
             applied_at,
             checksum: migration.checksum,

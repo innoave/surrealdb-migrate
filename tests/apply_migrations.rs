@@ -13,6 +13,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
+use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
 use surrealdb_migrate::db::apply_migration_in_transaction;
 use surrealdb_migrate::migration::{ApplicableMigration, Migration, MigrationKind};
 
@@ -24,7 +25,7 @@ async fn apply_migration_in_transaction_schema_migration() {
     define_default_migrations_table(&db).await;
 
     let script_content =
-        fs::read("fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
+        fs::read_to_string("fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
             .expect("failed to read migration script file");
 
     let key = key("20250103_140520");
@@ -42,13 +43,15 @@ async fn apply_migration_in_transaction_schema_migration() {
 
     let migration = ApplicableMigration {
         key,
-        rank: 1,
+        kind: MigrationKind::Up,
         checksum,
-        script_content: String::from_utf8(script_content).expect("invalid utf8"),
+        script_content: script_content.clone(),
     };
 
     let start = Utc::now();
-    let result = apply_migration_in_transaction(&migration, "some.user", &db).await;
+    let result =
+        apply_migration_in_transaction(&migration, "some.user", DEFAULT_MIGRATIONS_TABLE, &db)
+            .await;
 
     assert_that!(result).is_ok();
     let execution = result.expect("unreachable");

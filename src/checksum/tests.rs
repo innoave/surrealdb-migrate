@@ -55,13 +55,13 @@ proptest! {
 
 mod hash_migration_script {
     use super::*;
-    use crate::proptest_support::any_migration;
+    use crate::proptest_support::{any_migration, any_script_content};
 
     proptest! {
         #[test]
         fn can_hash_any_migration_script(
             migration in any_migration(),
-            script_content in vec(any::<u8>(), 0..2000),
+            script_content in any_script_content(),
         ) {
             let checksum = hash_migration_script(&migration, &script_content);
 

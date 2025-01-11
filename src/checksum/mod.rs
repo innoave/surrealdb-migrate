@@ -9,7 +9,7 @@ use std::ops::Deref;
 use std::str::FromStr;
 
 #[derive(SerializeDisplay, DeserializeFromStr, Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Checksum(u32);
+pub struct Checksum(pub(crate) u32);
 
 impl Display for Checksum {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -45,7 +45,7 @@ impl Borrow<u32> for Checksum {
     }
 }
 
-pub fn hash_migration_script(migration: &Migration, script_content: &[u8]) -> Checksum {
+pub fn hash_migration_script(migration: &Migration, script_content: &str) -> Checksum {
     let mut hasher = Hasher::new();
     hasher.update(
         migration
@@ -59,7 +59,7 @@ pub fn hash_migration_script(migration: &Migration, script_content: &[u8]) -> Ch
         MigrationKind::Up => &[1],
         MigrationKind::Down => &[2],
     });
-    hasher.update(script_content);
+    hasher.update(script_content.as_bytes());
     Checksum(hasher.finalize())
 }
 
