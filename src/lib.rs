@@ -3,7 +3,7 @@ pub mod config;
 pub mod db;
 pub mod definition;
 pub mod error;
-pub mod io;
+pub mod fs;
 pub mod migration;
 
 #[cfg(any(test, feature = "proptest-support"))]
