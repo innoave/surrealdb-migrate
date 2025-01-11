@@ -31,14 +31,14 @@ surrealdb = { version = "2.1", default-features = false }
 thiserror = "2"
 
 # optional
-proptest = { version = "1", optional = true }
+proptest = { version = "1", optional = true, default-features = false, features = ["std"] }
 
 [dev-dependencies]
 dotenvy = "0.15"
 proptest = "1"
 speculoos = "0.11"
 testcontainers-modules = { version = "0.11", features = ["surrealdb"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tokio = "1"
 
 [lints.rust]
 unsafe_code = "forbid"
