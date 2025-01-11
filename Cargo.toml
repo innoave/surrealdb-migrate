@@ -12,6 +12,7 @@ tool and lib to define and run migrations on the database. It provides version c
 SurrealDB database in a project.
 """
 keywords = ["database", "migrations", "version-control", "cli"]
+categories = ["database", "command-line-utilities"]
 
 [features]
 default = ["protocol-ws", "rustls"]
