@@ -2,7 +2,7 @@
 name = "surrealdb-migrate"
 version = "0.1.0"
 authors = ["haraldmaida"]
-license = "MIT/Apache-2.0"
+license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.80.1"
 
