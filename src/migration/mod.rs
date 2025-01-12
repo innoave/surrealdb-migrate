@@ -33,6 +33,7 @@ pub struct Migration {
 pub struct ScriptContent {
     pub key: NaiveDateTime,
     pub kind: MigrationKind,
+    pub path: PathBuf,
     pub content: String,
     pub checksum: Checksum,
 }
@@ -53,6 +54,22 @@ pub struct Execution {
     pub applied_at: DateTime<Utc>,
     pub checksum: Checksum,
     pub execution_time: Duration,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProblematicMigration {
+    pub key: NaiveDateTime,
+    pub kind: MigrationKind,
+    pub script_path: PathBuf,
+    pub problem: Problem,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Problem {
+    ChecksumMismatch {
+        definition_checksum: Checksum,
+        execution_checksum: Checksum,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
