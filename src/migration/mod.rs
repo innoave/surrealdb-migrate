@@ -70,6 +70,10 @@ pub enum Problem {
         definition_checksum: Checksum,
         execution_checksum: Checksum,
     },
+    OutOfOrder {
+        definition_key: NaiveDateTime,
+        last_applied_key: NaiveDateTime,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

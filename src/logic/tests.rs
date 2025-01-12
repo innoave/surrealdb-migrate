@@ -11,6 +11,379 @@ mod verify {
     use super::*;
 
     #[test]
+    fn list_out_of_order_first_and_third_migration_out_of_four_are_applied() {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([
+            Execution {
+                key: key("20250109_115959"),
+                applied_rank: 1,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_4D65A4BF),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250110_090059"),
+                applied_rank: 2,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_587930EA),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+        ]);
+
+        let verify = Verify::default();
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
+            key: key("20250109_125900"),
+            kind: MigrationKind::Up,
+            script_path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+            problem: Problem::OutOfOrder {
+                definition_key: key("20250109_125900"),
+                last_applied_key: key("20250110_090059"),
+            },
+        }]);
+    }
+
+    #[test]
+    fn list_out_of_order_second_and_fourth_migration_out_of_four_are_applied() {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([
+            Execution {
+                key: key("20250109_125900"),
+                applied_rank: 1,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_8E8B2D8B),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250110_090100"),
+                applied_rank: 2,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_36C45A48),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+        ]);
+
+        let verify = Verify::default();
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).contains_exactly_in_order(vec![
+            ProblematicMigration {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                script_path: Path::new("migrations/20250109_115959_create_name_set_one.surql")
+                    .into(),
+                problem: Problem::OutOfOrder {
+                    definition_key: key("20250109_115959"),
+                    last_applied_key: key("20250110_090100"),
+                },
+            },
+            ProblematicMigration {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                script_path: Path::new("migrations/20250110_090059_create_name_set_three.surql")
+                    .into(),
+                problem: Problem::OutOfOrder {
+                    definition_key: key("20250110_090059"),
+                    last_applied_key: key("20250110_090100"),
+                },
+            },
+        ]);
+    }
+
+    #[test]
+    fn list_out_of_order_with_ignore_order_option_second_and_fourth_migration_out_of_four_are_applied(
+    ) {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([
+            Execution {
+                key: key("20250109_125900"),
+                applied_rank: 1,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_8E8B2D8B),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250110_090100"),
+                applied_rank: 2,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_36C45A48),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+        ]);
+
+        let verify = Verify::default().with_ignore_order(true);
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).is_empty();
+    }
+
+    #[test]
+    fn list_out_of_order_input_not_sorted_and_first_is_applied() {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([Execution {
+            key: key("20250109_115959"),
+            applied_rank: 1,
+            applied_by: "some.user".into(),
+            checksum: Checksum(0x_4D65A4BF),
+            applied_at: DateTime::default(),
+            execution_time: Duration::default(),
+        }]);
+
+        let verify = Verify::default();
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).is_empty();
+    }
+
+    #[test]
+    fn list_out_of_order_input_not_sorted_and_none_applied() {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([]);
+
+        let verify = Verify::default();
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).is_empty();
+    }
+
+    #[test]
+    fn list_out_of_order_all_migrations_are_applied() {
+        let defined = vec![
+            ScriptContent {
+                key: key("20250109_115959"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_115959_create_name_set_one.surql").into(),
+                content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_4D65A4BF),
+            },
+            ScriptContent {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
+                content: r#"LET $data = ["Clair Windsor", "Georg Anderson"];"#.into(),
+                checksum: Checksum(0x_8E8B2D8B),
+            },
+            ScriptContent {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090059_create_name_set_three.surql").into(),
+                content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
+                checksum: Checksum(0x_587930EA),
+            },
+            ScriptContent {
+                key: key("20250110_090100"),
+                kind: MigrationKind::Up,
+                path: Path::new("migrations/20250110_090100_create_name_set_four.surql").into(),
+                content: r#"LET $data = ["Peter Burns", "Jennifer Carlson"];"#.into(),
+                checksum: Checksum(0x_36C45A48),
+            },
+        ];
+
+        let executed = executed_migrations([
+            Execution {
+                key: key("20250109_115959"),
+                applied_rank: 1,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_4D65A4BF),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250109_125900"),
+                applied_rank: 2,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_8E8B2D8B),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250110_090059"),
+                applied_rank: 3,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_587930EA),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+            Execution {
+                key: key("20250110_090100"),
+                applied_rank: 4,
+                applied_by: "some.user".into(),
+                checksum: Checksum(0x_36C45A48),
+                applied_at: DateTime::default(),
+                execution_time: Duration::default(),
+            },
+        ]);
+
+        let verify = Verify::default();
+
+        let problematic = verify.list_out_of_order(&defined, &executed);
+
+        assert_that!(problematic).is_empty();
+    }
+
+    #[test]
     fn list_changed_migrations_one_of_two_has_different_checksum() {
         let defined = vec![
             ScriptContent {
@@ -40,7 +413,7 @@ mod verify {
             },
             Execution {
                 key: key("20250110_090059"),
-                applied_rank: 1,
+                applied_rank: 2,
                 applied_by: "some.user".into(),
                 checksum: Checksum(0x_DD081E07),
                 applied_at: DateTime::default(),
@@ -93,7 +466,7 @@ mod verify {
             },
             Execution {
                 key: key("20250110_090059"),
-                applied_rank: 1,
+                applied_rank: 2,
                 applied_by: "some.user".into(),
                 checksum: Checksum(0x_DD081E07),
                 applied_at: DateTime::default(),
@@ -138,7 +511,7 @@ mod verify {
             },
             Execution {
                 key: key("20250110_090059"),
-                applied_rank: 1,
+                applied_rank: 2,
                 applied_by: "some.user".into(),
                 checksum: Checksum(0x_DD081E07),
                 applied_at: DateTime::default(),
@@ -239,7 +612,7 @@ mod verify {
             },
             Execution {
                 key: key("20250110_090059"),
-                applied_rank: 1,
+                applied_rank: 2,
                 applied_by: "some.user".into(),
                 checksum: Checksum(0x_DD081E07),
                 applied_at: DateTime::default(),
@@ -285,7 +658,7 @@ mod verify {
             },
             Execution {
                 key: key("20250110_090059"),
-                applied_rank: 1,
+                applied_rank: 2,
                 applied_by: "some.user".into(),
                 checksum: Checksum(0x_DD081E07),
                 applied_at: DateTime::default(),
