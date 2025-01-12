@@ -15,6 +15,7 @@ use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
 use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
 use surrealdb_migrate::db::apply_migration_in_transaction;
+use surrealdb_migrate::error::Error;
 use surrealdb_migrate::migration::{ApplicableMigration, Migration, MigrationKind};
 
 #[tokio::test]
@@ -72,4 +73,70 @@ async fn apply_migration_in_transaction_schema_migration() {
     assert_that!(db_info)
         .some()
         .contains_key("quote".to_string());
+}
+
+#[tokio::test]
+async fn apply_migration_in_transaction_schema_migration_with_error() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+    define_default_migrations_table(&db).await;
+
+    let mut script_content =
+        fs::read_to_string("fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
+            .expect("failed to read migration script file");
+    script_content.push_str(r#"THROW "test script error";"#);
+
+    let key = key("20250103_140520");
+
+    let migration = Migration {
+        key,
+        title: "define quote table".to_string(),
+        kind: MigrationKind::Up,
+        script_path: PathBuf::from(
+            "fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
+        ),
+    };
+
+    let checksum = hash_migration_script(&migration, &script_content);
+
+    let migration = ApplicableMigration {
+        key,
+        kind: MigrationKind::Up,
+        checksum,
+        script_content: script_content.clone(),
+    };
+
+    let result =
+        apply_migration_in_transaction(&migration, "some.user", DEFAULT_MIGRATIONS_TABLE, &db)
+            .await;
+
+    match result {
+        Ok(value) => {
+            panic!("script error expected but was Ok({value:?}");
+        },
+        Err(Error::DbScript(err_map)) => {
+            assert_that!(err_map.get(&4))
+                .some()
+                .is_equal_to(&"An error occurred: test script error".to_string());
+        },
+        Err(other) => {
+            panic!("expected Error::DbScript but was {other:?}");
+        },
+    }
+
+    let table_info: Option<HashMap<String, String>> = db
+        .query("INFO FOR DB")
+        .await
+        .expect("failed to get info for db query")
+        .take("tables")
+        .expect("failed to get tables info");
+
+    assert_that!(table_info)
+        .some()
+        .does_not_contain_key("quote".to_string());
+    assert_that!(table_info)
+        .some()
+        .contains_key(DEFAULT_MIGRATIONS_TABLE.to_string());
+    assert_that!(table_info).some().has_length(1);
 }
