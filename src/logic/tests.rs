@@ -1,5 +1,3 @@
-#![allow(clippy::manual_string_new)]
-
 use super::*;
 use crate::checksum::Checksum;
 use crate::migration::MigrationKind;
