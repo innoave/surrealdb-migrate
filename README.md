@@ -65,9 +65,9 @@ Milestone 0.1 (first public release):
 * [X] Read migrations from the filesystem
 * [X] Store migration executions in the migrations table in the database
 * [X] Create the migrations table if it does not exist
-* [ ] Apply migrations to a database
-* [ ] Verify order of migrations (optional: opt-out)
-* [ ] Verify checksum of applied migrations (optional: opt-out)
+* [X] Apply migrations to a database
+* [X] Verify order of migrations (optional: opt-out)
+* [X] Verify checksum of applied migrations (optional: opt-out)
 * [ ] Revert migrations using "down"-scripts
 * [ ] Create scaffold for defining migrations on the filesystem
 * [ ] Configure lib and CLI using environment variables
