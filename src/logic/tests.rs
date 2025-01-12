@@ -1,7 +1,7 @@
 use super::*;
 use crate::checksum::Checksum;
 use crate::migration::MigrationKind;
-use crate::test_dsl::{applicable_migrations, executed_migrations, key, script_content};
+use crate::test_dsl::{applicable_migrations, executed_migrations, key, script_contents};
 use assertor::*;
 use chrono::DateTime;
 use std::time::Duration;
@@ -11,7 +11,7 @@ mod migrate {
 
     #[test]
     fn list_migrations_to_apply_no_executions() {
-        let defined = script_content([ScriptContent {
+        let defined = script_contents([ScriptContent {
             key: key("20250109_125900"),
             kind: MigrationKind::Up,
             content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
@@ -35,7 +35,7 @@ mod migrate {
 
     #[test]
     fn list_migrations_to_apply_one_of_two_migrations_applied() {
-        let defined = script_content([
+        let defined = script_contents([
             ScriptContent {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Up,
@@ -74,7 +74,7 @@ mod migrate {
 
     #[test]
     fn list_migrations_to_apply_lists_forward_scripts_only() {
-        let defined = script_content([
+        let defined = script_contents([
             ScriptContent {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Baseline,
@@ -125,7 +125,7 @@ mod revert {
 
     #[test]
     fn list_migrations_to_apply_up_migration_applied() {
-        let defined = script_content([ScriptContent {
+        let defined = script_contents([ScriptContent {
             key: key("20250109_125900"),
             kind: MigrationKind::Down,
             content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
@@ -156,7 +156,7 @@ mod revert {
 
     #[test]
     fn list_migrations_to_apply_one_of_two_migrations_applied() {
-        let defined = script_content([
+        let defined = script_contents([
             ScriptContent {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Down,
@@ -195,7 +195,7 @@ mod revert {
 
     #[test]
     fn list_migrations_to_apply_lists_backward_scripts_only() {
-        let defined = script_content([
+        let defined = script_contents([
             ScriptContent {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Baseline,

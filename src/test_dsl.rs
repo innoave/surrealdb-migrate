@@ -22,7 +22,7 @@ pub fn defined_migrations(
         .collect::<IndexMap<_, _>>()
 }
 
-pub fn script_content(
+pub fn script_contents(
     values: impl IntoIterator<Item = ScriptContent>,
 ) -> IndexMap<NaiveDateTime, ScriptContent> {
     values
