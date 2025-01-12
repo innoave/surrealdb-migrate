@@ -35,7 +35,7 @@ test-lib:
 
 # run code coverage (does not include doc-tests)
 test-coverage:
-    cargo llvm-cov --html --open
+    cargo +nightly llvm-cov --branch --html --open --ignore-filename-regex "tests|test_dsl"
 
 # build the crate for release
 build-release:
