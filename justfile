@@ -6,6 +6,7 @@ alias b := build
 alias c := check
 alias l := lint
 alias t := test
+alias tc := test-coverage
 alias tl := test-lib
 
 # list recipies
@@ -24,13 +25,17 @@ check:
 lint:
     cargo clippy --all-targets --all-features
 
-# run the tests
+# run all tests
 test:
     cargo test
 
 # run the lib tests only
 test-lib:
     cargo test --lib
+
+# run code coverage (does not include doc-tests)
+test-coverage:
+    cargo llvm-cov --html --open
 
 # build the crate for release
 build-release:
