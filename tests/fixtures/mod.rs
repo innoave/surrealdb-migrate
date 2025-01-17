@@ -8,6 +8,7 @@ pub fn load_environment_variables() {
 // Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
 mod dummy_extern_uses {
     use chrono as _;
+    use color_eyre as _;
     use crc32fast as _;
     use indexmap as _;
     use proptest as _;

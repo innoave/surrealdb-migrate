@@ -6,7 +6,7 @@ use crate::error::Error;
 use crate::migration::{
     ApplicableMigration, Execution, Migration, MigrationKind, MigrationsTableInfo,
 };
-use chrono::Utc;
+use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -27,6 +27,7 @@ pub type DbError = surrealdb::Error;
 struct Connection {
     client: Surreal<Any>,
     token: Jwt,
+    username: String,
 }
 
 #[derive(Debug, Clone)]
@@ -35,9 +36,13 @@ pub struct DbConnection {
 }
 
 impl DbConnection {
-    pub fn new(client: Surreal<Any>, token: Jwt) -> Self {
+    fn new(client: Surreal<Any>, token: Jwt, username: String) -> Self {
         Self {
-            inner: Arc::new(Connection { client, token }),
+            inner: Arc::new(Connection {
+                client,
+                token,
+                username,
+            }),
         }
     }
 
@@ -48,11 +53,9 @@ impl DbConnection {
     pub fn token(&self) -> &Jwt {
         &self.inner.token
     }
-}
 
-impl From<(Surreal<Any>, Jwt)> for DbConnection {
-    fn from((client, token): (Surreal<Any>, Jwt)) -> Self {
-        Self::new(client, token)
+    pub fn username(&self) -> &str {
+        &self.inner.username
     }
 }
 
@@ -90,7 +93,11 @@ pub async fn connect_to_database(config: &DbClientConfig<'_>) -> Result<DbConnec
         .use_ns(config.namespace_or_default())
         .use_db(config.database_or_default());
 
-    Ok(DbConnection::new(client, token))
+    Ok(DbConnection::new(
+        client,
+        token,
+        config.username_or_default().into(),
+    ))
 }
 
 pub async fn define_migrations_table(table_name: &str, db: &DbConnection) -> Result<(), Error> {
@@ -166,6 +173,33 @@ struct MigrationExecutionData {
     execution_time: sql::Duration,
 }
 
+pub async fn select_all_executions_sorted_by_key(
+    migrations_table: &str,
+    db: &DbConnection,
+) -> Result<Vec<Execution>, Error> {
+    let execution_data: Vec<MigrationExecutionData> = db
+        .select(migrations_table)
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+    let mut executions = execution_data
+        .into_iter()
+        .map(|data| {
+            NaiveDateTime::parse_from_str(&data.key, MIGRATION_KEY_FORMAT_STR)
+                .map_err(|err| Error::DbQuery(err.to_string()))
+                .map(|key| Execution {
+                    key,
+                    applied_rank: data.applied_rank,
+                    applied_by: data.applied_by,
+                    applied_at: data.applied_at.0,
+                    checksum: data.checksum,
+                    execution_time: data.execution_time.0,
+                })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    executions.sort_unstable_by_key(|exec| exec.key);
+    Ok(executions)
+}
+
 pub async fn insert_migration_execution(
     migration: Migration,
     execution: Execution,
@@ -223,11 +257,13 @@ RETURN SELECT math::max(applied_rank) AS max_rank FROM {migrations_table} GROUP 
     let script_errors = response.take_errors();
     if script_errors.is_empty() {
         let num_stmts = response.num_statements();
-        let result: Option<i64> = response
+        let result: Option<HashMap<String, i64>> = response
             .take(num_stmts - 1)
             .map_err(|err| Error::DbQuery(err.to_string()))?;
 
-        let max_rank = result.unwrap_or(0);
+        let max_rank = result
+            .and_then(|fields| fields.get("max_rank").copied())
+            .unwrap_or(0);
         let applied_rank = max_rank + 1;
 
         let execution_time = Instant::now().duration_since(start);

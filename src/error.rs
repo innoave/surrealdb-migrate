@@ -1,17 +1,22 @@
+use crate::migration::ProblematicMigration;
 use indexmap::IndexMap;
 
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 pub enum Error {
-    #[error("db script execution failed: {0:?}")]
-    DbScript(IndexMap<usize, String>),
+    #[error("migrations changed after execution: {0:?}")]
+    ChangedAfterExecution(Vec<ProblematicMigration>),
     #[error("database query failed: {0}")]
     DbQuery(String),
+    #[error("db script execution failed: {0:?}")]
+    DbScript(IndexMap<usize, String>),
     #[error(transparent)]
     Definition(#[from] DefinitionError),
     #[error("failed to insert the migration execution for key={0} into the migrations table")]
     ExecutionNotInserted(String),
     #[error("failed to query table definitions: {0}")]
     FetchingTableDefinitions(String),
+    #[error("migrations out of order: {0:?}")]
+    OutOfOrder(Vec<ProblematicMigration>),
     #[error("failed reading migration files: {0}")]
     ReadingMigrationFile(String),
     #[error("failed scanning migration directory: {0}")]

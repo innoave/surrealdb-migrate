@@ -423,7 +423,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
             key: key("20250109_125900"),
@@ -476,7 +476,7 @@ mod verify {
 
         let verify = Verify::default().with_ignore_checksums(true);
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).is_empty();
     }
@@ -521,7 +521,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).is_empty();
     }
@@ -556,7 +556,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
             key: key("20250109_125900"),
@@ -592,7 +592,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).is_empty();
     }
@@ -622,7 +622,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).is_empty();
     }
@@ -668,7 +668,7 @@ mod verify {
 
         let verify = Verify::default();
 
-        let problematic = verify.list_changed_migrations(&defined, &executed);
+        let problematic = verify.list_changed_after_execution(&defined, &executed);
 
         assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
             key: key("20250110_090059"),
@@ -697,7 +697,8 @@ mod migrate {
 
         let executed = executed_migrations([]);
 
-        let applicable = Migrate.list_migrations_to_apply(&defined, &executed);
+        let migrate = Migrate::default();
+        let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([ApplicableMigration {
@@ -738,7 +739,8 @@ mod migrate {
             execution_time: Duration::default(),
         }]);
 
-        let applicable = Migrate.list_migrations_to_apply(&defined, &executed);
+        let migrate = Migrate::default();
+        let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([ApplicableMigration {
@@ -779,7 +781,8 @@ mod migrate {
 
         let executed = executed_migrations([]);
 
-        let applicable = Migrate.list_migrations_to_apply(&defined, &executed);
+        let migrate = Migrate::default();
+        let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([
@@ -824,7 +827,8 @@ mod revert {
             execution_time: Duration::default(),
         }]);
 
-        let applicable = Revert.list_migrations_to_apply(&defined, &executed);
+        let revert = Revert::default();
+        let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([ApplicableMigration {
@@ -865,7 +869,8 @@ mod revert {
             execution_time: Duration::default(),
         }]);
 
-        let applicable = Revert.list_migrations_to_apply(&defined, &executed);
+        let revert = Revert::default();
+        let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([ApplicableMigration {
@@ -931,7 +936,8 @@ mod revert {
             },
         ]);
 
-        let applicable = Revert.list_migrations_to_apply(&defined, &executed);
+        let revert = Revert::default();
+        let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
         assert_that!(applicable.iter()).contains_exactly_in_order(
             applicable_migrations([ApplicableMigration {

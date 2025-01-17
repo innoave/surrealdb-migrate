@@ -3,8 +3,9 @@ use crate::migration::{
 };
 use chrono::NaiveDateTime;
 use indexmap::IndexMap;
+use std::marker::PhantomData;
 
-pub trait OutOfOrder {
+pub trait ListOutOfOrder {
     fn list_out_of_order(
         &self,
         defined_migrations: &[ScriptContent],
@@ -12,8 +13,8 @@ pub trait OutOfOrder {
     ) -> Vec<ProblematicMigration>;
 }
 
-pub trait ChangedMigrations {
-    fn list_changed_migrations(
+pub trait ListChangedAfterExecution {
+    fn list_changed_after_execution(
         &self,
         defined_migrations: &[ScriptContent],
         executed_migrations: &IndexMap<NaiveDateTime, Execution>,
@@ -57,7 +58,7 @@ impl Verify {
     }
 }
 
-impl OutOfOrder for Verify {
+impl ListOutOfOrder for Verify {
     fn list_out_of_order(
         &self,
         defined_migrations: &[ScriptContent],
@@ -91,8 +92,8 @@ impl OutOfOrder for Verify {
     }
 }
 
-impl ChangedMigrations for Verify {
-    fn list_changed_migrations(
+impl ListChangedAfterExecution for Verify {
+    fn list_changed_after_execution(
         &self,
         defined_migrations: &[ScriptContent],
         executed_migrations: &IndexMap<NaiveDateTime, Execution>,
@@ -135,8 +136,10 @@ pub trait MigrationsToApply {
     ) -> IndexMap<NaiveDateTime, ApplicableMigration>;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Migrate;
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Migrate {
+    _seal: PhantomData<()>,
+}
 
 impl MigrationsToApply for Migrate {
     fn list_migrations_to_apply(
@@ -152,8 +155,10 @@ impl MigrationsToApply for Migrate {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Revert;
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Revert {
+    _seal: PhantomData<()>,
+}
 
 impl MigrationsToApply for Revert {
     fn list_migrations_to_apply(

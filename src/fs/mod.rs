@@ -1,6 +1,7 @@
+use crate::checksum::hash_migration_script;
 use crate::definition::ParseMigration;
 use crate::error::Error;
-use crate::migration::Migration;
+use crate::migration::{Migration, ScriptContent};
 use std::fs;
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;
@@ -27,11 +28,11 @@ impl<'a> ListMigrations for MigrationDirectory<'a> {
 
     fn list_all_migrations(&self) -> Result<Self::Iter, Error> {
         fs::read_dir(self.path)
+            .map_err(|err| Error::ScanningMigrationDirectory(err.to_string()))
             .map(|dir_iter| MigDirIter {
                 base_dir: self.path,
                 dir_iter,
             })
-            .map_err(|err| Error::ScanningMigrationDirectory(err.to_string()))
     }
 }
 
@@ -72,6 +73,25 @@ impl Iterator for MigDirIter<'_> {
 
 pub fn migration_directory(path: &str) -> MigrationDirectory<'_> {
     MigrationDirectory::new(Path::new(path))
+}
+
+pub fn read_script_content_for_migrations(
+    migrations: &[Migration],
+) -> Result<Vec<ScriptContent>, Error> {
+    let mut script_contents = Vec::with_capacity(migrations.len());
+    for migration in migrations {
+        let content = fs::read_to_string(&migration.script_path)
+            .map_err(|err| Error::ReadingMigrationFile(err.to_string()))?;
+        let checksum = hash_migration_script(migration, &content);
+        script_contents.push(ScriptContent {
+            key: migration.key,
+            kind: migration.kind,
+            path: migration.script_path.clone(),
+            content,
+            checksum,
+        });
+    }
+    Ok(script_contents)
 }
 
 #[cfg(test)]
