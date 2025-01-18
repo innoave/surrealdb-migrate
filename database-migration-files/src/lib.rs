@@ -3,6 +3,7 @@ use database_migration::definition::ParseMigration;
 use database_migration::error::Error;
 use database_migration::migration::{Migration, ScriptContent};
 use std::fs;
+#[cfg(target_family = "windows")]
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;
 
@@ -51,7 +52,12 @@ impl Iterator for MigDirIter<'_> {
                 Ok(entry) => {
                     match entry.file_type() {
                         Ok(file_type) => {
+                            #[cfg(target_family = "windows")]
                             if file_type.is_dir() || file_type.is_symlink_dir() {
+                                continue;
+                            }
+                            #[cfg(not(target_family = "windows"))]
+                            if file_type.is_dir() {
                                 continue;
                             }
                         },
