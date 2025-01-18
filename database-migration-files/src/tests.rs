@@ -1,13 +1,13 @@
 use super::*;
-use crate::error::Error;
-use crate::migration::{Migration, MigrationKind};
-use crate::test_dsl::key;
 use assertor::*;
+use database_migration::error::Error;
+use database_migration::migration::{Migration, MigrationKind};
+use database_migration::test_dsl::key;
 use std::path::Path;
 
 #[test]
 fn list_all_migrations_in_basic_migrations_dir() {
-    let migration_directory = migration_directory("fixtures/basic/migrations");
+    let migration_directory = migration_directory("../fixtures/basic/migrations");
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -20,7 +20,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
             title: "define quote table".into(),
             kind: MigrationKind::Up,
             script_path: Path::new(
-                "fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
+                "../fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
             )
             .into(),
         }),
@@ -29,7 +29,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
             title: "create some quotes".into(),
             kind: MigrationKind::Up,
             script_path: Path::new(
-                "fixtures/basic/migrations/20250103_140521_create_some_quotes.surql",
+                "../fixtures/basic/migrations/20250103_140521_create_some_quotes.surql",
             )
             .into(),
         }),
@@ -38,7 +38,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
 
 #[test]
 fn list_all_migrations_in_non_existing_directory() {
-    let migration_directory = migration_directory("fixtures/not_existing/migrations");
+    let migration_directory = migration_directory("../fixtures/not_existing/migrations");
 
     let migrations = migration_directory.list_all_migrations();
 
@@ -51,7 +51,7 @@ fn list_all_migrations_in_non_existing_directory() {
 
 #[test]
 fn list_all_migrations_in_migrations_dir_with_subdirectory() {
-    let migration_directory = migration_directory("fixtures/with_subdir/migrations");
+    let migration_directory = migration_directory("../fixtures/with_subdir/migrations");
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -64,7 +64,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             title: "define quote table".into(),
             kind: MigrationKind::Up,
             script_path: Path::new(
-                "fixtures/with_subdir/migrations/20250103_140520_define_quote_table.surql",
+                "../fixtures/with_subdir/migrations/20250103_140520_define_quote_table.surql",
             )
             .into(),
         }),
@@ -73,7 +73,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             title: "create some quotes".into(),
             kind: MigrationKind::Up,
             script_path: Path::new(
-                "fixtures/with_subdir/migrations/20250103_140521_create_some_quotes.surql",
+                "../fixtures/with_subdir/migrations/20250103_140521_create_some_quotes.surql",
             )
             .into(),
         }),

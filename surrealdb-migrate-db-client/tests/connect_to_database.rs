@@ -6,9 +6,9 @@ use crate::fixtures::db::{
 };
 use crate::fixtures::load_environment_variables;
 use assertor::*;
+use database_migration::config::DbAuthLevel;
 use fixtures::db::initialize_database;
-use surrealdb_migrate::config::DbAuthLevel;
-use surrealdb_migrate::db::connect_to_database;
+use surrealdb_migrate_db_client::connect_to_database;
 
 #[tokio::test]
 async fn test_surrealdb_version() {

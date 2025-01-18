@@ -1,0 +1,39 @@
+[package]
+name = "surrealdb-migrate"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+description = """
+Evolve a SurrealDB database over time by applying migrations. `surrealdb-migrate` is a library for
+defining and running migrations on a database. It provides version control for a SurrealDB database
+in a project.
+"""
+keywords = ["database", "migrations", "version-control", "surrealdb"]
+categories = ["database"]
+
+[features]
+default = ["protocol-ws", "rustls"]
+native-tls = ["surrealdb-migrate-db-client/native-tls"]
+protocol-http = ["surrealdb-migrate-db-client/protocol-http"]
+protocol-ws = ["surrealdb-migrate-db-client/protocol-ws"]
+rustls = ["surrealdb-migrate-db-client/rustls"]
+
+[dependencies]
+database-migration.workspace = true
+database-migration-files.workspace = true
+surrealdb-migrate-db-client.workspace = true
+
+indexmap.workspace = true
+
+[dev-dependencies]
+color-eyre.workspace = true
+dotenvy.workspace = true
+testcontainers-modules = { workspace = true, features = ["surrealdb"] }
+tokio.workspace = true
+
+[lints]
+workspace = true

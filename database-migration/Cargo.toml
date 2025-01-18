@@ -1,0 +1,39 @@
+[package]
+name = "database-migration"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+description = """
+Database agnostic functions and data structures to build database migration tools.
+"""
+keywords = ["database", "migrations", "version-control"]
+categories = ["database"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[features]
+proptest-support = ["dep:proptest"]
+test-dsl = []
+
+[dependencies]
+chrono.workspace = true
+crc32fast.workspace = true
+indexmap.workspace = true
+serde.workspace = true
+serde_with.workspace = true
+thiserror.workspace = true
+
+# optional
+proptest = { workspace = true, optional = true, default-features = false, features = ["std"] }
+
+[dev-dependencies]
+assertor.workspace = true
+proptest = { workspace = true, default-features = true }
+
+[lints]
+workspace = true

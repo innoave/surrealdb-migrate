@@ -1,12 +1,12 @@
 #![allow(clippy::ref_option)]
 
-use crate::checksum::Checksum;
-use crate::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
-use crate::error::Error;
-use crate::migration::{
+use chrono::{NaiveDateTime, Utc};
+use database_migration::checksum::Checksum;
+use database_migration::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
+use database_migration::error::Error;
+use database_migration::migration::{
     ApplicableMigration, Execution, Migration, MigrationKind, MigrationsTableInfo,
 };
-use chrono::{NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::ops::Deref;
@@ -17,7 +17,7 @@ use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
 use surrealdb::{sql, Surreal};
 
-pub const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../../surql/define_migrations_table.surql");
+pub const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../surql/define_migrations_table.surql");
 
 pub const TABLE_VERSION_KEY: &str = "version:";
 
@@ -291,3 +291,12 @@ pub fn within_transaction(query: &str) -> String {
 
 #[cfg(test)]
 mod tests;
+
+// workaround for false positive 'unused extern crate' warnings until
+// Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
+#[cfg(test)]
+mod dummy_extern_uses {
+    use dotenvy as _;
+    use testcontainers_modules as _;
+    use tokio as _;
+}

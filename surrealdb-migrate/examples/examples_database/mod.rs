@@ -4,9 +4,9 @@
 
 use color_eyre::eyre::WrapErr;
 use color_eyre::Report;
+use database_migration::config::{DbAuthLevel, DbClientConfig};
 use std::env;
-use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
-use surrealdb_migrate::db::{connect_to_database, DbConnection};
+use surrealdb_migrate_db_client::{connect_to_database, DbConnection};
 use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};

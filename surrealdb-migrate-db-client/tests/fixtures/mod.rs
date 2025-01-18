@@ -6,14 +6,9 @@ pub fn load_environment_variables() {
 
 // workaround for false positive 'unused extern crate' warnings until
 // Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
+#[cfg(test)]
 mod dummy_extern_uses {
     use chrono as _;
-    use color_eyre as _;
-    use crc32fast as _;
-    use indexmap as _;
-    use proptest as _;
     use serde as _;
-    use serde_with as _;
     use surrealdb as _;
-    use thiserror as _;
 }

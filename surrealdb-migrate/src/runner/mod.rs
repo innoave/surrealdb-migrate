@@ -1,14 +1,18 @@
-use crate::config::RunnerConfig;
-use crate::db::{
-    apply_migration_in_transaction, insert_migration_execution,
-    select_all_executions_sorted_by_key, DbConnection,
+use database_migration::config::RunnerConfig;
+use database_migration::error::Error;
+use database_migration::logic::{
+    ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify,
 };
-use crate::error::Error;
-use crate::fs::{read_script_content_for_migrations, ListMigrations, MigrationDirectory};
-use crate::logic::{ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify};
+use database_migration_files::{
+    read_script_content_for_migrations, ListMigrations, MigrationDirectory,
+};
 use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use surrealdb_migrate_db_client::{
+    apply_migration_in_transaction, insert_migration_execution,
+    select_all_executions_sorted_by_key, DbConnection,
+};
 
 pub struct MigrationRunner {
     migrations_folder: PathBuf,

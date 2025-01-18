@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Run example run_migrations" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-    <option name="command" value="run --example run_migrations" />
+    <option name="buildProfileId" value="dev" />
+    <option name="command" value="run --package surrealdb-migrate --example run_migrations" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <envs />
     <option name="emulateTerminal" value="false" />

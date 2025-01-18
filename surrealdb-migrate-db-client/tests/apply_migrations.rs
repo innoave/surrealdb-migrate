@@ -1,22 +1,21 @@
 mod fixtures;
-mod test_dsl;
 
 use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user,
     define_default_migrations_table, start_surrealdb_testcontainer,
 };
-use crate::test_dsl::key;
 use assertor::*;
 use chrono::Utc;
+use database_migration::checksum::hash_migration_script;
+use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
+use database_migration::error::Error;
+use database_migration::migration::{ApplicableMigration, Migration, MigrationKind};
+use database_migration::test_dsl::key;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
-use surrealdb_migrate::checksum::hash_migration_script;
-use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
-use surrealdb_migrate::db::apply_migration_in_transaction;
-use surrealdb_migrate::error::Error;
-use surrealdb_migrate::migration::{ApplicableMigration, Migration, MigrationKind};
+use surrealdb_migrate_db_client::apply_migration_in_transaction;
 
 #[tokio::test]
 async fn apply_migration_in_transaction_schema_migration() {
@@ -26,7 +25,7 @@ async fn apply_migration_in_transaction_schema_migration() {
     define_default_migrations_table(&db).await;
 
     let script_content =
-        fs::read_to_string("fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
+        fs::read_to_string("../fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
             .expect("failed to read migration script file");
 
     let key = key("20250103_140520");
@@ -36,7 +35,7 @@ async fn apply_migration_in_transaction_schema_migration() {
         title: "define quote table".to_string(),
         kind: MigrationKind::Up,
         script_path: PathBuf::from(
-            "fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
+            "../fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
         ),
     };
 
@@ -83,7 +82,7 @@ async fn apply_migration_in_transaction_schema_migration_with_error() {
     define_default_migrations_table(&db).await;
 
     let mut script_content =
-        fs::read_to_string("fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
+        fs::read_to_string("../fixtures/basic/migrations/20250103_140520_define_quote_table.surql")
             .expect("failed to read migration script file");
     script_content.push_str(r#"THROW "test script error";"#);
 
@@ -94,7 +93,7 @@ async fn apply_migration_in_transaction_schema_migration_with_error() {
         title: "define quote table".to_string(),
         kind: MigrationKind::Up,
         script_path: PathBuf::from(
-            "fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
+            "../fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
         ),
     };
 

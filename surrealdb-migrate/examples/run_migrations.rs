@@ -7,11 +7,11 @@ use crate::examples_database::{
     start_surrealdb_testcontainer,
 };
 use color_eyre::Report;
+use database_migration::config::RunnerConfig;
 use std::collections::HashMap;
 use std::path::Path;
-use surrealdb_migrate::config::RunnerConfig;
-use surrealdb_migrate::db::select_all_executions_sorted_by_key;
 use surrealdb_migrate::runner::MigrationRunner;
+use surrealdb_migrate_db_client::select_all_executions_sorted_by_key;
 
 #[tokio::main]
 async fn main() -> Result<(), Report> {

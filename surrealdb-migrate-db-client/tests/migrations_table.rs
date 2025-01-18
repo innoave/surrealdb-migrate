@@ -1,25 +1,24 @@
 mod fixtures;
-mod test_dsl;
 
 use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user,
     start_surrealdb_testcontainer,
 };
-use crate::test_dsl::{datetime, key};
 use assertor::*;
+use database_migration::checksum::{hash_migration_script, Checksum};
+use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
+use database_migration::error::Error;
+use database_migration::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
+use database_migration::test_dsl::{datetime, key};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
 use surrealdb::sql;
-use surrealdb_migrate::checksum::{hash_migration_script, Checksum};
-use surrealdb_migrate::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
-use surrealdb_migrate::db::{
+use surrealdb_migrate_db_client::{
     define_migrations_table, find_migrations_table_info, insert_migration_execution,
     DEFINE_MIGRATIONS_TABLE,
 };
-use surrealdb_migrate::error::Error;
-use surrealdb_migrate::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 struct MigrationExecutionData {

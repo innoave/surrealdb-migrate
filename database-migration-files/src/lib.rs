@@ -1,7 +1,7 @@
-use crate::checksum::hash_migration_script;
-use crate::definition::ParseMigration;
-use crate::error::Error;
-use crate::migration::{Migration, ScriptContent};
+use database_migration::checksum::hash_migration_script;
+use database_migration::definition::ParseMigration;
+use database_migration::error::Error;
+use database_migration::migration::{Migration, ScriptContent};
 use std::fs;
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;

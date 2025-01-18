@@ -1,0 +1,24 @@
+[package]
+name = "database-migration-files"
+version = "0.1.0"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+description = """
+Database agnostic handling of migration files.
+"""
+keywords = ["database", "migrations", "version-control"]
+categories = ["database"]
+
+[dependencies]
+database-migration.workspace = true
+
+[dev-dependencies]
+assertor.workspace = true
+database-migration = { workspace = true, features = ["test-dsl"] }
+
+[lints]
+workspace = true
