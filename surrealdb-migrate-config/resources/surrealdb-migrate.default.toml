@@ -1,0 +1,35 @@
+[migration]
+# Do not verify checksums of applied migrations.
+ignore-checksum = false
+# Allow execution of migration scripts in any order.
+ignore-order = false
+
+[files]
+# Path to the folder on the filesystem that holds the migration scripts.
+# Can be a relative or absolute path. A relative path is releative to the
+# current working directory.
+migrations-folder = "migrations"
+# Filename extension of migration script files.
+script-extension = ".surql"
+# Filename extension of forward migration scripts (migration scripts).
+up-script-extension = ".up.surql"
+# Filename extendsion of backward migration scripts (revert scripts).
+down-script-extension = ".down.surql"
+
+[database]
+# The name of the database table, where the migrations are tracked.
+migrations-table = "migrations"
+# The address of the SurrealDB instance.
+address = "ws://localhost:8000"
+# The namespace of the database, where the migrations shall be applied.
+namespace = "test"
+# The name of the database, where the migrations shall be applied.
+database = "test"
+# The Username of the user to be used for applying the migrations.
+username = "root"
+# The password of the user to be used for applying the migrations.
+password = "root"
+# Authentication Level of the user given by username and password settings.
+auth-level = "Root"
+# Capacity of the channels to the database.
+capacity = 20

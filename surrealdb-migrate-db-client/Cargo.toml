@@ -15,14 +15,18 @@ categories = ["database"]
 
 [features]
 default = ["protocol-ws", "rustls"]
+
+# re-exported features of the `surrealdb` crate
 native-tls = ["surrealdb/native-tls"]
 protocol-http = ["surrealdb/protocol-http"]
 protocol-ws = ["surrealdb/protocol-ws"]
 rustls = ["surrealdb/rustls"]
 
 [dependencies]
+# workspace dependencies
 database-migration.workspace = true
 
+# 3rd party dependencies
 chrono.workspace = true
 serde.workspace = true
 surrealdb.workspace = true

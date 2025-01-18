@@ -1,0 +1,15 @@
+# Only settings with custom values need to be specified.
+# Not specified settings get their default values.
+
+[migration]
+ignore-order = true
+
+[files]
+migrations-folder = "database_migration/scripts"
+
+[database]
+migrations-table = "schema_version"
+username = "tester"
+password = "s3cr3t"
+auth-level = "Database"
+capacity = 99

@@ -68,35 +68,35 @@ impl Deref for DbConnection {
 }
 
 pub async fn connect_to_database(config: &DbClientConfig<'_>) -> Result<DbConnection, DbError> {
-    let client = connect(config.address_or_default()).await?;
+    let client = connect(config.address.as_ref()).await?;
 
-    let token = match config.auth_level() {
+    let token = match config.auth_level {
         DbAuthLevel::Root => client.signin(auth::Root {
-            username: config.username_or_default(),
-            password: config.password_or_default(),
+            username: &config.username,
+            password: &config.password,
         }),
         DbAuthLevel::Namespace => client.signin(auth::Namespace {
-            namespace: config.namespace_or_default(),
-            username: config.username_or_default(),
-            password: config.password_or_default(),
+            namespace: &config.namespace,
+            username: &config.username,
+            password: &config.password,
         }),
         DbAuthLevel::Database => client.signin(auth::Database {
-            namespace: config.namespace_or_default(),
-            database: config.database_or_default(),
-            username: config.username_or_default(),
-            password: config.password_or_default(),
+            namespace: &config.namespace,
+            database: &config.database,
+            username: &config.username,
+            password: &config.password,
         }),
     }
     .await?;
 
     let _db = client
-        .use_ns(config.namespace_or_default())
-        .use_db(config.database_or_default());
+        .use_ns(config.namespace.to_string())
+        .use_db(config.database.to_string());
 
     Ok(DbConnection::new(
         client,
         token,
-        config.username_or_default().into(),
+        config.username.to_string(),
     ))
 }
 

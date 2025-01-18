@@ -34,7 +34,7 @@ async fn main() -> Result<(), Report> {
     runner.migrate(&db).await?;
 
     // Just for the example: display what happened
-    let executions = select_all_executions_sorted_by_key(config.migrations_table, &db).await?;
+    let executions = select_all_executions_sorted_by_key(&config.migrations_table, &db).await?;
 
     println!("\nApplied Migrations: ");
     println!("  1: {:?}", executions[0]);

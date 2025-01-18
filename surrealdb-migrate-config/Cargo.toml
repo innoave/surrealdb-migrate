@@ -1,5 +1,5 @@
 [package]
-name = "database-migration-files"
+name = "surrealdb-migrate-config"
 version = "0.1.0"
 authors.workspace = true
 license.workspace = true
@@ -8,18 +8,22 @@ rust-version.workspace = true
 repository.workspace = true
 
 description = """
-Database agnostic handling of migration files.
+Configuration of `surrealdb-migrate` using environment variables and/or config files.
 """
-keywords = ["database", "migrations", "version-control"]
+keywords = ["database", "migrations", "version-control", "surrealdb"]
 categories = ["database"]
 
 [dependencies]
 # workspace dependencies
 database-migration.workspace = true
 
+# 3rd party dependencies
+config.workspace = true
+serde.workspace = true
+
 [dev-dependencies]
 assertor.workspace = true
-database-migration = { workspace = true, features = ["test-dsl"] }
+serial_test.workspace = true
 
 [lints]
 workspace = true

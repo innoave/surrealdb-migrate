@@ -9,6 +9,8 @@ use database_migration_files::{
 use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::PathBuf;
+#[cfg(feature = "config")]
+use surrealdb_migrate_config::Settings;
 use surrealdb_migrate_db_client::{
     apply_migration_in_transaction, insert_migration_execution,
     select_all_executions_sorted_by_key, DbConnection,
@@ -21,17 +23,7 @@ pub struct MigrationRunner {
     ignore_order: bool,
 }
 
-impl Default for MigrationRunner {
-    fn default() -> Self {
-        Self::new(RunnerConfig::default())
-    }
-}
-
 impl MigrationRunner {
-    // pass `RunnerConfig` by value as we may add non-copy type parameters to
-    // the config later and the API should not break without needing to clone
-    // those parameters.
-    #[allow(clippy::needless_pass_by_value)]
     pub fn new(config: RunnerConfig<'_>) -> Self {
         Self {
             migrations_folder: config.migrations_folder.into(),
@@ -39,6 +31,11 @@ impl MigrationRunner {
             ignore_checksums: config.ignore_checksums,
             ignore_order: config.ignore_order,
         }
+    }
+
+    #[cfg(feature = "config")]
+    pub fn from_settings(settings: &Settings) -> Self {
+        Self::new(settings.runner_config())
     }
 
     pub async fn migrate(&self, db: &DbConnection) -> Result<(), Error> {

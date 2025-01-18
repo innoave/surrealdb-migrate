@@ -15,18 +15,29 @@ in a project.
 keywords = ["database", "migrations", "version-control", "surrealdb"]
 categories = ["database"]
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 default = ["protocol-ws", "rustls"]
+config = ["dep:surrealdb-migrate-config"]
+
+# re-exported features of the `surrealdb` crate
 native-tls = ["surrealdb-migrate-db-client/native-tls"]
 protocol-http = ["surrealdb-migrate-db-client/protocol-http"]
 protocol-ws = ["surrealdb-migrate-db-client/protocol-ws"]
 rustls = ["surrealdb-migrate-db-client/rustls"]
 
 [dependencies]
+# workspace dependencies
 database-migration.workspace = true
 database-migration-files.workspace = true
 surrealdb-migrate-db-client.workspace = true
 
+# optional
+surrealdb-migrate-config = { workspace = true, optional = true }
+
+# 3rd party dependencies
 indexmap.workspace = true
 
 [dev-dependencies]

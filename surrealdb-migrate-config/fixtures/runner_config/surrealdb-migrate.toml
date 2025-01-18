@@ -1,0 +1,12 @@
+# Only settings with custom values need to be specified.
+# Not specified settings get their default values.
+
+[migration]
+ignore-checksum = true
+ignore-order = false
+
+[files]
+migrations-folder = "database_migration/migrations"
+
+[database]
+migrations-table = "migration_executions"

@@ -9,8 +9,8 @@ pub const MIGRATION_KEY_FORMAT_STR: &str = "%Y%m%d_%H%M%S";
 #[must_use]
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RunnerConfig<'a> {
-    pub migrations_folder: &'a Path,
-    pub migrations_table: &'a str,
+    pub migrations_folder: Cow<'a, Path>,
+    pub migrations_table: Cow<'a, str>,
     pub ignore_checksums: bool,
     pub ignore_order: bool,
 }
@@ -18,8 +18,8 @@ pub struct RunnerConfig<'a> {
 impl Default for RunnerConfig<'_> {
     fn default() -> Self {
         Self {
-            migrations_folder: Path::new(DEFAULT_MIGRATIONS_FOLDER),
-            migrations_table: DEFAULT_MIGRATIONS_TABLE,
+            migrations_folder: Path::new(DEFAULT_MIGRATIONS_FOLDER).into(),
+            migrations_table: DEFAULT_MIGRATIONS_TABLE.into(),
             ignore_checksums: false,
             ignore_order: false,
         }
@@ -27,13 +27,13 @@ impl Default for RunnerConfig<'_> {
 }
 
 impl<'a> RunnerConfig<'a> {
-    pub const fn with_migrations_folder(mut self, migrations_folder: &'a Path) -> Self {
-        self.migrations_folder = migrations_folder;
+    pub fn with_migrations_folder(mut self, migrations_folder: impl Into<Cow<'a, Path>>) -> Self {
+        self.migrations_folder = migrations_folder.into();
         self
     }
 
-    pub const fn with_migrations_table(mut self, migrations_table: &'a str) -> Self {
-        self.migrations_table = migrations_table;
+    pub fn with_migrations_table(mut self, migrations_table: impl Into<Cow<'a, str>>) -> Self {
+        self.migrations_table = migrations_table.into();
         self
     }
 
@@ -65,17 +65,17 @@ pub struct DbClientConfig<'a> {
     /// - `"wss://cloud.surrealdb.com"`
     ///
     /// Default: `"ws://localhost:8000"`
-    pub address: Option<Cow<'a, str>>,
+    pub address: Cow<'a, str>,
 
     /// Namespace to use on the database instance.
     ///
     /// Default: `"test"`
-    pub namespace: Option<Cow<'a, str>>,
+    pub namespace: Cow<'a, str>,
 
     /// Database to use inside the database instance.
     ///
     /// Default: `"test"`
-    pub database: Option<Cow<'a, str>>,
+    pub database: Cow<'a, str>,
 
     /// The kind of the system user used for authentication.
     ///
@@ -85,12 +85,12 @@ pub struct DbClientConfig<'a> {
     /// Username used to authenticate to the database instance.
     ///
     /// Default: `"root"`
-    pub username: Option<Cow<'a, str>>,
+    pub username: Cow<'a, str>,
 
     /// Password used to authenticate to the database instance.
     ///
     /// Default: `"root"`
-    pub password: Option<Cow<'a, str>>,
+    pub password: Cow<'a, str>,
 
     /// Capacity of the channels to the database.
     ///
@@ -99,36 +99,36 @@ pub struct DbClientConfig<'a> {
     /// - `200`
     ///
     /// Default: `20`
-    pub capacity: Option<usize>,
+    pub capacity: usize,
 }
 
 impl Default for DbClientConfig<'_> {
     fn default() -> Self {
         Self {
-            address: None,
-            namespace: None,
-            database: None,
+            address: "ws://localhost:8000".into(),
+            namespace: "test".into(),
+            database: "test".into(),
             auth_level: DbAuthLevel::Root,
-            username: None,
-            password: None,
-            capacity: None,
+            username: "root".into(),
+            password: "root".into(),
+            capacity: 20,
         }
     }
 }
 
 impl<'a> DbClientConfig<'a> {
     pub fn with_address(mut self, address: impl Into<Cow<'a, str>>) -> Self {
-        self.address = Some(address.into());
+        self.address = address.into();
         self
     }
 
     pub fn with_namespace(mut self, namespace: impl Into<Cow<'a, str>>) -> Self {
-        self.namespace = Some(namespace.into());
+        self.namespace = namespace.into();
         self
     }
 
     pub fn with_database(mut self, database: impl Into<Cow<'a, str>>) -> Self {
-        self.database = Some(database.into());
+        self.database = database.into();
         self
     }
 
@@ -138,47 +138,17 @@ impl<'a> DbClientConfig<'a> {
     }
 
     pub fn with_username(mut self, username: impl Into<Cow<'a, str>>) -> Self {
-        self.username = Some(username.into());
+        self.username = username.into();
         self
     }
 
     pub fn with_password(mut self, password: impl Into<Cow<'a, str>>) -> Self {
-        self.password = Some(password.into());
+        self.password = password.into();
         self
     }
 
     pub const fn with_capacity(mut self, capacity: usize) -> Self {
-        self.capacity = Some(capacity);
+        self.capacity = capacity;
         self
-    }
-
-    pub fn address_or_default(&self) -> &str {
-        self.address
-            .as_ref()
-            .map_or("ws://localhost:8000", |v| v.as_ref())
-    }
-
-    pub fn namespace_or_default(&self) -> &str {
-        self.namespace.as_ref().map_or("test", |v| v.as_ref())
-    }
-
-    pub fn database_or_default(&self) -> &str {
-        self.database.as_ref().map_or("test", |v| v.as_ref())
-    }
-
-    pub const fn auth_level(&self) -> DbAuthLevel {
-        self.auth_level
-    }
-
-    pub fn username_or_default(&self) -> &str {
-        self.username.as_ref().map_or("root", |v| v.as_ref())
-    }
-
-    pub fn password_or_default(&self) -> &str {
-        self.password.as_ref().map_or("root", |v| v.as_ref())
-    }
-
-    pub fn capacity_or_default(&self) -> usize {
-        self.capacity.unwrap_or(20)
     }
 }

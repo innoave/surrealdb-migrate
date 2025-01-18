@@ -1,0 +1,11 @@
+# Only settings with custom values need to be specified.
+# Not specified settings get their default values.
+
+[database]
+address = "wss://localhost:9000"
+namespace = "playground"
+database = "thegame"
+username = "player"
+password = "s3cr3t"
+auth-level = "DATABASE"
+capacity = 150

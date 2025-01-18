@@ -5,6 +5,8 @@ use indexmap::IndexMap;
 pub enum Error {
     #[error("migrations changed after execution: {0:?}")]
     ChangedAfterExecution(Vec<ProblematicMigration>),
+    #[error("failed to load settings: {0}")]
+    Configuration(String),
     #[error("database query failed: {0}")]
     DbQuery(String),
     #[error("db script execution failed: {0:?}")]
