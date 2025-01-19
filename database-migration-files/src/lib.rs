@@ -61,12 +61,14 @@ impl Iterator for MigDirIter<'_> {
                                 continue;
                             }
                         },
-                        Err(err) => return Some(Err(Error::ReadingMigrationFile(err.to_string()))),
+                        Err(err) => {
+                            return Some(Err(Error::ScanningMigrationDirectory(err.to_string())))
+                        },
                     }
                     let file_path = self.base_dir.join(entry.file_name());
                     Some(file_path.parse_migration().map_err(Error::from))
                 },
-                Err(err) => Some(Err(Error::ReadingMigrationFile(err.to_string()))),
+                Err(err) => Some(Err(Error::ScanningMigrationDirectory(err.to_string()))),
             };
         }
         None
