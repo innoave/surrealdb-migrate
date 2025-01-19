@@ -4,7 +4,6 @@ use serde_with::{DeserializeFromStr, SerializeDisplay};
 use std::borrow::Borrow;
 use std::ffi::OsStr;
 use std::fmt::{Display, Formatter};
-use std::num::ParseIntError;
 use std::ops::Deref;
 use std::str::FromStr;
 
@@ -17,11 +16,22 @@ impl Display for Checksum {
     }
 }
 
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ParseChecksumError {
+    #[error("unsupported hash algorithm: {0}")]
+    UnsupportedAlgorithm(String),
+    #[error("invalid hash value: {0}")]
+    InvalidHashValue(String),
+}
+
 impl FromStr for Checksum {
-    type Err = ParseIntError;
+    type Err = ParseChecksumError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        u32::from_str(s).map(Self)
+        u32::from_str(s)
+            .map(Self)
+            .map_err(|err| ParseChecksumError::InvalidHashValue(err.to_string()))
     }
 }
 
