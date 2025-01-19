@@ -5,6 +5,11 @@ use database_migration::migration::{Migration, MigrationKind};
 use database_migration::test_dsl::key;
 use std::path::Path;
 
+const BASIC_MIGRATION_CONTENT1: &str =
+    include_str!("../../fixtures/basic/migrations/20250103_140520_define_quote_table.surql");
+const BASIC_MIGRATION_CONTENT2: &str =
+    include_str!("../../fixtures/basic/migrations/20250103_140521_create_some_quotes.surql");
+
 #[test]
 fn list_all_migrations_in_basic_migrations_dir() {
     let migration_directory = migration_directory("../fixtures/basic/migrations");
@@ -78,4 +83,62 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
             .into(),
         }),
     ]);
+}
+
+#[test]
+fn read_script_content_for_basic_migrations() {
+    let migrations_folder = Path::new("../fixtures/basic/migrations");
+
+    let migrations = &[
+        Migration {
+            key: key("20250103_140520"),
+            title: "define quote table".into(),
+            kind: MigrationKind::Up,
+            script_path: migrations_folder.join("20250103_140520_define_quote_table.surql"),
+        },
+        Migration {
+            key: key("20250103_140521"),
+            title: "create come quotes".into(),
+            kind: MigrationKind::Up,
+            script_path: migrations_folder.join("20250103_140521_create_some_quotes.surql"),
+        },
+    ];
+    let checksum1 = hash_migration_script(&migrations[0], BASIC_MIGRATION_CONTENT1);
+    let checksum2 = hash_migration_script(&migrations[1], BASIC_MIGRATION_CONTENT2);
+
+    let script_contents =
+        read_script_content_for_migrations(migrations).expect("failed to read script content");
+
+    assert_that!(script_contents).contains_exactly_in_order(vec![
+        ScriptContent {
+            key: key("20250103_140520"),
+            kind: MigrationKind::Up,
+            path: migrations_folder.join("20250103_140520_define_quote_table.surql"),
+            content: BASIC_MIGRATION_CONTENT1.into(),
+            checksum: checksum1,
+        },
+        ScriptContent {
+            key: key("20250103_140521"),
+            kind: MigrationKind::Up,
+            path: migrations_folder.join("20250103_140521_create_some_quotes.surql"),
+            content: BASIC_MIGRATION_CONTENT2.into(),
+            checksum: checksum2,
+        },
+    ]);
+}
+
+#[test]
+fn read_script_content_for_non_existing_migration() {
+    let migrations_folder = Path::new("../fixtures/basic/migrations");
+
+    let migrations = &[Migration {
+        key: key("20250103_140520"),
+        title: "non existing".into(),
+        kind: MigrationKind::Up,
+        script_path: migrations_folder.join("20250103_140520_non_existing.surql"),
+    }];
+
+    let result = read_script_content_for_migrations(migrations);
+
+    assert_that!(matches!(result, Err(Error::ReadingMigrationFile(_)))).is_true();
 }
