@@ -17,7 +17,6 @@ impl Display for Checksum {
 }
 
 #[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
 pub enum ParseChecksumError {
     #[error("unsupported hash algorithm: {0}")]
     UnsupportedAlgorithm(String),
