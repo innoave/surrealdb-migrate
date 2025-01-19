@@ -33,6 +33,10 @@ test:
 test-lib:
     cargo test --lib
 
+# run the cli-tests only
+test-cli:
+    cargo test --package surrealdb-migrate-cli
+
 # run code coverage (does not include doc-tests)
 test-coverage:
     cargo +nightly llvm-cov --branch --html --open --ignore-filename-regex "tests|test_dsl"
