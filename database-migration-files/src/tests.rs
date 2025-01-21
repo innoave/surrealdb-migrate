@@ -1,6 +1,7 @@
 use super::*;
 use assert_fs::TempDir;
 use assertor::*;
+use database_migration::definition::MigrationFilenameStrategy;
 use database_migration::error::Error;
 use database_migration::migration::{Migration, MigrationKind};
 use database_migration::test_dsl::key;
@@ -175,4 +176,66 @@ fn create_migrations_folder_if_not_existing_parent_folder_does_not_exist() {
         create_migrations_folder_if_not_existing(&parent_dir, "script_migrations");
 
     assert_that!(migrations_folder).is_equal_to(Ok(parent_dir.join("script_migrations")));
+}
+
+#[test]
+fn create_migration_file_for_new_migration() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "create some table".to_string(),
+        kind: MigrationKind::Up,
+    };
+
+    let migration_file = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+
+    assert_that!(migration_file).is_equal_to(Ok(temp_dir
+        .path()
+        .join("20250115_201642_create_some_table.up.surql")));
+    assert_that!(migration_file.expect("migration file not created").exists()).is_true();
+}
+
+#[test]
+fn create_migration_file_for_new_migration_file_already_existing() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "create some table".to_string(),
+        kind: MigrationKind::Up,
+    };
+
+    let existing_file = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+
+    assert_that!(existing_file).is_equal_to(Ok(temp_dir
+        .path()
+        .join("20250115_201642_create_some_table.up.surql")));
+    assert_that!(existing_file.expect("existing file not created").exists()).is_true();
+
+    let result = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+
+    assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
+}
+
+#[test]
+fn create_migration_file_for_new_migration_folder_does_not_exist() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let folder = temp_dir.path().join("not_existing");
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "create some table".to_string(),
+        kind: MigrationKind::Up,
+    };
+
+    let result = create_migration_file(&filename_strategy, &folder, &new_migration);
+
+    assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
 }

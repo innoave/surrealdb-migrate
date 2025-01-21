@@ -1,8 +1,9 @@
 use database_migration::checksum::hash_migration_script;
-use database_migration::definition::ParseMigration;
+use database_migration::definition::{GetFilename, ParseMigration};
 use database_migration::error::Error;
-use database_migration::migration::{Migration, ScriptContent};
+use database_migration::migration::{Migration, NewMigration, ScriptContent};
 use std::fs;
+use std::fs::File;
 #[cfg(target_family = "windows")]
 use std::os::windows::fs::FileTypeExt;
 use std::path::{Path, PathBuf};
@@ -113,6 +114,17 @@ pub fn create_migrations_folder_if_not_existing(
     fs::create_dir_all(&migrations_folder)
         .map_err(|err| Error::CreatingMigrationsFolder(err.to_string()))?;
     Ok(migrations_folder)
+}
+
+pub fn create_migration_file(
+    filename_strategy: &impl GetFilename,
+    migrations_folder: &Path,
+    new_migration: &NewMigration,
+) -> Result<PathBuf, Error> {
+    let filename = filename_strategy.get_filename(new_migration);
+    let script_path = migrations_folder.join(&filename);
+    File::create_new(&script_path).map_err(|err| Error::CreatingScriptFile(err.to_string()))?;
+    Ok(script_path)
 }
 
 #[cfg(test)]

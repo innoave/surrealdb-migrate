@@ -9,6 +9,8 @@ pub enum Error {
     Configuration(String),
     #[error("failed to create migrations folder: {0}")]
     CreatingMigrationsFolder(String),
+    #[error("failed to create script file: {0}")]
+    CreatingScriptFile(String),
     #[error("database query failed: {0}")]
     DbQuery(String),
     #[error("db script execution failed: {0:?}")]

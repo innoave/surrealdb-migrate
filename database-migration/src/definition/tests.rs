@@ -198,3 +198,84 @@ mod path {
         assert_that!(migration).has_err(DefinitionError::NoFilename);
     }
 }
+
+mod migration_filename_strategy {
+    use super::*;
+
+    #[test]
+    fn get_filename_with_default_strategy_for_up_migration() {
+        let filename_strategy = MigrationFilenameStrategy::default();
+
+        let migration = NewMigration {
+            key: key("20250114_092042"),
+            title: "create some table".to_string(),
+            kind: MigrationKind::Up,
+        };
+
+        let filename = filename_strategy.get_filename(&migration);
+
+        assert_that!(filename)
+            .is_equal_to("20250114_092042_create_some_table.up.surql".to_string());
+    }
+
+    #[test]
+    fn get_filename_with_default_strategy_for_down_migration() {
+        let filename_strategy = MigrationFilenameStrategy::default();
+
+        let migration = NewMigration {
+            key: key("20250101_235959"),
+            title: "create some table".to_string(),
+            kind: MigrationKind::Down,
+        };
+
+        let filename = filename_strategy.get_filename(&migration);
+
+        assert_that!(filename)
+            .is_equal_to("20250101_235959_create_some_table.down.surql".to_string());
+    }
+
+    #[test]
+    #[should_panic(expected = "baselines do not have migration scripts")]
+    fn get_filename_with_default_strategy_for_baseline_migration() {
+        let filename_strategy = MigrationFilenameStrategy::default().with_up_postfix(false);
+
+        let migration = NewMigration {
+            key: key("20250114_092042"),
+            title: "create some table".to_string(),
+            kind: MigrationKind::Baseline,
+        };
+
+        _ = filename_strategy.get_filename(&migration);
+    }
+
+    #[test]
+    fn get_filename_with_no_up_postfix_strategy_for_up_migration() {
+        let filename_strategy = MigrationFilenameStrategy::default().with_up_postfix(false);
+
+        let migration = NewMigration {
+            key: key("20250101_235959"),
+            title: "create some table".to_string(),
+            kind: MigrationKind::Up,
+        };
+
+        let filename = filename_strategy.get_filename(&migration);
+
+        assert_that!(filename).is_equal_to("20250101_235959_create_some_table.surql".to_string());
+    }
+
+    #[test]
+    fn get_filename_with_no_up_postfix_strategy_for_down_migration() {
+        let filename_strategy = MigrationFilenameStrategy::default().with_up_postfix(false);
+
+        let migration = NewMigration {
+            key: key("20250114_092042"),
+            title: "create some table".to_string(),
+            kind: MigrationKind::Down,
+        };
+
+        let filename = filename_strategy.get_filename(&migration);
+
+        assert_that!(filename)
+            .is_equal_to("20250114_092042_create_some_table.down.surql".to_string());
+    }
+}

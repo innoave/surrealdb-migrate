@@ -1,5 +1,6 @@
+use crate::config::MIGRATION_KEY_FORMAT_STR;
 use crate::error::DefinitionError;
-use crate::migration::{Migration, MigrationKind};
+use crate::migration::{Migration, MigrationKind, NewMigration};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -92,6 +93,43 @@ impl ParseMigration for Path {
             .ok_or(DefinitionError::InvalidUtf8Character)?;
 
         parse_migration(path, filename)
+    }
+}
+
+pub trait GetFilename {
+    fn get_filename(&self, migration: &NewMigration) -> String;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[must_use]
+pub struct MigrationFilenameStrategy {
+    pub up_postfix: bool,
+}
+
+impl Default for MigrationFilenameStrategy {
+    fn default() -> Self {
+        Self { up_postfix: true }
+    }
+}
+
+impl MigrationFilenameStrategy {
+    pub const fn with_up_postfix(mut self, up_postfix: bool) -> Self {
+        self.up_postfix = up_postfix;
+        self
+    }
+}
+
+impl GetFilename for MigrationFilenameStrategy {
+    fn get_filename(&self, migration: &NewMigration) -> String {
+        let key = migration.key.format(MIGRATION_KEY_FORMAT_STR).to_string();
+        let title = migration.title.replace(' ', "_");
+        let extension = match (migration.kind, self.up_postfix) {
+            (MigrationKind::Up, true) => UP_SCRIPT_FILE_EXTENSION,
+            (MigrationKind::Up, false) => SCRIPT_FILE_EXTENSION,
+            (MigrationKind::Down, _) => DOWN_SCRIPT_FILE_EXTENSION,
+            (MigrationKind::Baseline, _) => panic!("baselines do not have migration scripts"),
+        };
+        format!("{key}_{title}{extension}")
     }
 }
 

@@ -22,6 +22,13 @@ impl MigrationKind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewMigration {
+    pub key: NaiveDateTime,
+    pub title: String,
+    pub kind: MigrationKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Migration {
     pub key: NaiveDateTime,
     pub title: String,
