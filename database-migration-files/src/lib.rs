@@ -5,7 +5,7 @@ use database_migration::migration::{Migration, ScriptContent};
 use std::fs;
 #[cfg(target_family = "windows")]
 use std::os::windows::fs::FileTypeExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub trait ListMigrations {
     type Iter: Iterator<Item = Result<Migration, Error>>;
@@ -100,6 +100,19 @@ pub fn read_script_content_for_migrations(
         });
     }
     Ok(script_contents)
+}
+
+pub fn create_migrations_folder_if_not_existing(
+    path: &Path,
+    folder_name: &str,
+) -> Result<PathBuf, Error> {
+    let migrations_folder = path.join(folder_name);
+    if migrations_folder.exists() {
+        return Ok(migrations_folder);
+    }
+    fs::create_dir_all(&migrations_folder)
+        .map_err(|err| Error::CreatingMigrationsFolder(err.to_string()))?;
+    Ok(migrations_folder)
 }
 
 #[cfg(test)]

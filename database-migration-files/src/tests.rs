@@ -1,4 +1,5 @@
 use super::*;
+use assert_fs::TempDir;
 use assertor::*;
 use database_migration::error::Error;
 use database_migration::migration::{Migration, MigrationKind};
@@ -141,4 +142,37 @@ fn read_script_content_for_non_existing_migration() {
     let result = read_script_content_for_migrations(migrations);
 
     assert_that!(matches!(result, Err(Error::ReadingMigrationFile(_)))).is_true();
+}
+
+#[test]
+fn create_migrations_folder_if_not_existing_folder_does_not_exist() {
+    let parent_dir = TempDir::new().expect("failed to create temp dir");
+
+    let migrations_folder =
+        create_migrations_folder_if_not_existing(parent_dir.path(), "migrations");
+
+    assert_that!(migrations_folder).is_equal_to(Ok(parent_dir.path().join("migrations")));
+}
+
+#[test]
+fn create_migrations_folder_if_not_existing_folder_already_exists() {
+    let parent_dir = TempDir::new().expect("failed to create temp dir");
+    let expected_folder = parent_dir.path().join("my_migrations");
+    fs::create_dir(&expected_folder).expect("failed to create existing migrations folder");
+
+    let migrations_folder =
+        create_migrations_folder_if_not_existing(parent_dir.path(), "my_migrations");
+
+    assert_that!(migrations_folder).is_equal_to(Ok(expected_folder));
+}
+
+#[test]
+fn create_migrations_folder_if_not_existing_parent_folder_does_not_exist() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let parent_dir = temp_dir.path().join("package_dir");
+
+    let migrations_folder =
+        create_migrations_folder_if_not_existing(&parent_dir, "script_migrations");
+
+    assert_that!(migrations_folder).is_equal_to(Ok(parent_dir.join("script_migrations")));
 }

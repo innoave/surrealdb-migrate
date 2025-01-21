@@ -19,6 +19,7 @@ database-migration.workspace = true
 
 [dev-dependencies]
 assertor.workspace = true
+assert_fs.workspace = true
 database-migration = { workspace = true, features = ["test-dsl"] }
 
 [lints]

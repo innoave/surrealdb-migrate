@@ -7,6 +7,8 @@ pub enum Error {
     ChangedAfterExecution(Vec<ProblematicMigration>),
     #[error("failed to load settings: {0}")]
     Configuration(String),
+    #[error("failed to create migrations folder: {0}")]
+    CreatingMigrationsFolder(String),
     #[error("database query failed: {0}")]
     DbQuery(String),
     #[error("db script execution failed: {0:?}")]
