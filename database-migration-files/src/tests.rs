@@ -186,16 +186,23 @@ fn create_migration_file_for_new_migration() {
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
-        title: "create some table".to_string(),
+        title: "create some table".into(),
         kind: MigrationKind::Up,
     };
 
-    let migration_file = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+    let migration = create_migration_file(&filename_strategy, temp_dir.path(), new_migration)
+        .expect("failed to create new migration file");
 
-    assert_that!(migration_file).is_equal_to(Ok(temp_dir
-        .path()
-        .join("20250115_201642_create_some_table.up.surql")));
-    assert_that!(migration_file.expect("migration file not created").exists()).is_true();
+    assert_that!(migration).is_equal_to(Migration {
+        key: key("20250115_201642"),
+        title: "create some table".into(),
+        kind: MigrationKind::Up,
+        script_path: temp_dir
+            .path()
+            .join("20250115_201642_create_some_table.up.surql"),
+    });
+
+    assert_that!(migration.script_path.exists()).is_true();
 }
 
 #[test]
@@ -206,18 +213,29 @@ fn create_migration_file_for_new_migration_file_already_existing() {
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
-        title: "create some table".to_string(),
+        title: "create some table".into(),
         kind: MigrationKind::Up,
     };
 
-    let existing_file = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+    let existing_migration =
+        create_migration_file(&filename_strategy, temp_dir.path(), new_migration.clone());
 
-    assert_that!(existing_file).is_equal_to(Ok(temp_dir
-        .path()
-        .join("20250115_201642_create_some_table.up.surql")));
-    assert_that!(existing_file.expect("existing file not created").exists()).is_true();
+    assert_that!(existing_migration).is_equal_to(Ok(Migration {
+        key: key("20250115_201642"),
+        title: "create some table".into(),
+        kind: MigrationKind::Up,
+        script_path: temp_dir
+            .path()
+            .join("20250115_201642_create_some_table.up.surql"),
+    }));
 
-    let result = create_migration_file(&filename_strategy, temp_dir.path(), &new_migration);
+    assert_that!(existing_migration
+        .expect("existing file not created")
+        .script_path
+        .exists())
+    .is_true();
+
+    let result = create_migration_file(&filename_strategy, temp_dir.path(), new_migration);
 
     assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
 }
@@ -235,7 +253,7 @@ fn create_migration_file_for_new_migration_folder_does_not_exist() {
         kind: MigrationKind::Up,
     };
 
-    let result = create_migration_file(&filename_strategy, &folder, &new_migration);
+    let result = create_migration_file(&filename_strategy, &folder, new_migration);
 
     assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
 }

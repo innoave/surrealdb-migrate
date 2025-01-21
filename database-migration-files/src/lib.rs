@@ -119,12 +119,17 @@ pub fn create_migrations_folder_if_not_existing(
 pub fn create_migration_file(
     filename_strategy: &impl GetFilename,
     migrations_folder: &Path,
-    new_migration: &NewMigration,
-) -> Result<PathBuf, Error> {
-    let filename = filename_strategy.get_filename(new_migration);
+    new_migration: NewMigration,
+) -> Result<Migration, Error> {
+    let filename = filename_strategy.get_filename(&new_migration);
     let script_path = migrations_folder.join(&filename);
     File::create_new(&script_path).map_err(|err| Error::CreatingScriptFile(err.to_string()))?;
-    Ok(script_path)
+    Ok(Migration {
+        key: new_migration.key,
+        title: new_migration.title,
+        kind: new_migration.kind,
+        script_path,
+    })
 }
 
 #[cfg(test)]
