@@ -4,6 +4,7 @@ pub mod definition;
 pub mod error;
 pub mod logic;
 pub mod migration;
+pub mod repository;
 
 #[cfg(any(test, feature = "proptest-support"))]
 pub mod proptest_support;

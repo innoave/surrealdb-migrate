@@ -14,7 +14,7 @@ const BASIC_MIGRATION_CONTENT2: &str =
 
 #[test]
 fn list_all_migrations_in_basic_migrations_dir() {
-    let migration_directory = migration_directory("../fixtures/basic/migrations");
+    let migration_directory = MigrationDirectory::new(Path::new("../fixtures/basic/migrations"));
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -45,7 +45,8 @@ fn list_all_migrations_in_basic_migrations_dir() {
 
 #[test]
 fn list_all_migrations_in_non_existing_directory() {
-    let migration_directory = migration_directory("../fixtures/not_existing/migrations");
+    let migration_directory =
+        MigrationDirectory::new(Path::new("../fixtures/not_existing/migrations"));
 
     let migrations = migration_directory.list_all_migrations();
 
@@ -58,7 +59,8 @@ fn list_all_migrations_in_non_existing_directory() {
 
 #[test]
 fn list_all_migrations_in_migrations_dir_with_subdirectory() {
-    let migration_directory = migration_directory("../fixtures/with_subdir/migrations");
+    let migration_directory =
+        MigrationDirectory::new(Path::new("../fixtures/with_subdir/migrations"));
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -90,6 +92,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
 #[test]
 fn read_script_content_for_basic_migrations() {
     let migrations_folder = Path::new("../fixtures/basic/migrations");
+    let migration_directory = MigrationDirectory::new(migrations_folder);
 
     let migrations = &[
         Migration {
@@ -108,8 +111,9 @@ fn read_script_content_for_basic_migrations() {
     let checksum1 = hash_migration_script(&migrations[0], BASIC_MIGRATION_CONTENT1);
     let checksum2 = hash_migration_script(&migrations[1], BASIC_MIGRATION_CONTENT2);
 
-    let script_contents =
-        read_script_content_for_migrations(migrations).expect("failed to read script content");
+    let script_contents = migration_directory
+        .read_script_content_for_migrations(migrations)
+        .expect("failed to read script content");
 
     assert_that!(script_contents).contains_exactly_in_order(vec![
         ScriptContent {
@@ -132,15 +136,16 @@ fn read_script_content_for_basic_migrations() {
 #[test]
 fn read_script_content_for_non_existing_migration() {
     let migrations_folder = Path::new("../fixtures/basic/migrations");
+    let migration_directory = MigrationDirectory::new(migrations_folder);
 
-    let migrations = &[Migration {
+    let migrations = Migration {
         key: key("20250103_140520"),
         title: "non existing".into(),
         kind: MigrationKind::Up,
         script_path: migrations_folder.join("20250103_140520_non_existing.surql"),
-    }];
+    };
 
-    let result = read_script_content_for_migrations(migrations);
+    let result = migration_directory.read_script_content(&migrations);
 
     assert_that!(matches!(result, Err(Error::ReadingMigrationFile(_)))).is_true();
 }
@@ -148,11 +153,13 @@ fn read_script_content_for_non_existing_migration() {
 #[test]
 fn create_migrations_folder_if_not_existing_folder_does_not_exist() {
     let parent_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = parent_dir.join("migrations");
 
-    let migrations_folder =
-        create_migrations_folder_if_not_existing(parent_dir.path(), "migrations");
+    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let result = migration_directory.create_directory_if_not_existing();
 
-    assert_that!(migrations_folder).is_equal_to(Ok(parent_dir.path().join("migrations")));
+    assert_that!(result).is_ok();
+    assert_that!(migration_directory.path.exists()).is_true();
 }
 
 #[test]
@@ -160,29 +167,49 @@ fn create_migrations_folder_if_not_existing_folder_already_exists() {
     let parent_dir = TempDir::new().expect("failed to create temp dir");
     let expected_folder = parent_dir.path().join("my_migrations");
     fs::create_dir(&expected_folder).expect("failed to create existing migrations folder");
+    let migrations_folder = parent_dir.join("my_migrations");
 
-    let migrations_folder =
-        create_migrations_folder_if_not_existing(parent_dir.path(), "my_migrations");
+    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let result = migration_directory.create_directory_if_not_existing();
 
-    assert_that!(migrations_folder).is_equal_to(Ok(expected_folder));
+    assert_that!(result).is_ok();
+    assert_that!(migration_directory.path.exists()).is_true();
 }
 
 #[test]
 fn create_migrations_folder_if_not_existing_parent_folder_does_not_exist() {
     let temp_dir = TempDir::new().expect("failed to create temp dir");
     let parent_dir = temp_dir.path().join("package_dir");
+    let migrations_folder = parent_dir.join("script_migrations");
 
-    let migrations_folder =
-        create_migrations_folder_if_not_existing(&parent_dir, "script_migrations");
+    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let result = migration_directory.create_directory_if_not_existing();
 
-    assert_that!(migrations_folder).is_equal_to(Ok(parent_dir.join("script_migrations")));
+    assert_that!(result).is_ok();
+    assert_that!(migration_directory.path.exists()).is_true();
+}
+
+#[test]
+fn get_migration_files_from_migrations_directory() {
+    let migrations_folder = Path::new("../fixtures/basic/migrations");
+    let migration_directory = MigrationDirectory::new(migrations_folder);
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = migration_directory.files(filename_strategy);
+
+    assert_that!(migration_files).is_equal_to(MigrationFiles {
+        path: migrations_folder,
+        filename_strategy,
+    });
 }
 
 #[test]
 fn create_migration_file_for_new_migration() {
     let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = temp_dir.path();
 
     let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(migrations_folder, filename_strategy);
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
@@ -190,26 +217,29 @@ fn create_migration_file_for_new_migration() {
         kind: MigrationKind::Up,
     };
 
-    let migration = create_migration_file(&filename_strategy, temp_dir.path(), new_migration)
-        .expect("failed to create new migration file");
+    let migration = migration_files.create_new_migration(new_migration);
 
-    assert_that!(migration).is_equal_to(Migration {
+    assert_that!(migration).is_equal_to(Ok(Migration {
         key: key("20250115_201642"),
         title: "create some table".into(),
         kind: MigrationKind::Up,
-        script_path: temp_dir
-            .path()
-            .join("20250115_201642_create_some_table.up.surql"),
-    });
+        script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
+    }));
 
-    assert_that!(migration.script_path.exists()).is_true();
+    assert_that!(migration
+        .expect("failed to create new migration file")
+        .script_path
+        .exists())
+    .is_true();
 }
 
 #[test]
 fn create_migration_file_for_new_migration_file_already_existing() {
     let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = temp_dir.path();
 
     let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(migrations_folder, filename_strategy);
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
@@ -217,16 +247,13 @@ fn create_migration_file_for_new_migration_file_already_existing() {
         kind: MigrationKind::Up,
     };
 
-    let existing_migration =
-        create_migration_file(&filename_strategy, temp_dir.path(), new_migration.clone());
+    let existing_migration = migration_files.create_new_migration(new_migration.clone());
 
     assert_that!(existing_migration).is_equal_to(Ok(Migration {
         key: key("20250115_201642"),
         title: "create some table".into(),
         kind: MigrationKind::Up,
-        script_path: temp_dir
-            .path()
-            .join("20250115_201642_create_some_table.up.surql"),
+        script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
     }));
 
     assert_that!(existing_migration
@@ -235,7 +262,7 @@ fn create_migration_file_for_new_migration_file_already_existing() {
         .exists())
     .is_true();
 
-    let result = create_migration_file(&filename_strategy, temp_dir.path(), new_migration);
+    let result = migration_files.create_new_migration(new_migration);
 
     assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
 }
@@ -243,9 +270,10 @@ fn create_migration_file_for_new_migration_file_already_existing() {
 #[test]
 fn create_migration_file_for_new_migration_folder_does_not_exist() {
     let temp_dir = TempDir::new().expect("failed to create temp dir");
-    let folder = temp_dir.path().join("not_existing");
+    let not_existing_folder = temp_dir.path().join("not_existing");
 
     let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(&not_existing_folder, filename_strategy);
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
@@ -253,7 +281,7 @@ fn create_migration_file_for_new_migration_folder_does_not_exist() {
         kind: MigrationKind::Up,
     };
 
-    let result = create_migration_file(&filename_strategy, &folder, new_migration);
+    let result = migration_files.create_new_migration(new_migration);
 
     assert_that!(matches!(result, Err(Error::CreatingScriptFile(_)))).is_true();
 }

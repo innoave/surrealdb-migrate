@@ -2,17 +2,12 @@ use database_migration::checksum::hash_migration_script;
 use database_migration::definition::{GetFilename, ParseMigration};
 use database_migration::error::Error;
 use database_migration::migration::{Migration, NewMigration, ScriptContent};
+use database_migration::repository::{CreateNewMigration, ListMigrations, ReadScriptContent};
 use std::fs;
 use std::fs::File;
 #[cfg(target_family = "windows")]
 use std::os::windows::fs::FileTypeExt;
-use std::path::{Path, PathBuf};
-
-pub trait ListMigrations {
-    type Iter: Iterator<Item = Result<Migration, Error>>;
-
-    fn list_all_migrations(&self) -> Result<Self::Iter, Error>;
-}
+use std::path::Path;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MigrationDirectory<'a> {
@@ -22,6 +17,18 @@ pub struct MigrationDirectory<'a> {
 impl<'a> MigrationDirectory<'a> {
     pub const fn new(path: &'a Path) -> Self {
         Self { path }
+    }
+
+    pub fn create_directory_if_not_existing(&self) -> Result<(), Error> {
+        if self.path.exists() {
+            return Ok(());
+        }
+        fs::create_dir_all(self.path)
+            .map_err(|err| Error::CreatingMigrationsFolder(err.to_string()))
+    }
+
+    pub const fn files<S>(&self, filename_strategy: S) -> MigrationFiles<'a, S> {
+        MigrationFiles::new(self.path, filename_strategy)
     }
 }
 
@@ -35,6 +42,21 @@ impl<'a> ListMigrations for MigrationDirectory<'a> {
                 base_dir: self.path,
                 dir_iter,
             })
+    }
+}
+
+impl ReadScriptContent for MigrationDirectory<'_> {
+    fn read_script_content(&self, migration: &Migration) -> Result<ScriptContent, Error> {
+        let content = fs::read_to_string(&migration.script_path)
+            .map_err(|err| Error::ReadingMigrationFile(err.to_string()))?;
+        let checksum = hash_migration_script(migration, &content);
+        Ok(ScriptContent {
+            key: migration.key,
+            kind: migration.kind,
+            path: migration.script_path.clone(),
+            content,
+            checksum,
+        })
     }
 }
 
@@ -80,56 +102,36 @@ impl Iterator for MigDirIter<'_> {
     }
 }
 
-pub fn migration_directory(path: &str) -> MigrationDirectory<'_> {
-    MigrationDirectory::new(Path::new(path))
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MigrationFiles<'a, S> {
+    path: &'a Path,
+    filename_strategy: S,
 }
 
-pub fn read_script_content_for_migrations(
-    migrations: &[Migration],
-) -> Result<Vec<ScriptContent>, Error> {
-    let mut script_contents = Vec::with_capacity(migrations.len());
-    for migration in migrations {
-        let content = fs::read_to_string(&migration.script_path)
-            .map_err(|err| Error::ReadingMigrationFile(err.to_string()))?;
-        let checksum = hash_migration_script(migration, &content);
-        script_contents.push(ScriptContent {
-            key: migration.key,
-            kind: migration.kind,
-            path: migration.script_path.clone(),
-            content,
-            checksum,
-        });
+impl<'a, S> MigrationFiles<'a, S> {
+    pub const fn new(path: &'a Path, filename_strategy: S) -> Self {
+        Self {
+            path,
+            filename_strategy,
+        }
     }
-    Ok(script_contents)
 }
 
-pub fn create_migrations_folder_if_not_existing(
-    path: &Path,
-    folder_name: &str,
-) -> Result<PathBuf, Error> {
-    let migrations_folder = path.join(folder_name);
-    if migrations_folder.exists() {
-        return Ok(migrations_folder);
+impl<S> CreateNewMigration for MigrationFiles<'_, S>
+where
+    S: GetFilename,
+{
+    fn create_new_migration(&self, new_migration: NewMigration) -> Result<Migration, Error> {
+        let filename = self.filename_strategy.get_filename(&new_migration);
+        let script_path = self.path.join(&filename);
+        File::create_new(&script_path).map_err(|err| Error::CreatingScriptFile(err.to_string()))?;
+        Ok(Migration {
+            key: new_migration.key,
+            title: new_migration.title,
+            kind: new_migration.kind,
+            script_path,
+        })
     }
-    fs::create_dir_all(&migrations_folder)
-        .map_err(|err| Error::CreatingMigrationsFolder(err.to_string()))?;
-    Ok(migrations_folder)
-}
-
-pub fn create_migration_file(
-    filename_strategy: &impl GetFilename,
-    migrations_folder: &Path,
-    new_migration: NewMigration,
-) -> Result<Migration, Error> {
-    let filename = filename_strategy.get_filename(&new_migration);
-    let script_path = migrations_folder.join(&filename);
-    File::create_new(&script_path).map_err(|err| Error::CreatingScriptFile(err.to_string()))?;
-    Ok(Migration {
-        key: new_migration.key,
-        title: new_migration.title,
-        kind: new_migration.kind,
-        script_path,
-    })
 }
 
 #[cfg(test)]

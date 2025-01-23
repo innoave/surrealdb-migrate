@@ -3,9 +3,8 @@ use database_migration::error::Error;
 use database_migration::logic::{
     ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify,
 };
-use database_migration_files::{
-    read_script_content_for_migrations, ListMigrations, MigrationDirectory,
-};
+use database_migration::repository::{ListMigrations, ReadScriptContent};
+use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -47,7 +46,7 @@ impl MigrationRunner {
         migrations.sort_unstable_by_key(|mig| mig.key);
         let migrations = migrations;
 
-        let script_contents = read_script_content_for_migrations(&migrations)?;
+        let script_contents = mig_dir.read_script_content_for_migrations(&migrations)?;
         let existing_executions =
             select_all_executions_sorted_by_key(&self.migrations_table, db).await?;
         let executed_migrations = existing_executions
