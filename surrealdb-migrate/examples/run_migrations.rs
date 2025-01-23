@@ -25,7 +25,6 @@ async fn main() -> Result<(), Report> {
     let db = connect_to_examples_database_as_database_user(config).await?;
 
     // Instantiate the `MigrationRunner`
-    // Note: we could use `MigrationRunner::default();` instead if the default configuration is suitable.
     let config =
         RunnerConfig::default().with_migrations_folder(Path::new("fixtures/basic/migrations"));
     let runner = MigrationRunner::new(config.clone());
