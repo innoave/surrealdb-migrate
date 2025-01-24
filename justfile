@@ -27,11 +27,11 @@ lint:
 
 # run all tests
 test:
-    cargo test
+    cargo test --all-features
 
 # run the lib tests only
 test-lib:
-    cargo test --lib
+    cargo test --lib --all-features
 
 # run the cli-tests only
 test-cli:
@@ -43,7 +43,7 @@ test-coverage:
 
 # build the crate for release
 build-release:
-    cargo build --release --workspace --all-features
+    cargo build --release --workspace
 
 # clean the workspace
 clean:
