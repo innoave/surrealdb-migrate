@@ -33,7 +33,7 @@ impl MigrationRunner {
     }
 
     #[cfg(feature = "config")]
-    pub fn from_settings(settings: &Settings) -> Self {
+    pub fn with_settings(settings: &Settings) -> Self {
         Self::new(settings.runner_config())
     }
 
@@ -89,3 +89,6 @@ impl MigrationRunner {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests;
