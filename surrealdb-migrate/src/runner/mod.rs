@@ -74,9 +74,9 @@ impl MigrationRunner {
         let migrate = Migrate::default();
         let to_apply = migrate.list_migrations_to_apply(&script_contents, &executed_migrations);
         for migration in to_apply.values() {
-            let definition = migrations
-                .remove(&migration.key)
-                .expect("migration to applied not found in migrations - should be unreachable");
+            let definition = migrations.remove(&migration.key).expect(
+                "migration to be applied not found in migrations folder - should be unreachable",
+            );
             let execution = apply_migration_in_transaction(
                 migration,
                 db.username(),
