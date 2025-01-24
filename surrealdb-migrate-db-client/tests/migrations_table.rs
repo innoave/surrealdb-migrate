@@ -17,8 +17,9 @@ use std::time::Duration;
 use surrealdb::sql;
 use surrealdb_migrate_db_client::{
     define_migrations_table, find_migrations_table_info, insert_migration_execution,
-    DEFINE_MIGRATIONS_TABLE,
 };
+
+const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../surql/define_migrations_table.surql");
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 struct MigrationExecutionData {
