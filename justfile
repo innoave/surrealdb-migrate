@@ -39,7 +39,9 @@ test-cli:
 
 # run code coverage (does not include doc-tests)
 test-coverage:
-    cargo +nightly llvm-cov --branch --html --open --ignore-filename-regex "tests|test_dsl"
+    cargo +nightly llvm-cov clean --workspace
+    cargo +nightly llvm-cov --branch --all-features --no-report
+    cargo +nightly llvm-cov report --html --open --ignore-filename-regex "tests|test_dsl"
 
 # build the crate for release
 build-release:
