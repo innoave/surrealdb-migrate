@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Test cli" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+  <configuration default="false" name="Test migrate" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
     <option name="buildProfileId" value="test" />
-    <option name="command" value="test --package surrealdb-migrate-cli --all-features" />
+    <option name="command" value="test --package surrealdb-migrate --all-features" />
     <option name="workingDirectory" value="file://$PROJECT_DIR$" />
     <envs />
     <option name="emulateTerminal" value="false" />

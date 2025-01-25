@@ -35,7 +35,15 @@ test-lib:
 
 # run the cli-tests only
 test-cli:
-    cargo test --package surrealdb-migrate-cli
+    cargo test --package surrealdb-migrate-cli --all-features
+
+# run tests for the `surrealdb-migrate-db-client` package
+test-db-client:
+    cargo test --package surrealdb-migrate-db-client --all-features
+
+# run tests for the `surrealdb-migrate` package
+test-migrate:
+    cargo test --package surrealdb-migrate --all-features
 
 # run code coverage (does not include doc-tests)
 test-coverage:
