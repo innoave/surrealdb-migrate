@@ -1,14 +1,115 @@
+mod fixtures;
+
 use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user, get_db_tables_info,
     start_surrealdb_testcontainer,
 };
 use assertor::*;
+use database_migration::checksum::hash_migration_script;
+use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
+use database_migration::migration::{Execution, Migration, MigrationKind};
+use database_migration::test_dsl::{datetime, key};
 use std::collections::HashMap;
 use std::path::Path;
+use std::time::Duration;
 use surrealdb_migrate::config::RunnerConfig;
 use surrealdb_migrate::runner::MigrationRunner;
+use surrealdb_migrate_db_client::insert_migration_execution;
 
-mod fixtures;
+#[tokio::test]
+async fn list_applied_migrations_from_an_empty_database() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(db_config).await;
+
+    let config = RunnerConfig::default();
+    let runner = MigrationRunner::new(config);
+
+    let applied_migrations = runner
+        .list_applied_migrations(&db)
+        .await
+        .expect("failed to query list of applied migrations");
+
+    assert_that!(applied_migrations).is_empty();
+}
+
+#[tokio::test]
+async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(db_config).await;
+
+    let migration1 = Migration {
+        key: key("20250103_140520"),
+        title: "define quote table".into(),
+        kind: MigrationKind::Up,
+        script_path: "../fixture/basic/migrations/20250103_140520_define_quote_table.surql".into(),
+    };
+
+    let checksum1 = hash_migration_script(&migration1, "");
+
+    let execution1 = Execution {
+        key: key("20250103_140520"),
+        applied_rank: 1,
+        applied_by: "define quote table".into(),
+        applied_at: datetime("2025-01-20T09:10:19Z"),
+        checksum: checksum1,
+        execution_time: Duration::from_micros(256),
+    };
+
+    insert_migration_execution(migration1, execution1, DEFAULT_MIGRATIONS_TABLE, &db)
+        .await
+        .expect("failed to insert migration 1");
+
+    let migration2 = Migration {
+        key: key("20250103_140521"),
+        title: "create some quotes".into(),
+        kind: MigrationKind::Up,
+        script_path: "../fixture/basic/migrations/20250103_140521_create_some_quotes.surql".into(),
+    };
+
+    let checksum2 = hash_migration_script(&migration2, "");
+
+    let execution2 = Execution {
+        key: key("20250103_140521"),
+        applied_rank: 2,
+        applied_by: "create some quotes".into(),
+        applied_at: datetime("2025-01-20T09:10:20Z"),
+        checksum: checksum2,
+        execution_time: Duration::from_micros(42),
+    };
+
+    insert_migration_execution(migration2, execution2, DEFAULT_MIGRATIONS_TABLE, &db)
+        .await
+        .expect("failed to insert migration 2");
+
+    let config = RunnerConfig::default();
+    let runner = MigrationRunner::new(config);
+
+    let applied_migrations = runner
+        .list_applied_migrations(&db)
+        .await
+        .expect("failed to query list of applied migrations");
+
+    assert_that!(applied_migrations).contains_exactly_in_order(vec![
+        Execution {
+            key: key("20250103_140520"),
+            applied_rank: 1,
+            applied_by: "define quote table".into(),
+            applied_at: datetime("2025-01-20T09:10:19Z"),
+            checksum: checksum1,
+            execution_time: Duration::from_micros(256),
+        },
+        Execution {
+            key: key("20250103_140521"),
+            applied_rank: 2,
+            applied_by: "create some quotes".into(),
+            applied_at: datetime("2025-01-20T09:10:20Z"),
+            checksum: checksum2,
+            execution_time: Duration::from_micros(42),
+        },
+    ]);
+}
 
 #[tokio::test]
 async fn run_migrations_on_empty_db() {

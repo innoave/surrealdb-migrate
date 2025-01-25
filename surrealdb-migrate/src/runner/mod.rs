@@ -3,7 +3,7 @@ use database_migration::error::Error;
 use database_migration::logic::{
     ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify,
 };
-use database_migration::migration::{Migration, MigrationKind};
+use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
 use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
@@ -48,6 +48,13 @@ impl MigrationRunner {
             .collect::<Result<Vec<_>, _>>()?;
         migrations.sort_unstable_by_key(|mig| mig.key);
         Ok(migrations)
+    }
+
+    pub async fn list_applied_migrations(
+        &self,
+        db: &DbConnection,
+    ) -> Result<Vec<Execution>, Error> {
+        select_all_executions_sorted_by_key(&self.migrations_table, db).await
     }
 
     pub async fn migrate(&self, db: &DbConnection) -> Result<(), Error> {
