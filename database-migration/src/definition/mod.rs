@@ -2,7 +2,7 @@ use crate::config::MIGRATION_KEY_FORMAT_STR;
 use crate::error::DefinitionError;
 use crate::migration::{Migration, MigrationKind, NewMigration};
 use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
-use std::ffi::OsString;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 pub trait ParseMigration {
@@ -71,14 +71,12 @@ impl ParseMigration for str {
     }
 }
 
-impl ParseMigration for OsString {
+impl ParseMigration for OsStr {
     type Err = DefinitionError;
 
     fn parse_migration(&self) -> Result<Migration, Self::Err> {
-        let path = "";
-        let filename = self.to_str().ok_or(DefinitionError::InvalidUtf8Character)?;
-
-        parse_migration(Path::new(path), filename)
+        let path_str = self.to_str().ok_or(DefinitionError::InvalidUtf8Character)?;
+        ParseMigration::parse_migration(path_str)
     }
 }
 

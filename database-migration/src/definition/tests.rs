@@ -81,6 +81,25 @@ mod string {
     }
 }
 
+mod os_str {
+    use super::*;
+    use std::ffi::OsString;
+
+    #[test]
+    fn parse_migration_from_valid_file_path() {
+        let path = OsString::from("migrations/20250103_140830_define_some_table.surql");
+
+        let migration = path.parse_migration();
+
+        assert_that!(migration).has_ok(Migration {
+            key: key("20250103_140830"),
+            title: "define some table".into(),
+            kind: MigrationKind::Up,
+            script_path: path.into(),
+        });
+    }
+}
+
 mod path {
     use super::*;
     use std::path::Path;
