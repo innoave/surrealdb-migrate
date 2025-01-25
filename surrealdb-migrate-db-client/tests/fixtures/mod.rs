@@ -1,7 +1,7 @@
 pub mod db;
 
 pub fn load_environment_variables() {
-    dotenvy::dotenv().expect("failed to load .env file");
+    let _env_file = dotenvy::from_filename("test.env").expect("failed to load .env file");
 }
 
 // workaround for false positive 'unused extern crate' warnings until

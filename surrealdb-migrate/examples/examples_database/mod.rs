@@ -30,7 +30,8 @@ pub fn db_password() -> Result<String, Report> {
 }
 
 pub fn load_environment_variables() -> Result<(), Report> {
-    dotenvy::dotenv().wrap_err("failed to load environment variables")?;
+    let _env_file =
+        dotenvy::from_filename("test.env").wrap_err("failed to load environment variables")?;
     Ok(())
 }
 
