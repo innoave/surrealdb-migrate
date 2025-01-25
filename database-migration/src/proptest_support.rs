@@ -51,6 +51,14 @@ pub fn any_title() -> impl Strategy<Value = String> {
     string_regex(r"[\w][\w\-_ ]{0,200}").expect("invalid regex for title")
 }
 
+pub fn any_migration_kind() -> impl Strategy<Value = MigrationKind> {
+    prop_oneof![
+        Just(MigrationKind::Up),
+        Just(MigrationKind::Down),
+        Just(MigrationKind::Baseline)
+    ]
+}
+
 pub fn any_direction() -> impl Strategy<Value = MigrationKind> {
     prop_oneof![Just(MigrationKind::Up), Just(MigrationKind::Down),]
 }

@@ -2,10 +2,10 @@ use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user, get_db_tables_info,
     start_surrealdb_testcontainer,
 };
-use assertor::{assert_that, IteratorAssertion};
-use database_migration::config::RunnerConfig;
+use assertor::*;
 use std::collections::HashMap;
 use std::path::Path;
+use surrealdb_migrate::config::RunnerConfig;
 use surrealdb_migrate::runner::MigrationRunner;
 
 mod fixtures;

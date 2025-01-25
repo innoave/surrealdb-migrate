@@ -19,6 +19,10 @@ impl MigrationKind {
     pub fn is_forward(&self) -> bool {
         !self.is_backward()
     }
+
+    pub const fn is_any(&self) -> bool {
+        true
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -93,3 +97,6 @@ pub enum MigrationsTableInfo {
         definition: String,
     },
 }
+
+#[cfg(test)]
+mod tests;

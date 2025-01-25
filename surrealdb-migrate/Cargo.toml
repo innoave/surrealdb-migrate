@@ -41,6 +41,7 @@ surrealdb-migrate-config = { workspace = true, optional = true }
 indexmap.workspace = true
 
 [dev-dependencies]
+database-migration = { workspace = true, features = ["test-dsl"] }
 assert_fs.workspace = true
 assertor.workspace = true
 color-eyre.workspace = true

@@ -3,6 +3,7 @@ use database_migration::error::Error;
 use database_migration::logic::{
     ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify,
 };
+use database_migration::migration::{Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
 use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
@@ -37,14 +38,21 @@ impl MigrationRunner {
         Self::new(settings.runner_config())
     }
 
-    pub async fn migrate(&self, db: &DbConnection) -> Result<(), Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
-        let mut migrations = mig_dir
+    pub fn list_defined_migrations<P>(&self, predicate: P) -> Result<Vec<Migration>, Error>
+    where
+        P: Fn(&MigrationKind) -> bool,
+    {
+        let mut migrations = MigrationDirectory::new(self.migrations_folder.as_path())
             .list_all_migrations()?
-            .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| mig.kind.is_forward()))
+            .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| predicate(&mig.kind)))
             .collect::<Result<Vec<_>, _>>()?;
         migrations.sort_unstable_by_key(|mig| mig.key);
-        let migrations = migrations;
+        Ok(migrations)
+    }
+
+    pub async fn migrate(&self, db: &DbConnection) -> Result<(), Error> {
+        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let migrations = self.list_defined_migrations(MigrationKind::is_forward)?;
 
         let script_contents = mig_dir.read_script_content_for_migrations(&migrations)?;
         let existing_executions =
