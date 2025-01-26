@@ -8,9 +8,12 @@ use std::path::PathBuf;
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
-    /// Path to the folder containing the surrealdb-migrate.toml file
+    /// Path to the folder containing the surrealdb-migrate.toml config file
     #[clap(long)]
     pub config_dir: Option<PathBuf>,
+    /// Path to the folder that contains the migration files
+    #[clap(long)]
+    pub migrations_folder: Option<PathBuf>,
     /// Address of the database server, e.g. "ws://localhost:8000"
     #[clap(long)]
     pub db_address: Option<String>,

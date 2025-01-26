@@ -32,6 +32,7 @@ rustls = ["surrealdb-migrate/rustls"]
 surrealdb-migrate = { workspace = true, features = ["config"] }
 
 # 3rd party dependencies
+chrono.workspace = true
 clap.workspace = true
 cli-table.workspace = true
 color-eyre.workspace = true
@@ -41,6 +42,7 @@ tokio.workspace = true
 database-migration = { workspace = true, features = ["test-dsl"] }
 surrealdb-migrate-db-client.workspace = true
 assert_fs.workspace = true
+assertor.workspace = true
 dotenvy.workspace = true
 snapbox.workspace = true
 testcontainers-modules = { workspace = true, features = ["surrealdb"] }

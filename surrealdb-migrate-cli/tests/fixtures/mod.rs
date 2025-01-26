@@ -1,4 +1,5 @@
 pub mod db;
+pub mod files;
 
 use snapbox::cmd::{cargo_bin, Command};
 
@@ -16,6 +17,8 @@ pub fn surmig() -> Command {
 #[cfg(test)]
 mod dummy_extern_uses {
     use assert_fs as _;
+    use assertor as _;
+    use chrono as _;
     use clap as _;
     use cli_table as _;
     use color_eyre as _;

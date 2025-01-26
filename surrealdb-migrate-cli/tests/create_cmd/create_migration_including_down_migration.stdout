@@ -1,0 +1,6 @@
+
+Migrations located at [..]:
+
+New migration 20250126_120033_add_some_more_quotes.up.surql created.
+New backward migration 20250126_120033_add_some_more_quotes.down.surql created.
+
