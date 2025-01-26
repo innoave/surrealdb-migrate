@@ -43,8 +43,6 @@ pub enum DefinitionError {
     MissingDate,
     #[error("definition does not contain a time")]
     MissingTime,
-    #[error("definition does not contain a title")]
-    MissingTitle,
     #[error("definition does not specify a filename")]
     NoFilename,
 }

@@ -1,7 +1,11 @@
+#![allow(clippy::manual_string_new)]
+
 use super::*;
 use crate::migration::MigrationKind;
+use crate::proptest_support::{any_direction, any_key, any_title};
 use crate::test_dsl::key;
 use assertor::*;
+use proptest::prelude::*;
 
 mod str {
     use super::*;
@@ -161,6 +165,20 @@ mod path {
     }
 
     #[test]
+    fn parse_migration_from_file_path_without_title() {
+        let path = Path::new("migrations/20250103_140830.surql");
+
+        let migration = path.parse_migration();
+
+        assert_that!(migration).has_ok(Migration {
+            key: key("20250103_140830"),
+            title: "".into(),
+            kind: MigrationKind::Up,
+            script_path: path.into(),
+        });
+    }
+
+    #[test]
     fn parse_migration_from_file_path_without_date() {
         let path = Path::new("migrations/140830_define_some_table.surql");
 
@@ -179,15 +197,6 @@ mod path {
         assert_that!(migration).has_err(DefinitionError::InvalidTime(
             "input contains invalid characters".into(),
         ));
-    }
-
-    #[test]
-    fn parse_migration_from_file_path_without_title() {
-        let path = Path::new("migrations/20250103_140830.surql");
-
-        let migration = path.parse_migration();
-
-        assert_that!(migration).has_err(DefinitionError::MissingTitle);
     }
 
     #[test]
@@ -296,5 +305,35 @@ mod migration_filename_strategy {
 
         assert_that!(filename)
             .is_equal_to("20250114_092042_create_some_table.down.surql".to_string());
+    }
+}
+
+proptest! {
+    #[test]
+    fn any_filename_created_by_the_strategy_can_be_parsed_as_migration(
+        key in any_key(),
+        title in any_title(),
+        direction in any_direction(),
+        up_postfix in any::<bool>(),
+    ) {
+        let filename_strategy = MigrationFilenameStrategy {
+            up_postfix,
+        };
+
+        let new_migration = NewMigration {
+            key,
+            title: title.clone(),
+            kind: direction,
+        };
+        let filename = filename_strategy.get_filename(&new_migration);
+
+        let parsed_migration = filename.parse_migration();
+
+        prop_assert_eq!(parsed_migration, Ok(Migration {
+            key,
+            title: title.replace('_', " "),
+            kind: direction,
+            script_path: PathBuf::from(&filename),
+        }));
     }
 }

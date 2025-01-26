@@ -44,10 +44,11 @@ fn parse_migration(path: &Path, filename: &str) -> Result<Migration, DefinitionE
     let time = NaiveTime::parse_from_str(time_substr, "%H%M%S")
         .map_err(|err| DefinitionError::InvalidTime(err.to_string()))?;
     let key = NaiveDateTime::new(date, time);
-    if len < 17 + ext_len || &filename[15..16] != "_" {
-        return Err(DefinitionError::MissingTitle);
-    }
-    let title = &filename[16..len - ext_len].replace('_', " ");
+    let title = if len < 17 + ext_len || &filename[15..16] != "_" {
+        ""
+    } else {
+        &filename[16..len - ext_len].replace('_', " ")
+    };
     let mut script_path = PathBuf::from(path);
     script_path.push(filename);
 
