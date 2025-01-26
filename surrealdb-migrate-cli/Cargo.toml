@@ -44,7 +44,6 @@ assert_fs.workspace = true
 dotenvy.workspace = true
 snapbox.workspace = true
 testcontainers-modules = { workspace = true, features = ["surrealdb"] }
-trycmd.workspace = true
 
 [lints]
 workspace = true

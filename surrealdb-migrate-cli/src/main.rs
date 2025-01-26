@@ -64,5 +64,4 @@ mod dummy_extern_uses {
     use snapbox as _;
     use surrealdb_migrate_db_client as _;
     use testcontainers_modules as _;
-    use trycmd as _;
 }

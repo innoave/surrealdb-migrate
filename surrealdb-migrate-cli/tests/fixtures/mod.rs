@@ -23,5 +23,4 @@ mod dummy_extern_uses {
     use surrealdb_migrate as _;
     use surrealdb_migrate_db_client as _;
     use tokio as _;
-    use trycmd as _;
 }
