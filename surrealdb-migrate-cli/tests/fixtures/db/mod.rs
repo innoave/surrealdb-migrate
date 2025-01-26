@@ -1,5 +1,4 @@
 use super::load_environment_variables;
-use std::collections::HashMap;
 use std::env;
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
 use surrealdb_migrate::db_client::{connect_to_database, DbConnection};
@@ -25,6 +24,7 @@ pub fn db_password() -> String {
     env::var("DB_DATABASE_PASS").expect("environment variable DB_DATABASE_PASS not set")
 }
 
+#[allow(dead_code)]
 pub async fn start_surrealdb_testcontainer() -> ContainerAsync<SurrealDb> {
     SurrealDb::default()
         .with_tag("v2.1")
@@ -33,6 +33,7 @@ pub async fn start_surrealdb_testcontainer() -> ContainerAsync<SurrealDb> {
         .expect("failed to start SurrealDB testcontainer")
 }
 
+#[allow(dead_code)]
 pub async fn prepare_test_database(db_server: &ContainerAsync<SurrealDb>) -> DbClientConfig<'_> {
     let db_host = db_server
         .get_host()
@@ -54,13 +55,14 @@ pub async fn prepare_test_database(db_server: &ContainerAsync<SurrealDb>) -> DbC
         .with_password(db_password())
 }
 
-pub async fn connect_as_root_user(config: &DbClientConfig<'_>) -> DbConnection {
+async fn connect_as_root_user(config: &DbClientConfig<'_>) -> DbConnection {
     let config = DbClientConfig::default().with_address(config.address.clone());
     connect_to_database(&config)
         .await
         .expect("failed to connect to database as root user")
 }
 
+#[allow(dead_code)]
 pub async fn connect_to_test_database_as_database_user(
     config: &DbClientConfig<'_>,
 ) -> DbConnection {
@@ -84,15 +86,4 @@ async fn prepare_test_playground(db: &DbConnection) {
     )
     .await
     .expect("failed to prepare test playground in database");
-}
-
-pub async fn get_db_tables_info(db: &DbConnection) -> HashMap<String, String> {
-    let mut db_info = db
-        .query("INFO FOR DB")
-        .await
-        .expect("failed to query info for db");
-    let tables: Option<HashMap<String, String>> = db_info
-        .take("tables")
-        .expect("failed to get info about tables");
-    tables.expect("no info about tables")
 }

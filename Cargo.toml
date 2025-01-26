@@ -68,9 +68,9 @@ unused_extern_crates = "warn"
 unused_import_braces = "warn"
 unused_lifetimes = "warn"
 unused_qualifications = "warn"
-#variant_size_differences = "warn"  # enable when working on performance
+dead_code = "warn"
 #missing_docs = "warn"  # uncomment when working on docs
-dead_code = "allow"  # remove eventually
+#variant_size_differences = "warn"  # enable when working on performance
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }

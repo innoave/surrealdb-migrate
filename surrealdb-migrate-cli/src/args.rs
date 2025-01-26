@@ -1,7 +1,6 @@
 #![allow(clippy::doc_markdown, clippy::struct_excessive_bools)]
 
 use std::path::PathBuf;
-use surrealdb_migrate::migration::MigrationKind;
 
 /// Create and apply migrations for a SurrealDB database.
 #[derive(clap::Parser, Debug, Clone)]
@@ -85,24 +84,4 @@ pub struct VerifyArgs {
     /// only verify the order
     #[clap(long, short, action)]
     pub order: bool,
-}
-
-#[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MigrationKindValue {
-    /// Forward migration
-    Up,
-    /// Backward migration
-    Down,
-    /// Baseline
-    Baseline,
-}
-
-impl MigrationKindValue {
-    pub const fn to_migration_kind(self) -> MigrationKind {
-        match self {
-            Self::Up => MigrationKind::Up,
-            Self::Down => MigrationKind::Down,
-            Self::Baseline => MigrationKind::Baseline,
-        }
-    }
 }

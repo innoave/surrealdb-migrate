@@ -10,14 +10,6 @@ use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 
 const PREPARE_TEST_PLAYGROUND_SCRIPT: &str = include_str!("prepare_test_playground.surql");
 
-pub fn root_username() -> String {
-    env::var("DB_ROOT_USER").expect("environment variable DB_ROOT_USER not set")
-}
-
-pub fn root_password() -> String {
-    env::var("DB_ROOT_PASS").expect("environment variable DB_ROOT_PASS not set")
-}
-
 pub fn ns_username() -> String {
     env::var("DB_NAMESPACE_USER").expect("environment variable DB_NAMESPACE_USER not set")
 }
@@ -83,6 +75,7 @@ pub async fn initialize_database(config: &DbClientConfig<'_>) {
         .expect("failed to prepare test playground in database");
 }
 
+#[allow(dead_code)]
 pub async fn connect_to_test_database_as_database_user(config: DbClientConfig<'_>) -> DbConnection {
     load_environment_variables();
     initialize_database(&config).await;
@@ -99,6 +92,7 @@ pub async fn connect_to_test_database_as_database_user(config: DbClientConfig<'_
         .expect("failed to connect to test database")
 }
 
+#[allow(dead_code)]
 pub async fn define_default_migrations_table(db: &DbConnection) {
     define_migrations_table(DEFAULT_MIGRATIONS_TABLE, db)
         .await
