@@ -1,7 +1,7 @@
 mod fixtures;
 
 use crate::fixtures::db::{
-    client_config_for_testcontainer, connect_to_test_database_as_database_user, get_db_tables_info,
+    connect_to_test_database_as_database_user, get_db_tables_info, prepare_test_database,
     start_surrealdb_testcontainer,
 };
 use assertor::*;
@@ -19,8 +19,8 @@ use surrealdb_migrate_db_client::insert_migration_execution;
 #[tokio::test]
 async fn list_applied_migrations_from_an_empty_database() {
     let db_server = start_surrealdb_testcontainer().await;
-    let db_config = client_config_for_testcontainer(&db_server).await;
-    let db = connect_to_test_database_as_database_user(db_config).await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
 
     let config = RunnerConfig::default();
     let runner = MigrationRunner::new(config);
@@ -36,8 +36,8 @@ async fn list_applied_migrations_from_an_empty_database() {
 #[tokio::test]
 async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
     let db_server = start_surrealdb_testcontainer().await;
-    let db_config = client_config_for_testcontainer(&db_server).await;
-    let db = connect_to_test_database_as_database_user(db_config).await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
 
     let migration1 = Migration {
         key: key("20250103_140520"),
@@ -51,7 +51,7 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
     let execution1 = Execution {
         key: key("20250103_140520"),
         applied_rank: 1,
-        applied_by: "define quote table".into(),
+        applied_by: "tester".into(),
         applied_at: datetime("2025-01-20T09:10:19Z"),
         checksum: checksum1,
         execution_time: Duration::from_micros(256),
@@ -73,7 +73,7 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
     let execution2 = Execution {
         key: key("20250103_140521"),
         applied_rank: 2,
-        applied_by: "create some quotes".into(),
+        applied_by: "tester".into(),
         applied_at: datetime("2025-01-20T09:10:20Z"),
         checksum: checksum2,
         execution_time: Duration::from_micros(42),
@@ -95,7 +95,7 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
         Execution {
             key: key("20250103_140520"),
             applied_rank: 1,
-            applied_by: "define quote table".into(),
+            applied_by: "tester".into(),
             applied_at: datetime("2025-01-20T09:10:19Z"),
             checksum: checksum1,
             execution_time: Duration::from_micros(256),
@@ -103,7 +103,7 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
         Execution {
             key: key("20250103_140521"),
             applied_rank: 2,
-            applied_by: "create some quotes".into(),
+            applied_by: "tester".into(),
             applied_at: datetime("2025-01-20T09:10:20Z"),
             checksum: checksum2,
             execution_time: Duration::from_micros(42),
@@ -114,8 +114,8 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
 #[tokio::test]
 async fn run_migrations_on_empty_db() {
     let db_server = start_surrealdb_testcontainer().await;
-    let db_config = client_config_for_testcontainer(&db_server).await;
-    let db = connect_to_test_database_as_database_user(db_config).await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
 
     let config =
         RunnerConfig::default().with_migrations_folder(Path::new("../fixtures/basic/migrations"));

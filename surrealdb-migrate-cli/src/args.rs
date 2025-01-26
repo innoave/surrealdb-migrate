@@ -1,6 +1,7 @@
 #![allow(clippy::doc_markdown, clippy::struct_excessive_bools)]
 
-use database_migration::migration::MigrationKind;
+use std::path::PathBuf;
+use surrealdb_migrate::migration::MigrationKind;
 
 /// Create and apply migrations for a SurrealDB database.
 #[derive(clap::Parser, Debug, Clone)]
@@ -8,6 +9,12 @@ use database_migration::migration::MigrationKind;
 pub struct Args {
     #[command(subcommand)]
     pub command: Command,
+    /// Path to the folder containing the surrealdb-migrate.toml file
+    #[clap(long)]
+    pub config_dir: Option<PathBuf>,
+    /// Address of the database server, e.g. "ws://localhost:8000"
+    #[clap(long)]
+    pub db_address: Option<String>,
 }
 
 #[derive(clap::Subcommand, Debug, Clone)]
@@ -56,21 +63,18 @@ pub struct RevertArgs {
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct ListArgs {
-    /// list all migrations (default).
+    /// list all forward migrations (default).
     #[clap(long, short, action)]
-    pub all: bool,
+    pub up: bool,
+    /// only lists backward migrations.
+    #[clap(long, short, action)]
+    pub down: bool,
     /// only lists applied migrations.
     #[clap(long, short = 'x', action)]
     pub applied: bool,
     /// only lists defined but not yet applied migrations.
     #[clap(long, short, action)]
     pub open: bool,
-    /// only lists forward migrations.
-    #[clap(long, short, action)]
-    pub up: bool,
-    /// only lists backward migrations.
-    #[clap(long, short, action)]
-    pub down: bool,
 }
 
 #[derive(clap::Args, Debug, Clone)]

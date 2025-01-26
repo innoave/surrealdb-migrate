@@ -29,17 +29,21 @@ rustls = ["surrealdb-migrate/rustls"]
 
 [dependencies]
 # workspace dependencies
-database-migration.workspace = true
-surrealdb-migrate.workspace = true
+surrealdb-migrate = { workspace = true, features = ["config"] }
 
 # 3rd party dependencies
 clap.workspace = true
+cli-table.workspace = true
 color-eyre.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
-assert_cmd.workspace = true
+database-migration = { workspace = true, features = ["test-dsl"] }
+surrealdb-migrate-db-client.workspace = true
 assert_fs.workspace = true
+dotenvy.workspace = true
+snapbox.workspace = true
+testcontainers-modules = { workspace = true, features = ["surrealdb"] }
 trycmd.workspace = true
 
 [lints]

@@ -6,24 +6,22 @@ use fixtures::surmig;
 fn version_opt() {
     let version = env!("CARGO_PKG_VERSION");
 
-    let mut cmd = surmig();
-    cmd.arg("--version");
+    let cmd = surmig().arg("--version");
 
     cmd.assert()
         .code(0)
-        .stdout(format!("surmig {version}\n"))
-        .stderr("");
+        .stdout_eq(format!("surmig {version}\n"))
+        .stderr_eq("");
 }
 
 #[test]
 fn version_short_opt() {
     let version = env!("CARGO_PKG_VERSION");
 
-    let mut cmd = surmig();
-    cmd.arg("-V");
+    let cmd = surmig().arg("-V");
 
     cmd.assert()
         .code(0)
-        .stdout(format!("surmig {version}\n"))
-        .stderr("");
+        .stdout_eq(format!("surmig {version}\n"))
+        .stderr_eq("");
 }

@@ -1,0 +1,9 @@
+[files]
+migrations-folder = "../fixtures/with_down_migrations/migrations"
+
+[database]
+namespace = "playground"
+database = "test"
+username = "tester"
+password = "test123"
+auth-level = "Database"

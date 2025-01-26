@@ -1,6 +1,7 @@
 use crate::checksum::Checksum;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -12,6 +13,14 @@ pub enum MigrationKind {
 }
 
 impl MigrationKind {
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            Self::Baseline => "baseline",
+            Self::Up => "up",
+            Self::Down => "down",
+        }
+    }
+
     pub fn is_backward(&self) -> bool {
         *self == Self::Down
     }
@@ -22,6 +31,12 @@ impl MigrationKind {
 
     pub const fn is_any(&self) -> bool {
         true
+    }
+}
+
+impl Display for MigrationKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
     }
 }
 
