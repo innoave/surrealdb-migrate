@@ -1,3 +1,5 @@
+#![allow(clippy::manual_string_new)]
+
 use super::*;
 use assert_fs::TempDir;
 use assertor::*;
@@ -224,6 +226,96 @@ fn create_migration_file_for_new_migration() {
         title: "create some table".into(),
         kind: MigrationKind::Up,
         script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
+    }));
+
+    assert_that!(migration
+        .expect("failed to create new migration file")
+        .script_path
+        .exists())
+    .is_true();
+}
+
+#[test]
+fn create_migration_file_for_new_migration_with_empty_title() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = temp_dir.path();
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(migrations_folder, filename_strategy);
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "".into(),
+        kind: MigrationKind::Up,
+    };
+
+    let migration = migration_files.create_new_migration(new_migration);
+
+    assert_that!(migration).is_equal_to(Ok(Migration {
+        key: key("20250115_201642"),
+        title: "".into(),
+        kind: MigrationKind::Up,
+        script_path: migrations_folder.join("20250115_201642.up.surql"),
+    }));
+
+    assert_that!(migration
+        .expect("failed to create new migration file")
+        .script_path
+        .exists())
+    .is_true();
+}
+
+#[test]
+fn create_migration_file_for_down_migration() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = temp_dir.path();
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(migrations_folder, filename_strategy);
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "create some table".into(),
+        kind: MigrationKind::Down,
+    };
+
+    let migration = migration_files.create_new_migration(new_migration);
+
+    assert_that!(migration).is_equal_to(Ok(Migration {
+        key: key("20250115_201642"),
+        title: "create some table".into(),
+        kind: MigrationKind::Down,
+        script_path: migrations_folder.join("20250115_201642_create_some_table.down.surql"),
+    }));
+
+    assert_that!(migration
+        .expect("failed to create new migration file")
+        .script_path
+        .exists())
+    .is_true();
+}
+
+#[test]
+fn create_migration_file_for_down_migration_with_empty_title() {
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+    let migrations_folder = temp_dir.path();
+
+    let filename_strategy = MigrationFilenameStrategy::default();
+    let migration_files = MigrationFiles::new(migrations_folder, filename_strategy);
+
+    let new_migration = NewMigration {
+        key: key("20250115_201642"),
+        title: "".into(),
+        kind: MigrationKind::Down,
+    };
+
+    let migration = migration_files.create_new_migration(new_migration);
+
+    assert_that!(migration).is_equal_to(Ok(Migration {
+        key: key("20250115_201642"),
+        title: "".into(),
+        kind: MigrationKind::Down,
+        script_path: migrations_folder.join("20250115_201642.down.surql"),
     }));
 
     assert_that!(migration

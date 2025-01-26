@@ -127,7 +127,11 @@ impl GetFilename for MigrationFilenameStrategy {
             (MigrationKind::Down, _) => DOWN_SCRIPT_FILE_EXTENSION,
             (MigrationKind::Baseline, _) => panic!("baselines do not have migration scripts"),
         };
-        format!("{key}_{title}{extension}")
+        if title.is_empty() {
+            format!("{key}{extension}")
+        } else {
+            format!("{key}_{title}{extension}")
+        }
     }
 }
 
