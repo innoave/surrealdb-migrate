@@ -4,6 +4,7 @@ use crate::fixtures::db::{
     connect_to_test_database_as_database_user, prepare_test_database, start_surrealdb_testcontainer,
 };
 use crate::fixtures::surmig;
+use assert_fs::TempDir;
 use snapbox::file;
 use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
@@ -299,5 +300,30 @@ async fn list_applied_backward_migrations_one_applied() {
         .stdout_eq(file!(
             "list_cmd/applied_backward_migrations_one_applied.stdout"
         ))
+        .stderr_eq("");
+}
+
+#[tokio::test]
+async fn list_migrations_in_empty_directory() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let temp_dir = TempDir::new().expect("failed to create temp dir");
+
+    let cmd = surmig().args([
+        "--config-dir",
+        "tests/list_cmd",
+        "--migrations-folder",
+        temp_dir
+            .path()
+            .to_str()
+            .expect("failed to convert migrations folder path to str"),
+        "--db-address",
+        &db_config.address,
+        "list",
+    ]);
+
+    cmd.assert()
+        .code(0)
+        .stdout_eq(file!("list_cmd/in_empty_directory.stdout"))
         .stderr_eq("");
 }
