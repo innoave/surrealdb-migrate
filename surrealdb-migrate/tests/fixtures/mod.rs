@@ -11,6 +11,7 @@ pub fn load_environment_variables() {
 mod dummy_extern_uses {
     use assert_fs as _;
     use assertor as _;
+    use chrono as _;
     use color_eyre as _;
     use database_migration_files as _;
     use indexmap as _;

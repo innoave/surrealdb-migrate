@@ -38,6 +38,7 @@ surrealdb-migrate-db-client.workspace = true
 surrealdb-migrate-config = { workspace = true, optional = true }
 
 # 3rd party dependencies
+chrono.workspace = true
 indexmap.workspace = true
 
 [dev-dependencies]

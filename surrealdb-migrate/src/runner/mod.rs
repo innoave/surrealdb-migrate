@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use database_migration::config::RunnerConfig;
 use database_migration::error::Error;
 use database_migration::logic::{
@@ -12,7 +13,7 @@ use std::path::PathBuf;
 #[cfg(feature = "config")]
 use surrealdb_migrate_config::Settings;
 use surrealdb_migrate_db_client::{
-    apply_migration_in_transaction, insert_migration_execution,
+    apply_migration_in_transaction, insert_migration_execution, select_all_executions,
     select_all_executions_sorted_by_key, DbConnection,
 };
 
@@ -55,6 +56,13 @@ impl MigrationRunner {
         db: &DbConnection,
     ) -> Result<Vec<Execution>, Error> {
         select_all_executions_sorted_by_key(&self.migrations_table, db).await
+    }
+
+    pub async fn fetch_applied_migrations_dictionary(
+        &self,
+        db: &DbConnection,
+    ) -> Result<HashMap<NaiveDateTime, Execution>, Error> {
+        select_all_executions(&self.migrations_table, db).await
     }
 
     pub async fn migrate(&self, db: &DbConnection) -> Result<(), Error> {

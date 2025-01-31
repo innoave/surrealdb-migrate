@@ -200,6 +200,36 @@ pub async fn select_all_executions_sorted_by_key(
     Ok(executions)
 }
 
+pub async fn select_all_executions(
+    migrations_table: &str,
+    db: &DbConnection,
+) -> Result<HashMap<NaiveDateTime, Execution>, Error> {
+    let execution_data: Vec<MigrationExecutionData> = db
+        .select(migrations_table)
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+    execution_data
+        .into_iter()
+        .map(|data| {
+            NaiveDateTime::parse_from_str(&data.key, MIGRATION_KEY_FORMAT_STR)
+                .map_err(|err| Error::DbQuery(err.to_string()))
+                .map(|key| {
+                    (
+                        key,
+                        Execution {
+                            key,
+                            applied_rank: data.applied_rank,
+                            applied_by: data.applied_by,
+                            applied_at: data.applied_at.0,
+                            checksum: data.checksum,
+                            execution_time: data.execution_time.0,
+                        },
+                    )
+                })
+        })
+        .collect::<Result<HashMap<_, _>, _>>()
+}
+
 pub async fn insert_migration_execution(
     migration: Migration,
     execution: Execution,

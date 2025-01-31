@@ -2,7 +2,7 @@ use crate::args::ListArgs;
 use crate::runner::runner;
 use crate::tables::format_migration_table;
 use color_eyre::Report;
-use std::cmp::{Ordering, Reverse};
+use std::cmp::Ordering;
 use surrealdb_migrate::config::RunnerConfig;
 use surrealdb_migrate::db_client::DbConnection;
 use surrealdb_migrate::migration::MigrationKind;
@@ -25,128 +25,41 @@ pub async fn run(
         println!("{migration_table}");
         println!("  No migrations defined.\n");
     } else {
-        let mut executions = runner.list_applied_migrations(db).await?;
+        let executions = runner.fetch_applied_migrations_dictionary(db).await?;
         let mut entries = Vec::with_capacity(migrations.len());
 
-        match (args.up, args.down, args.applied, args.open) {
-            (_, false, false, false) | (_, false, true, true) => {
-                for migration in migrations {
-                    let execution = executions
-                        .iter()
-                        .position(|exe| exe.key == migration.key)
-                        .map(|pos| executions.remove(pos));
-                    entries.push((migration, execution));
-                }
-                println!("\nList of migrations:");
-            },
-            (_, false, true, false) => {
-                for migration in migrations {
-                    if let Some(execution) = executions
-                        .iter()
-                        .position(|exe| exe.key == migration.key)
-                        .map(|pos| executions.remove(pos))
-                    {
-                        entries.push((migration, Some(execution)));
-                    }
-                }
-                println!("\nList of applied migrations:");
-            },
-            (_, false, false, true) => {
-                for migration in migrations {
-                    let applied = executions.iter().any(|exe| exe.key == migration.key);
-                    if !applied {
-                        entries.push((migration, None));
-                    }
-                }
-                println!("\nList of open migrations:");
-            },
-            (false, true, false, false) | (false, true, true, true) => {
-                for migration in migrations {
-                    let execution = executions
-                        .iter()
-                        .position(|exe| exe.key == migration.key)
-                        .map(|pos| executions.remove(pos));
-                    entries.push((migration, execution));
-                }
-                entries.sort_unstable_by_key(|(mig, _)| Reverse(mig.key));
-                println!("\nList of backward migrations:");
-            },
-            (false, true, true, false) => {
-                for migration in migrations {
-                    let applied = executions.iter().any(|exe| exe.key == migration.key);
-                    if !applied {
-                        entries.push((migration, None));
-                    }
-                }
-                entries.sort_unstable_by_key(|(mig, _)| Reverse(mig.key));
-                println!("\nList of applied backward migrations:");
-            },
-            (false, true, false, true) => {
-                for migration in migrations.into_iter().filter(|mig| mig.kind.is_backward()) {
-                    if let Some(execution) = executions
-                        .iter()
-                        .position(|exe| exe.key == migration.key)
-                        .map(|pos| executions.remove(pos))
-                    {
-                        entries.push((migration, Some(execution)));
-                    }
-                }
-                entries.sort_unstable_by_key(|(mig, _)| Reverse(mig.key));
-                println!("\nList of open backward migrations:");
-            },
-            (true, true, false, false) | (true, true, true, true) => {
-                for migration in migrations {
-                    let execution = if migration.kind.is_forward() {
-                        executions
-                            .iter()
-                            .position(|exe| exe.key == migration.key)
-                            .map(|pos| executions.remove(pos))
-                    } else {
-                        None
-                    };
-                    entries.push((migration, execution));
-                }
-                entries.sort_unstable_by(|(mig1, _), (mig2, _)| {
-                    mig1.key
-                        .cmp(&mig2.key)
-                        .then_with(|| display_ordering(mig1.kind, mig2.kind))
-                });
-                println!("\nList of migrations:");
-            },
-            (true, true, false, true) => {
-                for migration in migrations {
-                    let execution = executions.iter().find(|exe| exe.key == migration.key);
-                    let applied = execution.is_some();
-                    if migration.kind.is_backward() == applied {
-                        let execution = execution.cloned();
-                        entries.push((migration, execution));
-                    }
-                }
-                entries.sort_unstable_by(|(mig1, _), (mig2, _)| {
-                    mig1.key
-                        .cmp(&mig2.key)
-                        .then_with(|| display_ordering(mig1.kind, mig2.kind))
-                });
-                println!("\nList of open migrations:");
-            },
-            (true, true, true, false) => {
-                for migration in migrations {
-                    let execution = executions.iter().find(|exe| exe.key == migration.key);
-                    let applied = execution.is_some();
-                    if migration.kind.is_forward() == applied {
-                        let execution = execution.cloned();
-                        entries.push((migration, execution));
-                    }
-                }
-                entries.sort_unstable_by(|(mig1, _), (mig2, _)| {
-                    mig1.key
-                        .cmp(&mig2.key)
-                        .then_with(|| display_ordering(mig1.kind, mig2.kind))
-                });
-                println!("\nList of applied migrations:");
-            },
+        for migration in migrations {
+            let execution = executions.get(&migration.key);
+            let applied = migration.kind.is_forward() == execution.is_some();
+            if args.open == args.applied || args.applied && applied || args.open && !applied {
+                let execution = execution.cloned();
+                entries.push((migration, execution));
+            }
+        }
+        if args.down && !args.up {
+            entries.sort_unstable_by(|(mig1, _), (mig2, _)| {
+                mig2.key
+                    .cmp(&mig1.key)
+                    .then_with(|| display_ordering(mig1.kind, mig2.kind))
+            });
+        } else {
+            entries.sort_unstable_by(|(mig1, _), (mig2, _)| {
+                mig1.key
+                    .cmp(&mig2.key)
+                    .then_with(|| display_ordering(mig1.kind, mig2.kind))
+            });
         }
 
+        match (args.open, args.applied, args.up, args.down) {
+            (false, false, false, true) | (true, true, false, true) => {
+                println!("\nList of backward migrations:");
+            },
+            (false, true, false, true) => println!("\nList of applied backward migrations:"),
+            (true, false, false, true) => println!("\nList of open backward migrations:"),
+            (false, true, _, _) => println!("\nList of applied migrations:"),
+            (true, false, _, _) => println!("\nList of open migrations:"),
+            (false, false, _, _) | (true, true, _, _) => println!("\nList of migrations:"),
+        }
         let no_migrations_listed = entries.is_empty();
         let migration_table = format_migration_table(entries)?;
         println!("{migration_table}");
