@@ -1,5 +1,3 @@
-#![allow(clippy::ref_option)]
-
 use chrono::{NaiveDateTime, Utc};
 use database_migration::checksum::Checksum;
 use database_migration::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};

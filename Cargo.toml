@@ -14,7 +14,7 @@ version = "0.1.0"
 authors = ["haraldmaida"]
 license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.80.1"
+rust-version = "1.81.0"
 repository = "https://github.com/innoave/surrealdb-migrate"
 
 [workspace.dependencies]
