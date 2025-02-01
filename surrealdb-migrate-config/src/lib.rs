@@ -165,7 +165,7 @@ impl Settings {
         RunnerConfig {
             migrations_folder: Path::new(&self.files.migrations_folder).into(),
             migrations_table: (&self.database.migrations_table).into(),
-            ignore_checksums: self.migration.ignore_checksum,
+            ignore_checksum: self.migration.ignore_checksum,
             ignore_order: self.migration.ignore_order,
         }
     }

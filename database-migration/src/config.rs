@@ -11,7 +11,7 @@ pub const MIGRATION_KEY_FORMAT_STR: &str = "%Y%m%d_%H%M%S";
 pub struct RunnerConfig<'a> {
     pub migrations_folder: Cow<'a, Path>,
     pub migrations_table: Cow<'a, str>,
-    pub ignore_checksums: bool,
+    pub ignore_checksum: bool,
     pub ignore_order: bool,
 }
 
@@ -20,7 +20,7 @@ impl Default for RunnerConfig<'_> {
         Self {
             migrations_folder: Path::new(DEFAULT_MIGRATIONS_FOLDER).into(),
             migrations_table: DEFAULT_MIGRATIONS_TABLE.into(),
-            ignore_checksums: false,
+            ignore_checksum: false,
             ignore_order: false,
         }
     }
@@ -37,8 +37,8 @@ impl<'a> RunnerConfig<'a> {
         self
     }
 
-    pub const fn with_ignore_checksums(mut self, ignore_checksums: bool) -> Self {
-        self.ignore_checksums = ignore_checksums;
+    pub const fn with_ignore_checksum(mut self, ignore_checksum: bool) -> Self {
+        self.ignore_checksum = ignore_checksum;
         self
     }
 

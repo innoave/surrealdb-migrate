@@ -40,6 +40,7 @@ surrealdb-migrate-config = { workspace = true, optional = true }
 # 3rd party dependencies
 chrono.workspace = true
 indexmap.workspace = true
+log.workspace = true
 
 [dev-dependencies]
 database-migration = { workspace = true, features = ["test-dsl"] }

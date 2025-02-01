@@ -15,7 +15,7 @@ mod migration_runner {
 
         assert_that!(migration_runner.migrations_folder).is_equal_to(PathBuf::from("migrations"));
         assert_that!(migration_runner.migrations_table).is_equal_to("migrations".to_string());
-        assert_that!(migration_runner.ignore_checksums).is_equal_to(false);
+        assert_that!(migration_runner.ignore_checksum).is_equal_to(false);
         assert_that!(migration_runner.ignore_order).is_equal_to(false);
     }
 
@@ -31,7 +31,7 @@ mod migration_runner {
 
         assert_that!(migration_runner.migrations_folder).is_equal_to(PathBuf::from("migrations"));
         assert_that!(migration_runner.migrations_table).is_equal_to("migrations".to_string());
-        assert_that!(migration_runner.ignore_checksums).is_equal_to(false);
+        assert_that!(migration_runner.ignore_checksum).is_equal_to(false);
         assert_that!(migration_runner.ignore_order).is_equal_to(false);
     }
 

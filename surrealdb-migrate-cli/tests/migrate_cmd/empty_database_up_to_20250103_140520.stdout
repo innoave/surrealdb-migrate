@@ -1,0 +1,7 @@
+
+Migrating database "playground/test" up to 20250103_140520...
+
+20250103_140520: define quote table (up) applied
+
+Successfully migrated database "playground/test" up to 20250103_140520.
+

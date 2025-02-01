@@ -15,6 +15,7 @@ mod dummy_extern_uses {
     use color_eyre as _;
     use database_migration_files as _;
     use indexmap as _;
+    use log as _;
     #[cfg(feature = "config")]
     use surrealdb_migrate_config as _;
     use surrealdb_migrate_db_client as _;

@@ -23,6 +23,8 @@ mod dummy_extern_uses {
     use cli_table as _;
     use color_eyre as _;
     use database_migration as _;
+    use log as _;
+    use simplelog as _;
     use surrealdb_migrate as _;
     use surrealdb_migrate_db_client as _;
     use tokio as _;

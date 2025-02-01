@@ -128,7 +128,7 @@ fn get_runner_config_from_settings() {
     assert_that!(runner_config).is_equal_to(RunnerConfig {
         migrations_folder: Path::new("database_migration/migrations").into(),
         migrations_table: "migration_executions".into(),
-        ignore_checksums: true,
+        ignore_checksum: true,
         ignore_order: false,
     });
 }

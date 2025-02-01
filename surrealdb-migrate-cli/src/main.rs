@@ -1,12 +1,15 @@
 mod args;
 mod create_cmd;
 mod list_cmd;
+mod migrate_cmd;
 mod runner;
 mod tables;
 
 use crate::args::{Args, Command};
 use clap::Parser;
+use color_eyre::eyre::WrapErr;
 use color_eyre::Report;
+use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 use std::path::Path;
 use surrealdb_migrate::config::{DbClientConfig, RunnerConfig};
 use surrealdb_migrate::db_client::connect_to_database;
@@ -21,6 +24,7 @@ async fn main() -> Result<(), Report> {
     let settings = args.config_dir.map_or_else(Settings::load, |dir| {
         Settings::load_from_dir(Path::new(&dir))
     })?;
+
     let runner_config = args
         .migrations_folder
         .map_or(settings.runner_config(), |mfd| {
@@ -42,8 +46,11 @@ async fn run_command(
 ) -> Result<(), Report> {
     match command {
         Command::Create(args) => create_cmd::run(args, runner_config),
-        Command::Migrate(_) => {
-            todo!()
+        Command::Migrate(args) => {
+            SimpleLogger::init(LevelFilter::Info, logger_config())
+                .wrap_err("failed to initialize terminal logger")?;
+            let db = connect_to_database(&db_config).await?;
+            migrate_cmd::run(args, runner_config, db_config, &db).await
         },
         Command::Revert(_) => {
             todo!()
@@ -56,6 +63,16 @@ async fn run_command(
             todo!()
         },
     }
+}
+
+fn logger_config() -> simplelog::Config {
+    ConfigBuilder::new()
+        .set_location_level(LevelFilter::Off)
+        .set_max_level(LevelFilter::Off)
+        .set_target_level(LevelFilter::Off)
+        .set_thread_level(LevelFilter::Off)
+        .set_time_level(LevelFilter::Off)
+        .build()
 }
 
 // workaround for false positive 'unused extern crate' warnings until

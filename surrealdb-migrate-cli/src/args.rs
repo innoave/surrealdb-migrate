@@ -54,6 +54,12 @@ pub struct MigrateArgs {
     /// Only applies new migrations up to the migration with the given key (inclusive).
     #[clap(long)]
     pub to: Option<String>,
+    /// Do not verify checksum of already applied migrations.
+    #[clap(long, action)]
+    pub ignore_checksum: bool,
+    /// Do not verify the order of migrations to be applied.
+    #[clap(long, action)]
+    pub ignore_order: bool,
 }
 
 #[derive(clap::Args, Debug, Clone)]
