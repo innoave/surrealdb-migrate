@@ -29,9 +29,9 @@ lint:
 test:
     cargo test --all-features
 
-# run the lib tests only
+# run unit tests only
 test-lib:
-    cargo test --lib --all-features
+    cargo test --all-features --lib --bin surmig
 
 # run the cli-tests only
 test-cli:
