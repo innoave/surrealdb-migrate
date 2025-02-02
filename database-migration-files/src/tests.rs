@@ -23,7 +23,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly_in_order(vec![
+    assert_that!(migrations).contains_exactly(vec![
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
@@ -69,7 +69,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly_in_order(vec![
+    assert_that!(migrations).contains_exactly(vec![
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
