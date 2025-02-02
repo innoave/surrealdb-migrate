@@ -10,6 +10,7 @@ use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::test_dsl::{datetime, key};
 use std::collections::HashMap;
+use std::iter::once;
 use std::path::Path;
 use std::time::Duration;
 use surrealdb_migrate::config::RunnerConfig;
@@ -121,7 +122,9 @@ async fn run_migrations_on_empty_db() {
         RunnerConfig::default().with_migrations_folder(Path::new("../fixtures/basic/migrations"));
     let runner = MigrationRunner::new(config);
 
-    runner.migrate(&db).await.expect("failed to run migrations");
+    let migrated = runner.migrate(&db).await.expect("failed to run migrations");
+
+    assert_that!(migrated).is_equal_to(Some(key("20250103_140521")));
 
     let tables_info = get_db_tables_info(&db).await;
 
@@ -144,4 +147,103 @@ async fn run_migrations_on_empty_db() {
         ]
         .iter(),
     );
+}
+
+#[tokio::test]
+async fn run_migrations_on_fully_migrated_db() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
+
+    let config =
+        RunnerConfig::default().with_migrations_folder(Path::new("../fixtures/basic/migrations"));
+    let runner = MigrationRunner::new(config);
+
+    runner.migrate(&db).await.expect("failed to run migrations");
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+
+    let migrated = runner.migrate(&db).await.expect("failed to run migrations");
+
+    assert_that!(migrated).is_none();
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly(["migrations".to_string(), "quote".to_string()].iter());
+
+    let quotes: Vec<HashMap<String, String>> = db
+        .query("SELECT text FROM quote ORDER BY text")
+        .await
+        .expect("failed to query quotes")
+        .take(0)
+        .expect("did not get expected query result");
+
+    assert_that!(quotes.iter().map(|row| &row["text"])).contains_exactly_in_order(
+        [
+            "Behind every great man is a woman rolling her eyes. - Jim Carrey".to_string(),
+            "If you want a guarantee, buy a toaster. - Clint Eastwood".to_string(),
+            "It takes considerable knowledge just to realize the extent of your own ignorance. - Thomas Sowell".to_string(),
+            "don't seek happiness - create it".to_string(),
+        ]
+        .iter(),
+    );
+}
+
+#[tokio::test]
+async fn revert_migrations_on_fully_migrated_db() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
+
+    let config = RunnerConfig::default()
+        .with_migrations_folder(Path::new("../fixtures/with_down_migrations/migrations"));
+    let runner = MigrationRunner::new(config);
+
+    runner.migrate(&db).await.expect("failed to run migrations");
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+
+    let reverted = runner
+        .revert(&db)
+        .await
+        .expect("failed to revert migrations");
+
+    assert_that!(reverted).is_none();
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys()).contains_exactly(once(&DEFAULT_MIGRATIONS_TABLE.to_string()));
+}
+
+#[tokio::test]
+async fn revert_migrations_on_empty_db() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
+
+    let config = RunnerConfig::default()
+        .with_migrations_folder(Path::new("../fixtures/with_down_migrations/migrations"));
+    let runner = MigrationRunner::new(config);
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys()).is_empty();
+
+    let reverted = runner
+        .revert(&db)
+        .await
+        .expect("failed to revert migrations");
+
+    assert_that!(reverted).is_none();
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys()).is_empty();
 }

@@ -2,18 +2,20 @@ use chrono::NaiveDateTime;
 use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
 use database_migration::logic::{
-    ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Verify,
+    ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
 use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
+use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::path::PathBuf;
 #[cfg(feature = "config")]
 use surrealdb_migrate_config::Settings;
 use surrealdb_migrate_db_client::{
-    apply_migration_in_transaction, insert_migration_execution, select_all_executions,
+    apply_migration_in_transaction, delete_migration_execution, find_max_applied_migration_key,
+    insert_migration_execution, revert_migration_in_transaction, select_all_executions,
     select_all_executions_sorted_by_key, DbConnection,
 };
 
@@ -151,6 +153,79 @@ impl MigrationRunner {
             log::info!("{migration_applied}");
         }
         Ok(last_applied_migration)
+    }
+
+    pub async fn revert(&self, db: &DbConnection) -> Result<Option<NaiveDateTime>, Error> {
+        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mut migrations = mig_dir
+            .list_all_migrations()?
+            .filter(|maybe_mig| {
+                maybe_mig
+                    .as_ref()
+                    .map_or(true, |mig| mig.kind.is_backward())
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        migrations.sort_unstable_by_key(|mig| Reverse(mig.key));
+
+        self.revert_list(mig_dir, migrations, db).await
+    }
+
+    pub async fn revert_to(
+        &self,
+        max_key: NaiveDateTime,
+        db: &DbConnection,
+    ) -> Result<Option<NaiveDateTime>, Error> {
+        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mut migrations = mig_dir
+            .list_all_migrations()?
+            .filter(|maybe_mig| {
+                maybe_mig
+                    .as_ref()
+                    .map_or(true, |mig| mig.kind.is_backward() && mig.key > max_key)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        migrations.sort_unstable_by_key(|mig| Reverse(mig.key));
+
+        self.migrate_list(mig_dir, migrations, db).await
+    }
+
+    async fn revert_list(
+        &self,
+        mig_dir: MigrationDirectory<'_>,
+        migration_list: Vec<Migration>,
+        db: &DbConnection,
+    ) -> Result<Option<NaiveDateTime>, Error> {
+        let script_contents = mig_dir.read_script_content_for_migrations(&migration_list)?;
+        let existing_executions =
+            select_all_executions_sorted_by_key(&self.migrations_table, db).await?;
+        let executed_migrations = existing_executions
+            .into_iter()
+            .map(|exec| (exec.key, exec))
+            .collect::<IndexMap<_, _>>();
+        let mut migrations = migration_list
+            .into_iter()
+            .map(|mig| (mig.key, mig))
+            .collect::<HashMap<_, _>>();
+
+        let revert = Revert::default();
+        let to_apply = revert.list_migrations_to_apply(&script_contents, &executed_migrations);
+        for migration in to_apply.values() {
+            let definition = migrations.remove(&migration.key).expect(
+                "down migration to be applied not found in migrations folder - should be unreachable - please report a bug",
+            );
+            let migration_reverted = format!(
+                "{}: {} ({}) applied",
+                migration.key.format(MIGRATION_KEY_FORMAT_STR),
+                &definition.title,
+                &migration.kind.as_str(),
+            );
+            let reversion = revert_migration_in_transaction(migration, db.username(), db).await?;
+            delete_migration_execution(reversion, &self.migrations_table, db).await?;
+            log::info!("{migration_reverted}");
+        }
+        let max_remaining_migration =
+            find_max_applied_migration_key(&self.migrations_table, db).await?;
+        Ok(max_remaining_migration)
     }
 }
 

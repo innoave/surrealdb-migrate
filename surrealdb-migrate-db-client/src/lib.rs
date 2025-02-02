@@ -274,6 +274,32 @@ pub async fn delete_migration_execution(
     Ok(())
 }
 
+pub async fn find_max_applied_migration_key(
+    migrations_table: &str,
+    db: &DbConnection,
+) -> Result<Option<NaiveDateTime>, Error> {
+    let mut response = db
+        .query(format!(
+            "SELECT math::max(key) AS max_key FROM {migrations_table} GROUP ALL"
+        ))
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    let result: Option<HashMap<String, String>> = response
+        .take(0)
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    let max_applied_key = result
+        .and_then(|mut fields| fields.remove("max_key"))
+        .map(|value| {
+            NaiveDateTime::parse_from_str(&value, MIGRATION_KEY_FORMAT_STR)
+                .map_err(|err| Error::DbQuery(err.to_string()))
+        })
+        .transpose()?;
+
+    Ok(max_applied_key)
+}
+
 pub async fn apply_migration_in_transaction(
     migration: &ApplicableMigration,
     username: &str,
