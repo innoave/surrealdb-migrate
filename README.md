@@ -14,21 +14,38 @@ Milestone 0.1 (first public release):
 * [X] Apply migrations to a database
 * [X] Verify order of migrations (optional: opt-out)
 * [X] Verify checksum of applied migrations (optional: opt-out)
-* [ ] Revert migrations using "down"-scripts
-* [ ] Create scaffold for defining migrations on the filesystem
+* [X] Revert migrations using "down"-scripts
+* [X] Create new migration definitions in the migrations folder
 * [X] Configure lib and CLI using environment variables
 * [X] Configure lib and CLI using configuration file (TOML)
-* [ ] Command line application (CLI)
+* [X] Command line application (CLI)
 
-Milestone 1.0:
+Planned features:
 
-* [ ] Configure lib and CLI via a "hierarchy" of config-files (TOML) - workdir -> homedir -> appdir
+* [ ] CLI: Verify applied migrations against defined ones, to detect changed migrations and
+  out-of-order migrations
+* [ ] Traversing subfolders of the migrations-directory
+* [ ] Ignore configured filenames (pattern) when scanning the migrations-directory
 * [ ] Dry run for migrate and revert
 * [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
-* [ ] Create new migration definitions in the migrations folder - templates!?
-* [ ] Traversing subfolders of the `migrations` directory
-* [ ] Support for baseline of non-empty databases (or snapshots!?)
-* [ ] Support for branching of databases for development
+
+Further feature ideas:
+
+* [ ] GitHub action for running `surrealdb-migrate` in CI/CD pipelines
+* [ ] Docker container to run `ssurrealdb-migrate` as `initcontainer` for tools like Kubernetes
+* [ ] Baseline of non-empty databases (or snapshots!?)
+* [ ] Branching of databases for development
+* [ ] Configure lib and CLI via a "hierarchy" of config-files (TOML) - workdir -> homedir -> appdir
+* [ ] Templates for defining new migrations (provided ones and custom ones)
+
+Non functional goals:
+
+* [X] Excellent test coverage
+* [ ] Continues integration (CI) using GitHub Actions
+* [ ] Good documentation of Lib on docs.rs
+* [ ] Good documentation of CLI application in README
+* [ ] Applying semantic versioning ([SemVer])
+* [X] Documented Minimal Supported Rust Version (MSRV)
 
 ## Defining migrations
 
@@ -49,7 +66,7 @@ migrations/
     20250102_142116_add_record_user_for_some_table.up.surql
 ```
 
-Separate up and down migrations:
+Separate up and down migrations: &lbrack;planned&rbrack;
 
 ```
 migrations/
@@ -123,6 +140,9 @@ SURMIG_DATABASE_PASSWORD=s3cr3t
 
 The possible environment variables are listed in the file [
 `default.env`](surrealdb-migrate-config/resources/default.env)
+
+
+[SemVer]: https://semver.org
 
 [SurrealDB]: https://surrealdb.com
 
