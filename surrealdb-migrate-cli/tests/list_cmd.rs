@@ -5,12 +5,12 @@ use crate::fixtures::db::{
 };
 use crate::fixtures::surmig;
 use assert_fs::TempDir;
+use database_migration::test_dsl::{datetime, key};
 use snapbox::file;
 use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
 use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
 use surrealdb_migrate::migration::{Execution, Migration, MigrationKind};
-use surrealdb_migrate::test_dsl::{datetime, key};
 use surrealdb_migrate_db_client::insert_migration_execution;
 
 #[tokio::test]

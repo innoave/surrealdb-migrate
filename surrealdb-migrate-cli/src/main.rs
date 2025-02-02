@@ -2,6 +2,7 @@ mod args;
 mod create_cmd;
 mod list_cmd;
 mod migrate_cmd;
+mod revert_cmd;
 mod runner;
 mod tables;
 
@@ -52,8 +53,11 @@ async fn run_command(
             let db = connect_to_database(&db_config).await?;
             migrate_cmd::run(args, runner_config, db_config, &db).await
         },
-        Command::Revert(_) => {
-            todo!()
+        Command::Revert(args) => {
+            SimpleLogger::init(LevelFilter::Info, logger_config())
+                .wrap_err("failed to initialize terminal logger")?;
+            let db = connect_to_database(&db_config).await?;
+            revert_cmd::run(args, runner_config, db_config, &db).await
         },
         Command::List(args) => {
             let db = connect_to_database(&db_config).await?;

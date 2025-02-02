@@ -158,11 +158,7 @@ impl MigrationRunner {
             log::info!("{migration_applied}");
         }
 
-        Ok(
-            last_applied_migration.map_or(Migrated::Nothing, |last_applied| {
-                Migrated::UpTo(last_applied)
-            }),
-        )
+        Ok(last_applied_migration.map_or(Migrated::Nothing, Migrated::UpTo))
     }
 
     pub async fn revert(&self, db: &DbConnection) -> Result<Reverted, Error> {
@@ -240,11 +236,15 @@ impl MigrationRunner {
         let max_remaining_migration =
             find_max_applied_migration_key(&self.migrations_table, db).await?;
 
-        Ok(
-            max_remaining_migration.map_or(Reverted::Nothing, |max_remaining| {
-                Reverted::DownTo(max_remaining)
-            }),
-        )
+        let completely_or_nothing = || {
+            if executed_migrations.is_empty() {
+                Reverted::Nothing
+            } else {
+                Reverted::Completely
+            }
+        };
+
+        Ok(max_remaining_migration.map_or_else(completely_or_nothing, Reverted::DownTo))
     }
 }
 

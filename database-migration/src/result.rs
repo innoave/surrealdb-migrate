@@ -18,6 +18,8 @@ pub enum Reverted {
     Nothing,
     /// Reverted the database to the specified migration key (version).
     DownTo(NaiveDateTime),
+    /// The database has been reverted completely.
+    Completely,
     /// No backward migrations found in the migrations folder.
     NoBackwardMigrationsFound,
 }

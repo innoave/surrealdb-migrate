@@ -248,7 +248,7 @@ async fn revert_migrations_on_fully_migrated_db() {
         .await
         .expect("failed to revert migrations");
 
-    assert_that!(reverted).is_equal_to(Reverted::Nothing);
+    assert_that!(reverted).is_equal_to(Reverted::Completely);
 
     let tables_info = get_db_tables_info(&db).await;
 
