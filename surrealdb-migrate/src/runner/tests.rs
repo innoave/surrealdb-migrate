@@ -51,14 +51,14 @@ mod migration_runner {
                 title: "define quote table".into(),
                 kind: MigrationKind::Up,
                 script_path:
-                    "../fixtures/basic/migrations\\20250103_140520_define_quote_table.surql".into(),
+                    "../fixtures/basic/migrations/20250103_140520_define_quote_table.surql".into(),
             },
             Migration {
                 key: key("20250103_140521"),
                 title: "create some quotes".into(),
                 kind: MigrationKind::Up,
                 script_path:
-                    "../fixtures/basic/migrations\\20250103_140521_create_some_quotes.surql".into(),
+                    "../fixtures/basic/migrations/20250103_140521_create_some_quotes.surql".into(),
             },
         ]);
     }
