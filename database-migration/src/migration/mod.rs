@@ -83,6 +83,14 @@ pub struct Execution {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Reversion {
+    pub key: NaiveDateTime,
+    pub reverted_by: String,
+    pub reverted_at: DateTime<Utc>,
+    pub execution_time: Duration,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProblematicMigration {
     pub key: NaiveDateTime,
     pub kind: MigrationKind,

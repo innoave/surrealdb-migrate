@@ -1,5 +1,6 @@
 use crate::fixtures::load_environment_variables;
 use database_migration::config::{DbAuthLevel, DbClientConfig, DEFAULT_MIGRATIONS_TABLE};
+use std::collections::HashMap;
 use std::env;
 use surrealdb_migrate_db_client::{
     connect_to_database, define_migrations_table, DbConnection, DbError,
@@ -97,4 +98,16 @@ pub async fn define_default_migrations_table(db: &DbConnection) {
     define_migrations_table(DEFAULT_MIGRATIONS_TABLE, db)
         .await
         .expect("failed to define migrations table");
+}
+
+#[allow(dead_code)]
+pub async fn get_db_tables_info(db: &DbConnection) -> HashMap<String, String> {
+    let mut db_info = db
+        .query("INFO FOR DB")
+        .await
+        .expect("failed to query info for db");
+    let tables: Option<HashMap<String, String>> = db_info
+        .take("tables")
+        .expect("failed to get info about tables");
+    tables.expect("no info about tables")
 }

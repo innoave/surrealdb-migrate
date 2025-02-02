@@ -3,7 +3,7 @@ use database_migration::checksum::Checksum;
 use database_migration::config::{DbAuthLevel, DbClientConfig, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
 use database_migration::migration::{
-    ApplicableMigration, Execution, Migration, MigrationKind, MigrationsTableInfo,
+    ApplicableMigration, Execution, Migration, MigrationKind, MigrationsTableInfo, Reversion,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -254,7 +254,23 @@ pub async fn insert_migration_execution(
         .await
         .map_err(|err| Error::DbQuery(err.to_string()))?;
 
-    _ = response.ok_or_else(|| Error::ExecutionNotInserted(key.to_string()))?;
+    _ = response.ok_or_else(|| Error::ExecutionNotInserted(key))?;
+    Ok(())
+}
+
+pub async fn delete_migration_execution(
+    reversion: Reversion,
+    migrations_table: &str,
+    db: &DbConnection,
+) -> Result<(), Error> {
+    let key = reversion.key.format(MIGRATION_KEY_FORMAT_STR).to_string();
+
+    let response: Option<MigrationExecutionData> = db
+        .delete((migrations_table, key.clone()))
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    _ = response.ok_or_else(|| Error::ExecutionNotDeleted(key))?;
     Ok(())
 }
 
@@ -313,8 +329,45 @@ RETURN SELECT math::max(applied_rank) AS max_rank FROM {migrations_table} GROUP 
     }
 }
 
-pub fn within_transaction(query: &str) -> String {
-    format!("BEGIN TRANSACTION;\n\n{query}\n\nCOMMIT TRANSACTION;")
+pub async fn revert_migration_in_transaction(
+    backward_migration: &ApplicableMigration,
+    username: &str,
+    db: &DbConnection,
+) -> Result<Reversion, Error> {
+    let reverted_at = Utc::now();
+    let start = Instant::now();
+
+    let script_content = &backward_migration.script_content;
+    let query = format!(
+        "\
+BEGIN TRANSACTION;
+{script_content}
+COMMIT TRANSACTION;
+"
+    );
+
+    let mut response = db
+        .query(query)
+        .await
+        .map_err(|err| Error::DbQuery(err.to_string()))?;
+
+    let script_errors = response.take_errors();
+    if script_errors.is_empty() {
+        let execution_time = Instant::now().duration_since(start);
+
+        Ok(Reversion {
+            key: backward_migration.key,
+            reverted_by: username.into(),
+            reverted_at,
+            execution_time,
+        })
+    } else {
+        let errors = script_errors
+            .into_iter()
+            .map(|(index, err)| (index, err.to_string()))
+            .collect();
+        Err(Error::DbScript(errors))
+    }
 }
 
 #[cfg(test)]

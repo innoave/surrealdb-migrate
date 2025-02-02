@@ -19,6 +19,8 @@ pub enum Error {
     Definition(#[from] DefinitionError),
     #[error("failed to insert the migration execution for key={0} into the migrations table")]
     ExecutionNotInserted(String),
+    #[error("failed to delete the migration execution for key={0} from the migrations table")]
+    ExecutionNotDeleted(String),
     #[error("failed to query table definitions: {0}")]
     FetchingTableDefinitions(String),
     #[error("migrations out of order: {0:?}")]

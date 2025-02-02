@@ -1,22 +1,26 @@
+#![allow(clippy::similar_names)]
+
 mod fixtures;
 
 use crate::fixtures::db::{
-    client_config_for_testcontainer, connect_to_test_database_as_database_user,
+    client_config_for_testcontainer, connect_to_test_database_as_database_user, get_db_tables_info,
     start_surrealdb_testcontainer,
 };
 use assertor::*;
 use database_migration::checksum::{hash_migration_script, Checksum};
 use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
-use database_migration::migration::{Execution, Migration, MigrationKind, MigrationsTableInfo};
+use database_migration::migration::{
+    Execution, Migration, MigrationKind, MigrationsTableInfo, Reversion,
+};
 use database_migration::test_dsl::{datetime, key};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
 use surrealdb::sql;
 use surrealdb_migrate_db_client::{
-    define_migrations_table, find_migrations_table_info, insert_migration_execution,
+    define_migrations_table, delete_migration_execution, find_migrations_table_info,
+    insert_migration_execution,
 };
 
 const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../surql/define_migrations_table.surql");
@@ -44,15 +48,9 @@ async fn define_migrations_table_in_empty_database() {
 
     assert_that!(result).is_ok();
 
-    let tables: Option<HashMap<String, String>> = db
-        .query("INFO FOR DB")
-        .await
-        .expect("failed query for db info")
-        .take("tables")
-        .expect("tables info not found");
-    let tables = tables.expect("tables info not found");
+    let db_tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables).contains_key("my_migrations".to_string());
+    assert_that!(db_tables_info).contains_key("my_migrations".to_string());
 }
 
 #[tokio::test]
@@ -224,7 +222,7 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
 
     let migration = Migration {
         key,
-        title: "define some tables".to_string(),
+        title: "define some tables".into(),
         kind: MigrationKind::Up,
         script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
     };
@@ -232,7 +230,7 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
     let execution = Execution {
         key,
         applied_rank: 2,
-        applied_by: "some.user".to_string(),
+        applied_by: "some.user".into(),
         applied_at: datetime("2025-01-06 07:12:50+01:00"),
         checksum: hash_migration_script(
             &migration,
@@ -254,5 +252,263 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
     let result =
         insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).err().is_equal_to(Error::DbQuery("There was a problem with the database: Database record `migrations:20250103_153309` already exists".to_string()));
+    assert_that!(result).err().is_equal_to(Error::DbQuery("There was a problem with the database: Database record `migrations:20250103_153309` already exists".into()));
+}
+
+#[tokio::test]
+async fn delete_migration_execution_which_is_the_only_record() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+
+    let migrations_table_defined = define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db).await;
+    assert_that!(migrations_table_defined).is_ok();
+
+    let mig_key = key("20250103_153309");
+
+    let migration = Migration {
+        key: mig_key,
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
+    };
+
+    let execution = Execution {
+        key: mig_key,
+        applied_rank: 1,
+        applied_by: "some.user".into(),
+        applied_at: datetime("2025-01-06 07:12:50+01:00"),
+        checksum: hash_migration_script(
+            &migration,
+            r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#,
+        ),
+        execution_time: Duration::from_millis(380),
+    };
+
+    let result =
+        insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration executions");
+
+    assert_that!(executions).has_length(1);
+
+    let reversion = Reversion {
+        key: key("20250103_153309"),
+        reverted_by: "some.user".into(),
+        reverted_at: datetime("2025-01-30 12:42:31+01:00"),
+        execution_time: Duration::from_micros(230),
+    };
+
+    let result = delete_migration_execution(reversion, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let remaining_executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration execution");
+
+    assert_that!(remaining_executions).is_empty();
+}
+
+#[tokio::test]
+async fn delete_migration_execution_from_two_records() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+
+    let migrations_table_defined = define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db).await;
+    assert_that!(migrations_table_defined).is_ok();
+
+    let mig_key1 = key("20250103_153309");
+
+    let migration1 = Migration {
+        key: mig_key1,
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
+    };
+
+    let checksum1 = hash_migration_script(&migration1, "");
+
+    let execution1 = Execution {
+        key: mig_key1,
+        applied_rank: 1,
+        applied_by: "some.user".into(),
+        applied_at: datetime("2025-01-06 07:12:50+01:00"),
+        checksum: checksum1,
+        execution_time: Duration::from_millis(380),
+    };
+
+    let result =
+        insert_migration_execution(migration1, execution1, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let mig_key2 = key("20250122_091731");
+
+    let migration2 = Migration {
+        key: mig_key2,
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: PathBuf::from("migrations/20250122_091731_define_some_tables.surql"),
+    };
+
+    let checksum2 = hash_migration_script(&migration2, "");
+
+    let execution2 = Execution {
+        key: mig_key2,
+        applied_rank: 2,
+        applied_by: "some.user".into(),
+        applied_at: datetime("2025-01-06 07:12:50+01:00"),
+        checksum: checksum2,
+        execution_time: Duration::from_millis(420),
+    };
+
+    let result =
+        insert_migration_execution(migration2, execution2, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration executions");
+
+    assert_that!(executions).has_length(2);
+
+    let reversion = Reversion {
+        key: key("20250122_091731"),
+        reverted_by: "some.user".into(),
+        reverted_at: datetime("2025-01-30 12:42:31+01:00"),
+        execution_time: Duration::from_micros(210),
+    };
+
+    let result = delete_migration_execution(reversion, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let remaining_executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration execution");
+
+    assert_that!(remaining_executions).contains_exactly(vec![MigrationExecutionData {
+        applied_rank: 1,
+        key: "20250103_153309".into(),
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: "migrations/20250103_153309_define_some_tables.surql".into(),
+        checksum: checksum1,
+        applied_at: datetime("2025-01-06 07:12:50+01:00").into(),
+        applied_by: "some.user".into(),
+        execution_time: Duration::from_millis(380).into(),
+    }]);
+}
+
+#[tokio::test]
+async fn delete_migration_execution_not_existing() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+
+    let migrations_table_defined = define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db).await;
+    assert_that!(migrations_table_defined).is_ok();
+
+    let mig_key = key("20250103_153309");
+
+    let migration = Migration {
+        key: mig_key,
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: PathBuf::from("migrations/20250103_153309_define_some_tables.surql"),
+    };
+
+    let checksum = hash_migration_script(&migration, "");
+
+    let execution = Execution {
+        key: mig_key,
+        applied_rank: 1,
+        applied_by: "some.user".into(),
+        applied_at: datetime("2025-01-06 07:12:50+01:00"),
+        checksum,
+        execution_time: Duration::from_millis(380),
+    };
+
+    let result =
+        insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).is_ok();
+
+    let executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration executions");
+
+    assert_that!(executions).has_length(1);
+
+    let reversion = Reversion {
+        key: key("20250122_081731"),
+        reverted_by: "some.user".into(),
+        reverted_at: datetime("2025-01-30 12:42:31+01:00"),
+        execution_time: Duration::from_micros(170),
+    };
+
+    let result = delete_migration_execution(reversion, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result)
+        .err()
+        .is_equal_to(Error::ExecutionNotDeleted("20250122_081731".into()));
+
+    let remaining_executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration executions");
+
+    assert_that!(remaining_executions).contains_exactly(vec![MigrationExecutionData {
+        applied_rank: 1,
+        key: "20250103_153309".into(),
+        title: "define some tables".into(),
+        kind: MigrationKind::Up,
+        script_path: "migrations/20250103_153309_define_some_tables.surql".into(),
+        checksum,
+        applied_at: datetime("2025-01-06 07:12:50+01:00").into(),
+        applied_by: "some.user".into(),
+        execution_time: Duration::from_millis(380).into(),
+    }]);
+}
+
+#[tokio::test]
+async fn delete_migration_execution_from_empty_table() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+
+    let migrations_table_defined = define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db).await;
+    assert_that!(migrations_table_defined).is_ok();
+
+    let reversion = Reversion {
+        key: key("20250122_081731"),
+        reverted_by: "some.user".into(),
+        reverted_at: datetime("2025-01-30 12:42:31+01:00"),
+        execution_time: Duration::from_micros(170),
+    };
+
+    let result = delete_migration_execution(reversion, DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result)
+        .err()
+        .is_equal_to(Error::ExecutionNotDeleted("20250122_081731".into()));
+
+    let executions: Vec<MigrationExecutionData> = db
+        .select(DEFAULT_MIGRATIONS_TABLE)
+        .await
+        .expect("failed to select migration executions");
+
+    assert_that!(executions).is_empty();
 }
