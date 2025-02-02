@@ -280,7 +280,7 @@ pub async fn find_max_applied_migration_key(
 ) -> Result<Option<NaiveDateTime>, Error> {
     let mut response = db
         .query(format!(
-            "SELECT math::max(key) AS max_key FROM {migrations_table} GROUP ALL"
+            "SELECT key AS max_key FROM (SELECT key FROM {migrations_table} ORDER BY key DESC) LIMIT 1"
         ))
         .await
         .map_err(|err| Error::DbQuery(err.to_string()))?;
@@ -290,10 +290,11 @@ pub async fn find_max_applied_migration_key(
         .map_err(|err| Error::DbQuery(err.to_string()))?;
 
     let max_applied_key = result
-        .and_then(|mut fields| fields.remove("max_key"))
-        .map(|value| {
-            NaiveDateTime::parse_from_str(&value, MIGRATION_KEY_FORMAT_STR)
-                .map_err(|err| Error::DbQuery(err.to_string()))
+        .and_then(|fields| {
+            fields.get("max_key").map(|value| {
+                NaiveDateTime::parse_from_str(value, MIGRATION_KEY_FORMAT_STR)
+                    .map_err(|err| Error::DbQuery(err.to_string()))
+            })
         })
         .transpose()?;
 

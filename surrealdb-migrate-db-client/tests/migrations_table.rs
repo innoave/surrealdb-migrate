@@ -1,4 +1,4 @@
-#![allow(clippy::similar_names)]
+#![allow(clippy::similar_names, clippy::manual_string_new)]
 
 mod fixtures;
 
@@ -7,6 +7,7 @@ use crate::fixtures::db::{
     start_surrealdb_testcontainer,
 };
 use assertor::*;
+use chrono::DateTime;
 use database_migration::checksum::{hash_migration_script, Checksum};
 use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
@@ -19,8 +20,8 @@ use std::path::PathBuf;
 use std::time::Duration;
 use surrealdb::sql;
 use surrealdb_migrate_db_client::{
-    define_migrations_table, delete_migration_execution, find_migrations_table_info,
-    insert_migration_execution,
+    define_migrations_table, delete_migration_execution, find_max_applied_migration_key,
+    find_migrations_table_info, insert_migration_execution,
 };
 
 const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../surql/define_migrations_table.surql");
@@ -511,4 +512,82 @@ async fn delete_migration_execution_from_empty_table() {
         .expect("failed to select migration executions");
 
     assert_that!(executions).is_empty();
+}
+
+#[tokio::test]
+async fn find_max_applied_migration_key_empty_table() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+    define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db)
+        .await
+        .expect("failed to define migrations table");
+
+    let result = find_max_applied_migration_key(DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result).ok().is_equal_to(None);
+}
+
+#[tokio::test]
+async fn find_max_applied_migration_key_in_table_with_2_records() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let config = client_config_for_testcontainer(&db_server).await;
+    let db = connect_to_test_database_as_database_user(config).await;
+    define_migrations_table(DEFAULT_MIGRATIONS_TABLE, &db)
+        .await
+        .expect("failed to define migrations table");
+
+    let _: Option<MigrationExecutionData> = db
+        .insert((DEFAULT_MIGRATIONS_TABLE, "20250103_140520"))
+        .content(MigrationExecutionData {
+            applied_rank: 1,
+            key: "20250103_140520".into(),
+            title: "".into(),
+            kind: MigrationKind::Up,
+            script_path: "migrations/20250103_140520.up.surql".into(),
+            checksum: hash_migration_script(
+                &Migration {
+                    key: key("20250103_140520"),
+                    title: "".into(),
+                    kind: MigrationKind::Up,
+                    script_path: "migrations/20250103_140520.up.surql".into(),
+                },
+                "",
+            ),
+            applied_at: DateTime::default().into(),
+            applied_by: "some.user".into(),
+            execution_time: Duration::from_micros(913).into(),
+        })
+        .await
+        .expect("failed to insert migration table entry");
+
+    let _: Option<MigrationExecutionData> = db
+        .insert((DEFAULT_MIGRATIONS_TABLE, "20250103_140521"))
+        .content(MigrationExecutionData {
+            applied_rank: 2,
+            key: "20250103_140521".into(),
+            title: "".into(),
+            kind: MigrationKind::Up,
+            script_path: "migrations/20250103_140521.up.surql".into(),
+            checksum: hash_migration_script(
+                &Migration {
+                    key: key("20250103_140521"),
+                    title: "".into(),
+                    kind: MigrationKind::Up,
+                    script_path: "migrations/20250103_140521.up.surql".into(),
+                },
+                "",
+            ),
+            applied_at: DateTime::default().into(),
+            applied_by: "another.user".into(),
+            execution_time: Duration::from_micros(590).into(),
+        })
+        .await
+        .expect("failed to insert migration table entry");
+
+    let result = find_max_applied_migration_key(DEFAULT_MIGRATIONS_TABLE, &db).await;
+
+    assert_that!(result)
+        .ok()
+        .is_equal_to(Some(key("20250103_140521")));
 }
