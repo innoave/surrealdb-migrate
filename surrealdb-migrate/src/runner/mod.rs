@@ -6,6 +6,7 @@ use database_migration::logic::{
 };
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
+use database_migration::result::{Migrated, Reverted};
 use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
 use std::cmp::Reverse;
@@ -67,12 +68,15 @@ impl MigrationRunner {
         select_all_executions(&self.migrations_table, db).await
     }
 
-    pub async fn migrate(&self, db: &DbConnection) -> Result<Option<NaiveDateTime>, Error> {
+    pub async fn migrate(&self, db: &DbConnection) -> Result<Migrated, Error> {
         let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| mig.kind.is_forward()))
             .collect::<Result<Vec<_>, _>>()?;
+        if migrations.is_empty() {
+            return Ok(Migrated::NoForwardMigrationsFound);
+        }
         migrations.sort_unstable_by_key(|mig| mig.key);
 
         self.migrate_list(mig_dir, migrations, db).await
@@ -82,7 +86,7 @@ impl MigrationRunner {
         &self,
         max_key: NaiveDateTime,
         db: &DbConnection,
-    ) -> Result<Option<NaiveDateTime>, Error> {
+    ) -> Result<Migrated, Error> {
         let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
         let mut migrations = mig_dir
             .list_all_migrations()?
@@ -102,7 +106,7 @@ impl MigrationRunner {
         mig_dir: MigrationDirectory<'_>,
         migration_list: Vec<Migration>,
         db: &DbConnection,
-    ) -> Result<Option<NaiveDateTime>, Error> {
+    ) -> Result<Migrated, Error> {
         let script_contents = mig_dir.read_script_content_for_migrations(&migration_list)?;
         let existing_executions =
             select_all_executions_sorted_by_key(&self.migrations_table, db).await?;
@@ -128,9 +132,10 @@ impl MigrationRunner {
             return Err(Error::OutOfOrder(out_of_order));
         }
 
-        let mut last_applied_migration = None;
         let migrate = Migrate::default();
         let to_apply = migrate.list_migrations_to_apply(&script_contents, &executed_migrations);
+
+        let mut last_applied_migration = None;
         for migration in to_apply.values() {
             let definition = migrations.remove(&migration.key).expect(
                 "migration to be applied not found in migrations folder - should be unreachable - please report a bug",
@@ -152,10 +157,15 @@ impl MigrationRunner {
             last_applied_migration = Some(migration.key);
             log::info!("{migration_applied}");
         }
-        Ok(last_applied_migration)
+
+        Ok(
+            last_applied_migration.map_or(Migrated::Nothing, |last_applied| {
+                Migrated::UpTo(last_applied)
+            }),
+        )
     }
 
-    pub async fn revert(&self, db: &DbConnection) -> Result<Option<NaiveDateTime>, Error> {
+    pub async fn revert(&self, db: &DbConnection) -> Result<Reverted, Error> {
         let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
         let mut migrations = mig_dir
             .list_all_migrations()?
@@ -165,6 +175,9 @@ impl MigrationRunner {
                     .map_or(true, |mig| mig.kind.is_backward())
             })
             .collect::<Result<Vec<_>, _>>()?;
+        if migrations.is_empty() {
+            return Ok(Reverted::NoBackwardMigrationsFound);
+        }
         migrations.sort_unstable_by_key(|mig| Reverse(mig.key));
 
         self.revert_list(mig_dir, migrations, db).await
@@ -174,7 +187,7 @@ impl MigrationRunner {
         &self,
         max_key: NaiveDateTime,
         db: &DbConnection,
-    ) -> Result<Option<NaiveDateTime>, Error> {
+    ) -> Result<Reverted, Error> {
         let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
         let mut migrations = mig_dir
             .list_all_migrations()?
@@ -186,7 +199,7 @@ impl MigrationRunner {
             .collect::<Result<Vec<_>, _>>()?;
         migrations.sort_unstable_by_key(|mig| Reverse(mig.key));
 
-        self.migrate_list(mig_dir, migrations, db).await
+        self.revert_list(mig_dir, migrations, db).await
     }
 
     async fn revert_list(
@@ -194,7 +207,7 @@ impl MigrationRunner {
         mig_dir: MigrationDirectory<'_>,
         migration_list: Vec<Migration>,
         db: &DbConnection,
-    ) -> Result<Option<NaiveDateTime>, Error> {
+    ) -> Result<Reverted, Error> {
         let script_contents = mig_dir.read_script_content_for_migrations(&migration_list)?;
         let existing_executions =
             select_all_executions_sorted_by_key(&self.migrations_table, db).await?;
@@ -209,6 +222,7 @@ impl MigrationRunner {
 
         let revert = Revert::default();
         let to_apply = revert.list_migrations_to_apply(&script_contents, &executed_migrations);
+
         for migration in to_apply.values() {
             let definition = migrations.remove(&migration.key).expect(
                 "down migration to be applied not found in migrations folder - should be unreachable - please report a bug",
@@ -225,7 +239,12 @@ impl MigrationRunner {
         }
         let max_remaining_migration =
             find_max_applied_migration_key(&self.migrations_table, db).await?;
-        Ok(max_remaining_migration)
+
+        Ok(
+            max_remaining_migration.map_or(Reverted::Nothing, |max_remaining| {
+                Reverted::DownTo(max_remaining)
+            }),
+        )
     }
 }
 

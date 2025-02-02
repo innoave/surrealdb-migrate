@@ -8,6 +8,7 @@ use assertor::*;
 use database_migration::checksum::hash_migration_script;
 use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
 use database_migration::migration::{Execution, Migration, MigrationKind};
+use database_migration::result::{Migrated, Reverted};
 use database_migration::test_dsl::{datetime, key};
 use std::collections::HashMap;
 use std::iter::once;
@@ -124,7 +125,7 @@ async fn run_migrations_on_empty_db() {
 
     let migrated = runner.migrate(&db).await.expect("failed to run migrations");
 
-    assert_that!(migrated).is_equal_to(Some(key("20250103_140521")));
+    assert_that!(migrated).is_equal_to(Migrated::UpTo(key("20250103_140521")));
 
     let tables_info = get_db_tables_info(&db).await;
 
@@ -168,7 +169,7 @@ async fn run_migrations_on_fully_migrated_db() {
 
     let migrated = runner.migrate(&db).await.expect("failed to run migrations");
 
-    assert_that!(migrated).is_none();
+    assert_that!(migrated).is_equal_to(Migrated::Nothing);
 
     let tables_info = get_db_tables_info(&db).await;
 
@@ -215,7 +216,7 @@ async fn revert_migrations_on_fully_migrated_db() {
         .await
         .expect("failed to revert migrations");
 
-    assert_that!(reverted).is_none();
+    assert_that!(reverted).is_equal_to(Reverted::Nothing);
 
     let tables_info = get_db_tables_info(&db).await;
 
@@ -241,7 +242,7 @@ async fn revert_migrations_on_empty_db() {
         .await
         .expect("failed to revert migrations");
 
-    assert_that!(reverted).is_none();
+    assert_that!(reverted).is_equal_to(Reverted::Nothing);
 
     let tables_info = get_db_tables_info(&db).await;
 

@@ -5,6 +5,7 @@ use color_eyre::eyre::eyre;
 use color_eyre::Report;
 use surrealdb_migrate::config::{DbClientConfig, RunnerConfig, MIGRATION_KEY_FORMAT_STR};
 use surrealdb_migrate::db_client::DbConnection;
+use surrealdb_migrate::result::Migrated;
 
 pub async fn run(
     args: MigrateArgs,
@@ -48,20 +49,24 @@ pub async fn run(
         runner.migrate(db).await.map_err(Report::from)
     }?;
 
-    if let Some(migrated_to) = migrated_to {
-        println!();
-        log::info!(
-            r#"Successfully migrated database "{}/{}" up to {}."#,
-            &db_config.namespace,
-            &db_config.database,
-            &migrated_to.format(MIGRATION_KEY_FORMAT_STR).to_string()
-        );
-    } else {
-        log::info!(
-            r#"No migration applied to database "{}/{}". All migrations are applied already."#,
-            &db_config.namespace,
-            &db_config.database
-        );
+    match migrated_to {
+        Migrated::Nothing => {
+            log::info!(
+                r#"No migration applied to database "{}/{}". All migrations are applied already."#,
+                &db_config.namespace,
+                &db_config.database
+            );
+        },
+        Migrated::UpTo(last_applied) => {
+            println!();
+            log::info!(
+                r#"Successfully migrated database "{}/{}" up to {}."#,
+                &db_config.namespace,
+                &db_config.database,
+                &last_applied.format(MIGRATION_KEY_FORMAT_STR).to_string()
+            );
+        },
+        Migrated::NoForwardMigrationsFound => {},
     }
     println!();
     Ok(())
