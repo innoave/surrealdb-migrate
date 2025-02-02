@@ -55,8 +55,8 @@ jobs:
           command: test
           args: --workspace
 
-  test-msrv:
-    name: Test MSRV
+  check-msrv:
+    name: Check MSRV
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
