@@ -195,6 +195,38 @@ async fn run_migrations_on_fully_migrated_db() {
 }
 
 #[tokio::test]
+async fn migrate_an_empty_db_up_to_migration_20250103_140520() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
+
+    let config =
+        RunnerConfig::default().with_migrations_folder(Path::new("../fixtures/basic/migrations"));
+    let runner = MigrationRunner::new(config);
+
+    let migrated = runner
+        .migrate_to(key("20250103_140520"), &db)
+        .await
+        .expect("failed to run migrations");
+
+    assert_that!(migrated).is_equal_to(Migrated::UpTo(key("20250103_140520")));
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly(["migrations".to_string(), "quote".to_string()].iter());
+
+    let quotes: Vec<HashMap<String, String>> = db
+        .query("SELECT text FROM quote ORDER BY text")
+        .await
+        .expect("failed to query quotes")
+        .take(0)
+        .expect("did not get expected query result");
+
+    assert_that!(quotes.iter().map(|row| &row["text"])).is_empty();
+}
+
+#[tokio::test]
 async fn revert_migrations_on_fully_migrated_db() {
     let db_server = start_surrealdb_testcontainer().await;
     let db_config = prepare_test_database(&db_server).await;
@@ -247,4 +279,34 @@ async fn revert_migrations_on_empty_db() {
     let tables_info = get_db_tables_info(&db).await;
 
     assert_that!(tables_info.keys()).is_empty();
+}
+
+#[tokio::test]
+async fn revert_a_fully_migrated_db_down_to_migration_20250103_140520() {
+    let db_server = start_surrealdb_testcontainer().await;
+    let db_config = prepare_test_database(&db_server).await;
+    let db = connect_to_test_database_as_database_user(&db_config).await;
+
+    let config = RunnerConfig::default()
+        .with_migrations_folder(Path::new("../fixtures/with_down_migrations/migrations"));
+    let runner = MigrationRunner::new(config);
+
+    runner.migrate(&db).await.expect("failed to run migrations");
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+
+    let reverted = runner
+        .revert_to(key("20250103_140520"), &db)
+        .await
+        .expect("failed to revert migrations");
+
+    assert_that!(reverted).is_equal_to(Reverted::DownTo(key("20250103_140520")));
+
+    let tables_info = get_db_tables_info(&db).await;
+
+    assert_that!(tables_info.keys())
+        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
 }
