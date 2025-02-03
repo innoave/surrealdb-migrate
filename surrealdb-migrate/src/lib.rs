@@ -15,6 +15,11 @@ pub mod db_client {
     pub use surrealdb_migrate_db_client::DbError;
 }
 
+// test code snippets in the README.md
+#[doc = include_str!("../../README.md")]
+#[allow(dead_code)]
+type TestExamplesInReadme = ();
+
 // workaround for false positive 'unused extern crate' warnings until
 // Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
 #[cfg(test)]
