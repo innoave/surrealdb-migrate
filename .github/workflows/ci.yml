@@ -55,7 +55,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace
+          args: --workspace --no-fail-fast
 
   unit-test:
     name: Unit-Test  # testcontainers do not run on macos and windows
@@ -83,7 +83,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace --lib --bins
+          args: --workspace --lib --bins --no-fail-fast
 
   msrv:
     name: Build with MSRV
