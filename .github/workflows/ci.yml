@@ -18,7 +18,7 @@ jobs:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout sources
         uses: actions/checkout@v4
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
@@ -32,6 +32,19 @@ jobs:
           command: clippy
           args: --workspace
 
+  fmt:
+    name: Rustfmt check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+      - run: cargo +nightly fmt --check --all
+
   integration-test:
     name: Integration-Test
     runs-on: ubuntu-latest
@@ -43,7 +56,7 @@ jobs:
           - beta
           - nightly
     steps:
-      - name: Checkout
+      - name: Checkout sources
         uses: actions/checkout@v4
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
@@ -71,7 +84,7 @@ jobs:
           - beta
           - nightly
     steps:
-      - name: Checkout
+      - name: Checkout sources
         uses: actions/checkout@v4
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
@@ -89,7 +102,7 @@ jobs:
     name: Build with MSRV
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout sources
         uses: actions/checkout@v4
       - name: Get current MSRV from Cargo.toml
         id: current_msrv
