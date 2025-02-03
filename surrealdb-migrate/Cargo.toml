@@ -44,6 +44,7 @@ log.workspace = true
 
 [dev-dependencies]
 database-migration = { workspace = true, features = ["test-dsl"] }
+anyhow.workspace = true
 assert_fs.workspace = true
 assertor.workspace = true
 color-eyre.workspace = true

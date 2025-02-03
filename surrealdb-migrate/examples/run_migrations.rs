@@ -3,26 +3,34 @@
 mod examples_database;
 
 use crate::examples_database::{
-    client_config_for_testcontainer, connect_to_examples_database_as_database_user,
+    client_config_for_testcontainer, db_password, db_username, setup_examples_database,
     start_surrealdb_testcontainer,
 };
-use color_eyre::Report;
-use database_migration::config::RunnerConfig;
+use anyhow::Context;
+use database_migration::config::DbAuthLevel;
 use std::collections::HashMap;
 use std::path::Path;
+use surrealdb_migrate::config::RunnerConfig;
 use surrealdb_migrate::runner::MigrationRunner;
-use surrealdb_migrate_db_client::select_all_executions_sorted_by_key;
+use surrealdb_migrate_db_client::{connect_to_database, select_all_executions_sorted_by_key};
 
 #[tokio::main]
-async fn main() -> Result<(), Report> {
-    color_eyre::install()?;
-
+async fn main() -> Result<(), anyhow::Error> {
     // prepare database for the example
     let db_server = start_surrealdb_testcontainer().await?;
+    let config = client_config_for_testcontainer(&db_server).await?;
+    setup_examples_database(config.clone()).await?;
 
     // setup database connection
-    let config = client_config_for_testcontainer(&db_server).await?;
-    let db = connect_to_examples_database_as_database_user(config).await?;
+    let config = config
+        .with_namespace("playground")
+        .with_database("examples")
+        .with_auth_level(DbAuthLevel::Database)
+        .with_username(db_username()?)
+        .with_password(db_password()?);
+    let db = connect_to_database(&config)
+        .await
+        .context("failed to connect to examples database")?;
 
     // Instantiate the `MigrationRunner`
     let config =

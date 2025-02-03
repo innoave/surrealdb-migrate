@@ -9,6 +9,7 @@ pub fn load_environment_variables() {
 // Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
 #[cfg(test)]
 mod dummy_extern_uses {
+    use anyhow as _;
     use assert_fs as _;
     use assertor as _;
     use chrono as _;
