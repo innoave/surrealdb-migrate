@@ -31,7 +31,7 @@ test:
 
 # run unit tests only
 test-lib:
-    cargo test --all-features --lib --bin surmig
+    cargo test --all-features --lib --bins
 
 # run the cli-tests only
 test-cli:
