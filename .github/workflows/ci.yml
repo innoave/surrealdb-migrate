@@ -25,24 +25,22 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: --workspace
 
-  test:
-    name: Test
-    runs-on: ${{ matrix.os }}
+  integration-test:
+    name: Integration-Test
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
         rust:
           - stable
-          #          - beta
+          - beta
           - nightly
     steps:
       - name: Checkout
@@ -52,18 +50,40 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
-      #      - name: Enable Docker Remote API on Localhost
-      #        shell: bash
-      #        run: |
-      #          sudo mkdir -p /etc/systemd/system/docker.service.d/
-      #          sudo cp ./.github/docker.override.conf /etc/systemd/system/docker.service.d/override.conf
-      #          sudo systemctl daemon-reload
-      #          sudo systemctl restart docker
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo test
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --workspace
+
+  unit-test:
+    name: Unit-Test  # testcontainers do not run on macos and windows
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+        rust:
+          - stable
+          - beta
+          - nightly
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - uses: Swatinem/rust-cache@v2
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --lib --bins
 
   msrv:
     name: Build with MSRV
@@ -81,6 +101,7 @@ jobs:
         with:
           toolchain: ${{ steps.current_msrv.outputs.msrv }}
           override: true
+      - uses: Swatinem/rust-cache@v2
       - name: Run cargo build
         uses: actions-rs/cargo@v1
         with:
