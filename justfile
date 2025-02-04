@@ -4,9 +4,9 @@ set windows-shell := ["pwsh.exe", "-NoLogo", "-Command"]
 
 alias b := build
 alias c := check
+alias cc := code-coverage
 alias l := lint
 alias t := test
-alias tc := test-coverage
 alias tl := test-lib
 
 # list recipies
@@ -46,7 +46,7 @@ test-migrate:
     cargo test --package surrealdb-migrate --all-features
 
 # run code coverage (does not include doc-tests)
-test-coverage:
+code-coverage:
     cargo +nightly llvm-cov clean --workspace
     cargo +nightly llvm-cov --branch --all-features --no-report
     cargo +nightly llvm-cov report --html --open --ignore-filename-regex "tests|test_dsl"
