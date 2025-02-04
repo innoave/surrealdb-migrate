@@ -51,6 +51,7 @@ color-eyre.workspace = true
 dotenvy.workspace = true
 testcontainers-modules = { workspace = true, features = ["surrealdb"] }
 tokio.workspace = true
+version-sync.workspace = true
 
 [lints]
 workspace = true

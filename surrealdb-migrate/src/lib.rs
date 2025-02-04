@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://docs.rs/surrealdb-migrate/0.1")]
+
 pub mod runner;
 
 //
@@ -30,4 +32,5 @@ mod dummy_extern_uses {
     use dotenvy as _;
     use testcontainers_modules as _;
     use tokio as _;
+    use version_sync as _;
 }
