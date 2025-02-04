@@ -11,6 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  RUST_BACKTRACE: 1
   RUSTFLAGS: -Dwarnings
 
 jobs:
