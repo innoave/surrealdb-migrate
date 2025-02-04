@@ -13,7 +13,7 @@ jobs:
     name: Code Coverage through Tests
     runs-on: ubuntu-latest
     env:
-      CARGO_TERM_COLORS: always
+      CARGO_TERM_COLOR: always
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
