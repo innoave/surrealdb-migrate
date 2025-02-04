@@ -138,10 +138,10 @@ Further feature ideas:
 Non functional goals:
 
 * [X] Excellent test coverage
-* [ ] Continues integration (CI) using GitHub Actions
+* [X] Continues integration (CI) using GitHub Actions
 * [ ] Good documentation of Lib on docs.rs
 * [ ] Good documentation of CLI application in README
-* [ ] Complying with semantic versioning ([SemVer])
+* [X] Complying with semantic versioning ([SemVer])
 * [X] Documented Minimal Supported Rust Version (MSRV)
 
 ## Defining migrations
