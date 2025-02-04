@@ -9,8 +9,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-coverage:
-    name: Code Coverage through Tests
+  code-coverage:
+    name: Code Coverage
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
