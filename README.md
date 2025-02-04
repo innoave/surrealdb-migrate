@@ -1,10 +1,10 @@
 # SurrealDB-Migrate
 
-[![crates.io](https://img.shields.io/crates/v/surrealdb-migrate.svg)](https://crates.io/crates/surrealdb-migrate)
-[![docs.rs](https://docs.rs/surrealdb-migrate/badge.svg)](https://docs.rs/surrealdb-migrate)
-![GitHub License](https://img.shields.io/github/license/innoave/surrealdb-migrate)
-![Crates.io MSRV](https://img.shields.io/crates/msrv/surrealdb-migrate)
-[![Test Coverage](https://codecov.io/gh/innoave/surrealdb-migrate/branch/main/graph/badge.svg)](https://codecov.io/github/innoave/surrealdb-migrate?branch=main)
+[![crates.io][crates-badge]][crates-url]
+[![docs.rs][docs-badge]][docs-url]
+[![Apache-2.0 licensed][license-badge]][license-url]
+![MSRV][msrv-badge]
+[![code coverage][code-coverage-badge]][code-coverage-url]
 
 Evolve a [SurrealDB] database over time by applying migrations. SurrealDB-Migrate is a commandline
 tool and lib to define and apply migrations on a database. It provides version control for a
@@ -243,6 +243,29 @@ SURMIG_DATABASE_PASSWORD=s3cr3t
 The possible environment variables are listed in the file [
 `default.env`](surrealdb-migrate-config/resources/default.env)
 
+
+<!-- Badges and related URLs --> 
+
+[crates-badge]: https://img.shields.io/crates/v/surrealdb-migrate.svg
+
+[crates-url]: https://crates.io/crates/surrealdb-migrate
+
+[docs-badge]: https://docs.rs/surrealdb-migrate/badge.svg
+
+[docs-url]: https://docs.rs/surrealdb-migrate
+
+[license-badge]: https://img.shields.io/github/license/innoave/surrealdb-migrate?color=blue
+
+[license-url]: https://github.com/innoave/surrealdb-migrate/blob/main/LICENSE
+
+[msrv-badge]: https://img.shields.io/crates/msrv/surrealdb-migrate?color=grey
+
+[code-coverage-badge]: https://codecov.io/github/innoave/surrealdb-migrate/graph/badge.svg?token=o0w7R7J0Op
+
+[code-coverage-url]: https://codecov.io/github/innoave/surrealdb-migrate
+
+
+<!-- External Links -->
 
 [crates.io]: https://crates.io
 
