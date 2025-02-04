@@ -18,6 +18,14 @@ SurrealDB-Migrate provides two ways to deal with migrations of a database:
 
 ## `surmig`: the command line tool
 
+Install the command line tool from [crates.io]:
+
+```console
+$ cargo install surrealdb-migrate-cli
+```
+
+Run the help command to get a list of available commands and options:
+
 ```console
 $ surmig help 
 Create and apply migrations for a SurrealDB database
@@ -47,10 +55,14 @@ Options:
 
 ## `surrealdb-migrate`: the crate for Rust programs
 
+Add the dependency to your `Cargo.toml` file:
+
 ```toml
 [dependencies]
 surrealdb-migrate = "0.1"
 ```
+
+Example on how to run migrations assuming they are stored in a `my_database/migrations` folder:
 
 ```rust ,no_run
 use anyhow::Context;
@@ -67,7 +79,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .with_namespace("playground")
         .with_database("examples")
         .with_auth_level(DbAuthLevel::Database)
-        .with_username("tester")
+        .with_username("example.user")
         .with_password("s3cr3t");
 
     let db = connect_to_database(&db_config)
@@ -231,6 +243,8 @@ SURMIG_DATABASE_PASSWORD=s3cr3t
 The possible environment variables are listed in the file [
 `default.env`](surrealdb-migrate-config/resources/default.env)
 
+
+[crates.io]: https://crates.io
 
 [SemVer]: https://semver.org
 
