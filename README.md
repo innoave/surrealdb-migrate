@@ -18,7 +18,7 @@ SurrealDB-Migrate provides two ways to deal with migrations of a database:
 
 ## `surmig`: the command line tool
 
-Install the command line tool from [crates.io]:
+Install the command line tool from [crates.io][crates-url]:
 
 ```console
 $ cargo install surrealdb-migrate-cli
@@ -55,7 +55,7 @@ Options:
 
 ## `surrealdb-migrate`: the crate for Rust programs
 
-Add the dependency to your `Cargo.toml` file:
+Add the dependency to the `Cargo.toml` file of your project:
 
 ```toml
 [dependencies]
@@ -175,7 +175,29 @@ migrations/
         20250102_142116_add_record_user_for_some_table.surql
 ```
 
-## Tracking the status of migrations
+## Applying migrations
+
+### Order of migrations
+
+Migrations are applied in the order of their keys (= timestamps). A migrations with an earlier
+timestamp is applied before another migration with a later timestamp. If a migration with an earlier
+timestamp is added after a migration with a later timestamp has been applied already, this is
+considered an out-of-order migration.
+
+SurrealDB-Migrate checks the order of migrations. By default, it does not migrate a databases if an
+out-of-order migration is detected. This can be switched off by settings the configuration parameter
+`ignore-order = true`, setting the environment variable `SURMIG_MIGRATION_IGNORE_ORDER=true` or
+by specifying command line flag `--ignore-order`. (See [configuration](#configuration) for details.)
+
+### Transactions
+
+Each migration script is executed in one database transaction. This should prevent situations where
+a failing migration script causes an inconsistent state of the database.
+
+If a migration script fails and leaves the database in an inconsistent state it is up to the user
+to revert the failed migration manually or by applying a down-script.
+
+### Tracking the status of migrations
 
 A migration is defined by:
 
@@ -191,13 +213,30 @@ The status of a migration is tracked by their execution:
 * checksum
 * execution time
 
-## Transactions
+SurrealDB-Migrate records executed migrations in a dedicated migrations-table in the database. The
+default name of the migrations-table is `migrations`. The user can configure a custom name for this
+migrations-table by settings the parameter `migrations-table = "schema_version"` or setting the
+environment variable `SURMIG_DATABASE_MIGRATIONS_TABLE=schema_version`. If both, the parameter in
+the configuration file and the environment variable, are set the value of the environment variable
+overrides the value specified in the configuration file.
 
-Each migration script is executed in one database transaction. This should prevent situations where
-a failing migration script causes an inconsistent state of the database.
+### Modified migrations
 
-If a migration script fails and leaves the database in an inconsistent state it is up to the user
-to revert the failed migration manually or by applying a down-script.
+Before applying new migrations, SurrealDB-Migrate checks whether already applied migrations have
+been changed. This is done by comparing the checksum of a migration in the migrations directory on
+the filesystem with the checksum stored in the migrations table in the database for this migration
+when it has been applied.
+
+The checksum for the defined migration is calculated every time the 'migrate' operation is executed.
+If this checksum does not match with the checksum stored when this checksum has been applied, the
+'migrate' operation is aborted with an error message. The user can examine whether the migration
+has changed accidentally or was modified on purpose and take actions to assure the database is in a
+consistent state and remains consistent, when the new migrations are applied.
+
+The check for changed migrations can be switched off by setting the parameter
+`ignore-checksum = true` in the configuration file, by setting the environment variable
+`SURMIG_MIGRATION_IGNORE_CHECKSUM=true` or specifying the command line flag `--ignore-checksum`.
+(See [configuration](#configuration) for details.)
 
 ## Configuration
 
@@ -243,6 +282,25 @@ SURMIG_DATABASE_PASSWORD=s3cr3t
 The possible environment variables are listed in the file [
 `default.env`](surrealdb-migrate-config/resources/default.env)
 
+### Options of the command line tool
+
+Options of the command line tool overwrite related settings of environment variables and in the
+configuration file. There are options that are applicable for all subcommands and options that are
+available only for a specific subcommand.
+
+To get details about options that are available for all subcommands specify the `--help` option
+without any subcommand like so:
+
+```console
+$ surmig --help 
+```
+
+To get details about available options for a specific subcommand specify the `--help` option after
+the subcommand. For example:
+
+```console
+$ surmig migrate --help
+```
 
 <!-- Badges and related URLs --> 
 
