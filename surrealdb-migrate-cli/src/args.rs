@@ -39,10 +39,10 @@ pub enum Command {
 
 #[derive(clap::Args, Debug, Clone)]
 pub struct CreateArgs {
-    /// The key of the new migration in the format YYYYMMDD_HHMMSS. Default: <current date and time>.
+    /// The key of the new migration in the format YYYYMMDD_HHMMSS. Default: &lt;current date and time&gt;.
     #[clap(long, short)]
     pub key: Option<String>,
-    /// The title of the new migration. Default: <no title>.
+    /// The title of the new migration. Default: &lt;no title&gt;.
     pub title: Option<String>,
     /// Also create a new down migration file.
     #[clap(long, short, action)]
