@@ -61,4 +61,4 @@ clean:
 
 # generate and open docs locally
 docl:
-    cargo doc --workspace --all-features --open
+    cargo doc --workspace --all-features --no-deps --open
