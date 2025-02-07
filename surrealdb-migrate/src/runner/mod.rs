@@ -1,9 +1,9 @@
 use chrono::NaiveDateTime;
-use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
-use database_migration::error::Error;
-use database_migration::logic::{
+use database_migration::action::{
     ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
+use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
+use database_migration::error::Error;
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
 use database_migration::result::{Migrated, Reverted};

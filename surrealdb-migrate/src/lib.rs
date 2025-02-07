@@ -3,7 +3,7 @@
 pub mod runner;
 
 //
-// re-export other crates of the project for a one-crate-dependency experience
+// re-export other crates of this project for a one-crate-dependency experience
 // for users of this crate.
 //
 
