@@ -6,6 +6,7 @@ license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
+readme.workspace = true
 
 description = """
 Evolve a SurrealDB database over time by applying migrations. `surrealdb-migrate` is a library for
