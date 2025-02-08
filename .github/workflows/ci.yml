@@ -142,4 +142,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --workspace --all-features -no-deps
+          args: --workspace --all-features --no-deps
