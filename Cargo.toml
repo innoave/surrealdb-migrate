@@ -19,8 +19,8 @@ repository = "https://github.com/innoave/surrealdb-migrate"
 
 [workspace.dependencies]
 # workspace dependencies
-database-migration = { path = "database-migration" }
-database-migration-files = { path = "database-migration-files" }
+database-migration = { version = "0.1", path = "database-migration" }
+database-migration-files = { version = "0.1", path = "database-migration-files" }
 surrealdb-migrate-db-client = { path = "surrealdb-migrate-db-client" }
 surrealdb-migrate-config = { path = "surrealdb-migrate-config" }
 surrealdb-migrate = { path = "surrealdb-migrate" }
