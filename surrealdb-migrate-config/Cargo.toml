@@ -6,6 +6,7 @@ license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 repository.workspace = true
+readme.workspace = true
 
 description = """
 Configuration of `surrealdb-migrate` using environment variables and/or config files.
