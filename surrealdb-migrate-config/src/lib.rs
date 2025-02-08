@@ -1,3 +1,106 @@
+//! Configuration mechanism for the [`surrealdb-migrate`] crate.
+//!
+//! To be able to use the `MigrationRunner` of the [`surrealdb-migrate`] crate
+//! some configuration settings are needed for the runner itself and the
+//! DB-connection to the database the migrations shall be applied to. These
+//! configuration settings can be provided by an application through its own
+//! configuration mechanism or this crate is used to load the settings from
+//! a configuration file and/or some environment variables.
+//!
+//! ## Concept
+//!
+//! All settings have default values. The user needs to provide only those
+//! settings which shall get a value different from the default value and omit
+//! those settings where the default value is suitable for the application.
+//!
+//! First the settings are loaded from a configuration file with the name
+//! `surrealdb-migrate.toml`. By default, this configuration file must be
+//! located in the current working directory. To load the configuration file
+//! from a different directory, the environment variable
+//! `SURREALDB_MIGRATE_CONFIG_DIR` can be set to point to the directory where
+//! the configuration file is located. For example:
+//!
+//! ```dotenv
+//! SURREALDB_MIGRATE_CONFIG_DIR="my_application/config"
+//! ```
+//!
+//! The configuration does not need to define all available settings. If a
+//! setting is not present in the configuration file the default value is used.
+//! If the configuration file is not present or can not be found, the default
+//! values for all settings are used.
+//!
+//! All available settings with their default values are listed in the example
+//! configuration file [surrealdb-migrate.default.toml].
+//!
+//! In a second step the settings are loaded from the environment. Each
+//! specified environment variable that defines a settings overwrites this
+//! setting in the resulting configuration.
+//!
+//! If an environment variable is not set, the value from the configuration file
+//! is used. If a setting is neither specified in the configuration file nor set
+//! via an environment variable, the default value is used.
+//!
+//! All available environment variables that define configuration settings are
+//! listed in the example dotenv file [default.env].
+//!
+//! ## Usage
+//!
+//! To load the settings via the mechanism described in the previous chapter,
+//! the [`load()`](Settings::load) function of the [`Settings`] struct is used.
+//!
+//! ```no_run
+//! use database_migration::error::Error;
+//! use surrealdb_migrate_config::Settings;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let _settings = Settings::load()?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! The [`load()`](Settings::load) function searches for the configuration file
+//! in the directory specified by the environment variable
+//! `SURREALDB_MIGRATE_CONFIG_DIR` if set or in the current working directory
+//! otherwise.
+//!
+//! The directory where the configuration file is located can also be specified
+//! when using the [`load_from_dir()`](Settings::load_from_dir()) function
+//! instead.
+//!
+//! ```no_run
+//! use std::path::Path;
+//! use database_migration::error::Error;
+//! use surrealdb_migrate_config::Settings;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let _settings = Settings::load_from_dir(Path::new("my_application/config"))?;
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! The loaded settings can then be used to get a [`DbClientConfig`] and a
+//! [`RunnerConfig`].
+//!
+//! ```no_run
+//! # use database_migration::error::Error;
+//! # use surrealdb_migrate_config::Settings;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let settings = Settings::load()?;
+//!
+//!     let _db_config = settings.db_client_config();
+//!     let _runner_config = settings.runner_config();
+//!
+//!     Ok(())
+//! }
+//! ```
+//!
+//! [default.env]: https://github.com/innoave/surrealdb-migrate/blob/main/surrealdb-migrate-config/resources/default.env
+//! [surrealdb-migrate.default.toml]: https://github.com/innoave/surrealdb-migrate/blob/main/surrealdb-migrate-config/resources/surrealdb-migrate.default.toml
+//! [`surrealdb-migrate`]: https://docs.rs/surrealdb-migrate/0.1.0
+
 use config::{Config, File, FileFormat};
 use database_migration::config::{DbAuthLevel, DbClientConfig, RunnerConfig};
 use database_migration::error::Error;
@@ -9,7 +112,7 @@ use std::fmt::Formatter;
 use std::path::Path;
 
 pub const CONFIG_DIR_ENVIRONMENT_VAR: &str = "SURREALDB_MIGRATE_CONFIG_DIR";
-pub const SETTINGS_FILENAME: &str = "surrealdb-migrate";
+pub const CONFIG_FILENAME: &str = "surrealdb-migrate";
 
 const DEFAULT_SETTINGS: &str = include_str!("../resources/surrealdb-migrate.default.toml");
 
@@ -148,7 +251,7 @@ impl Settings {
 
     pub fn load_from_dir(path: &Path) -> Result<Self, Error> {
         let environment = read_environment();
-        let config_file = path.join(SETTINGS_FILENAME);
+        let config_file = path.join(CONFIG_FILENAME);
         let config = Config::builder()
             .add_source(File::from_str(DEFAULT_SETTINGS, FileFormat::Toml))
             .add_source(File::from(config_file).required(false))
