@@ -82,13 +82,19 @@ pub mod runner;
 // for users of this crate.
 //
 
+#[doc(inline)]
 pub use database_migration::*;
+#[doc(inline)]
 pub use database_migration_files as files;
+#[doc(inline)]
 #[cfg(feature = "config")]
 pub use surrealdb_migrate_config as settings;
 pub mod db_client {
+    #[doc(inline)]
     pub use surrealdb_migrate_db_client::connect_to_database;
+    #[doc(inline)]
     pub use surrealdb_migrate_db_client::DbConnection;
+    #[doc(inline)]
     pub use surrealdb_migrate_db_client::DbError;
 }
 
