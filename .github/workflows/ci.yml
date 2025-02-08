@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Install toolchain
+      - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v4
-      - name: Install toolchain
+      - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
@@ -110,7 +110,7 @@ jobs:
         run: |
           msrv=$(cat Cargo.toml | grep rust-version | sed 's/.* = "//; s/"//')
           echo "msrv=$msrv" >> $GITHUB_OUTPUT
-      - name: Install toolchain
+      - name: Install MSRV toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ steps.current_msrv.outputs.msrv }}
@@ -122,3 +122,21 @@ jobs:
           args: --workspace
         env:
           RUSTFLAGS: "" # remove -Dwarnings
+
+  doc:
+    name: API Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v2
+      - name: Run cargo doc
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --workspace --all-features -no-deps
