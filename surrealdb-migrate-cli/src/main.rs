@@ -1,3 +1,57 @@
+//! A command line tool to manage and apply migrations for a [SurrealDB] database.
+//!
+//! ## Installation
+//!
+//! Currently only installation from source via [crates.io] is supported.
+//!
+//! ### From crates.io (Linux, Mac-OS, Windows)
+//!
+//! ```console
+//! $ cargo install surrealdb-migrate-cli
+//! ```
+//!
+//! This command will install the executable `surmig` on Linux and Mac-OS and
+//! `surmig.exe` on Windows.
+//!
+//! ## Usage
+//!
+//! Surmig provides several subcommands for different tasks. To get an overview
+//! of the available subcommands type:
+//!
+//! ```console
+//! $ surmig help
+//! ```
+//!
+//! or
+//!
+//! ```console
+//! $ surmig --help
+//! ```
+//!
+//! There are general options applicable to most/all subcommands and subcommand
+//! specific options. To get a list of options available for a specific
+//! subcommand use the `--help` option after the subcommand. For example:
+//!
+//! ```console
+//! $ surmig migrate --help
+//! ```
+//!
+//! ## Configuration
+//!
+//! In order to work properly with `surmig` it needs some configuration. It can
+//! be configured by providing a config-file `surrealdb-migrate.toml` and/or by
+//! settings some environment variables. For details on how to configure
+//! `surmig` see the [configuration documentation][surrealdb_migrate::settings].
+//!
+//! Some settings can be provided via command-line options. To get the available
+//! command line options specify the `--help` option.
+//!
+//! When a command line option is specified it overwrites the related
+//! environment variable and the related setting in the configuration file.
+//!
+//! [crates.io]: https://crates.io/crates/surrealdb-migrate-cli
+//! [SurrealDB]: https://surrealdb.com
+
 mod args;
 mod create_cmd;
 mod list_cmd;

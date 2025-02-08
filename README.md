@@ -18,7 +18,7 @@ SurrealDB-Migrate provides two ways to deal with migrations of a database:
 
 ## `surmig`: the command line tool
 
-Install the command line tool from [crates.io][crates-url]:
+Install the command line tool from [crates.io][cli-crate-url]:
 
 ```console
 $ cargo install surrealdb-migrate-cli
@@ -52,6 +52,9 @@ Options:
   -V, --version
           Print version
 ```
+
+In order to work properly `surmig` needs some configuration. See the
+chapter [Configuration](#configuration) for how to configure `surmig`.
 
 ## `surrealdb-migrate`: the crate for Rust programs
 
@@ -97,6 +100,9 @@ async fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 ```
+
+See the [API docs][docs-url] for more details on how to use this crate. A fully working example
+can be found in the [examples](surrealdb-migrate/examples) folder of `surrealdb-migrate`.
 
 ## Features and functionality
 
@@ -325,7 +331,7 @@ $ surmig migrate --help
 
 <!-- External Links -->
 
-[crates.io]: https://crates.io
+[cli-crate-url]: https://crates.io/crates/surrealdb-migrate-cli
 
 [SemVer]: https://semver.org
 
