@@ -53,8 +53,8 @@ Options:
           Print version
 ```
 
-In order to work properly `surmig` needs some configuration. See the
-chapter [Configuration](#configuration) for how to configure `surmig`.
+In order to work properly `surmig` needs some configuration. See the chapter
+[Configuration](#configuration) on how to configure `surmig`.
 
 ## `surrealdb-migrate`: the crate for Rust programs
 
