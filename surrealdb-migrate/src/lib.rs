@@ -98,6 +98,7 @@ pub mod db_client {
 }
 
 // test code snippets in the README.md
+#[cfg(doctest)]
 #[doc = include_str!("../../README.md")]
 #[allow(dead_code)]
 type TestExamplesInReadme = ();
