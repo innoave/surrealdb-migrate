@@ -48,10 +48,9 @@
 //!
 //! The configuration of the database connection and the migration runner can be
 //! provided in an application specific way or by using the configuration
-//! mechanism provided by this crate
-//! (see [Configuring the Db-connection and the MigrationRunner]).
+//! mechanism provided by this crate (see next chapter below).
 //!
-//! ## Configuring the DB-connection and the MigrationRunner
+//! ## Configuring the DB-connection and the Migration-Runner
 //!
 //! Both the DB-connection and the [`MigrationRunner`] can be configured using
 //! the configuration mechanism provided by this crate. The configuration
