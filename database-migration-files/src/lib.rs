@@ -1,3 +1,5 @@
+#![doc(html_root_url = "https://docs.rs/database-migration-files/0.1.0")]
+
 use database_migration::checksum::hash_migration_script;
 use database_migration::definition::{GetFilename, ParseMigration};
 use database_migration::error::Error;
@@ -136,3 +138,10 @@ where
 
 #[cfg(test)]
 mod tests;
+
+// workaround for false positive 'unused extern crate' warnings until
+// Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
+#[cfg(test)]
+mod dummy_extern_uses {
+    use version_sync as _;
+}
