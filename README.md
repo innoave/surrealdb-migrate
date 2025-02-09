@@ -322,7 +322,7 @@ $ surmig migrate --help
 
 [license-url]: https://github.com/innoave/surrealdb-migrate/blob/main/LICENSE
 
-[msrv-badge]: https://img.shields.io/crates/msrv/surrealdb-migrate?color=grey
+[msrv-badge]: https://img.shields.io/crates/msrv/surrealdb-migrate?color=chocolate
 
 [code-coverage-badge]: https://codecov.io/github/innoave/surrealdb-migrate/graph/badge.svg?token=o0w7R7J0Op
 

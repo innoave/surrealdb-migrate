@@ -28,7 +28,7 @@ this project but could be used by other database migration projects as well.
 
 [license-url]: https://github.com/innoave/surrealdb-migrate/blob/main/LICENSE
 
-[msrv-badge]: https://img.shields.io/crates/msrv/database-migration-files?color=grey
+[msrv-badge]: https://img.shields.io/crates/msrv/database-migration-files?color=chocolate
 
 [code-coverage-badge]: https://codecov.io/github/innoave/surrealdb-migrate/graph/badge.svg?token=o0w7R7J0Op
 
