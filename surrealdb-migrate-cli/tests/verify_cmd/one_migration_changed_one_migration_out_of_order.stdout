@@ -1,0 +1,8 @@
+
+Verifying migrations against database "playground/test"...
+
+* migration 20250103_141030 is out of order - last applied migration is 20250103_141521
+* migration 20250103_141521 has changed - current checksum: [..], applied checksum: [..]
+
+Found 2 problematic migrations.
+

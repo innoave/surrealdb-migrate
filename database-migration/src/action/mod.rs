@@ -2,8 +2,10 @@ use crate::migration::{
     ApplicableMigration, Execution, Problem, ProblematicMigration, ScriptContent,
 };
 use chrono::NaiveDateTime;
+use enumset::{EnumSet, EnumSetIter, EnumSetType};
 use indexmap::IndexMap;
 use std::marker::PhantomData;
+use std::ops::{Add, AddAssign};
 
 pub trait ListOutOfOrder {
     fn list_out_of_order(
@@ -21,6 +23,96 @@ pub trait ListChangedAfterExecution {
     ) -> Vec<ProblematicMigration>;
 }
 
+#[derive(EnumSetType, Debug)]
+pub enum Check {
+    Checksum,
+    Order,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Checks(EnumSet<Check>);
+
+impl Checks {
+    pub const fn none() -> Self {
+        Self(EnumSet::empty())
+    }
+
+    pub const fn all() -> Self {
+        Self(EnumSet::all())
+    }
+
+    pub fn only(check: Check) -> Self {
+        Self(EnumSet::only(check))
+    }
+
+    pub fn contains(&self, check: Check) -> bool {
+        self.0.contains(check)
+    }
+
+    pub fn iter(&self) -> CheckIter {
+        CheckIter {
+            set_iter: self.0.iter(),
+        }
+    }
+}
+
+impl From<Check> for Checks {
+    fn from(value: Check) -> Self {
+        Self(EnumSet::from(value))
+    }
+}
+
+#[allow(clippy::suspicious_arithmetic_impl)]
+impl Add<Self> for Check {
+    type Output = Checks;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Checks(self | rhs)
+    }
+}
+
+#[allow(clippy::suspicious_op_assign_impl)]
+impl AddAssign<Check> for Checks {
+    fn add_assign(&mut self, rhs: Check) {
+        self.0 |= rhs;
+    }
+}
+
+#[derive(Clone)]
+pub struct CheckIter {
+    set_iter: EnumSetIter<Check>,
+}
+
+impl Iterator for CheckIter {
+    type Item = Check;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.set_iter.next()
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.set_iter.size_hint()
+    }
+}
+
+impl IntoIterator for &Checks {
+    type Item = Check;
+    type IntoIter = CheckIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl IntoIterator for Checks {
+    type Item = Check;
+    type IntoIter = CheckIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 #[must_use]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Verify {
@@ -34,6 +126,15 @@ impl Default for Verify {
         Self {
             ignore_checksums: false,
             ignore_order: false,
+        }
+    }
+}
+
+impl From<Checks> for Verify {
+    fn from(checks: Checks) -> Self {
+        Self {
+            ignore_checksums: !checks.contains(Check::Checksum),
+            ignore_order: !checks.contains(Check::Order),
         }
     }
 }
