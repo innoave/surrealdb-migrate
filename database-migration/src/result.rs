@@ -1,3 +1,4 @@
+use crate::migration::ProblematicMigration;
 use chrono::NaiveDateTime;
 
 /// Result of a migration action.
@@ -22,4 +23,15 @@ pub enum Reverted {
     Completely,
     /// No backward migrations found in the migrations folder.
     NoBackwardMigrationsFound,
+}
+
+/// Result of a verify action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Verified {
+    /// No problems have been found.
+    NoProblemsFound,
+    /// Problematic migrations found.
+    FoundProblems(Vec<ProblematicMigration>),
+    /// No migrations found in the migrations folder.
+    NoMigrationsFound,
 }

@@ -63,18 +63,18 @@ async fn migrate_fully_migrated_database_ignoring_checksum() {
         .expect("failed to insert migration 1");
 
     let migration2 = Migration {
-        key: key("20250103_140521"),
+        key: key("20250103_141521"),
         title: "create some quotes".into(),
         kind: MigrationKind::Up,
         script_path:
-            "../fixture/with_down_migrations/migrations/20250103_140521_create_some_quotes.surql"
+            "../fixture/with_down_migrations/migrations/20250103_141521_create_some_quotes.surql"
                 .into(),
     };
 
     let checksum2 = hash_migration_script(&migration2, "");
 
     let execution2 = Execution {
-        key: key("20250103_140521"),
+        key: key("20250103_141521"),
         applied_rank: 2,
         applied_by: "tester".into(),
         applied_at: datetime("2025-01-20T09:10:20Z"),
