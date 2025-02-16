@@ -177,10 +177,7 @@ impl ListOutOfOrder for Verify {
                             key: mig.key,
                             kind: mig.kind,
                             script_path: mig.path.clone(),
-                            problem: Problem::OutOfOrder {
-                                definition_key: mig.key,
-                                last_applied_key,
-                            },
+                            problem: Problem::OutOfOrder { last_applied_key },
                         })
                     } else {
                         None

@@ -105,7 +105,6 @@ pub enum Problem {
         execution_checksum: Checksum,
     },
     OutOfOrder {
-        definition_key: NaiveDateTime,
         last_applied_key: NaiveDateTime,
     },
 }

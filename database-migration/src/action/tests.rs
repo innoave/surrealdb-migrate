@@ -129,7 +129,6 @@ mod verify {
             kind: MigrationKind::Up,
             script_path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
             problem: Problem::OutOfOrder {
-                definition_key: key("20250109_125900"),
                 last_applied_key: key("20250110_090059"),
             },
         }]);
@@ -198,7 +197,6 @@ mod verify {
                 script_path: Path::new("migrations/20250109_115959_create_name_set_one.surql")
                     .into(),
                 problem: Problem::OutOfOrder {
-                    definition_key: key("20250109_115959"),
                     last_applied_key: key("20250110_090100"),
                 },
             },
@@ -208,7 +206,6 @@ mod verify {
                 script_path: Path::new("migrations/20250110_090059_create_name_set_three.surql")
                     .into(),
                 problem: Problem::OutOfOrder {
-                    definition_key: key("20250110_090059"),
                     last_applied_key: key("20250110_090100"),
                 },
             },

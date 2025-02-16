@@ -418,7 +418,6 @@ async fn verify_fully_migrated_database_one_migration_out_of_order() {
 
     if let Ok(Verified::FoundProblems(problems)) = result {
         assert_that!(problems[0].problem).is_equal_to(Problem::OutOfOrder {
-            definition_key: key("20250103_141030"),
             last_applied_key: key("20250103_141521"),
         });
         assert_that!(problems[0].key).is_equal_to(key("20250103_141030"));
@@ -575,7 +574,6 @@ async fn verify_fully_migrated_database_one_migration_changed_and_one_out_of_ord
 
     if let Ok(Verified::FoundProblems(problems)) = result {
         assert_that!(problems[0].problem).is_equal_to(Problem::OutOfOrder {
-            definition_key: key("20250103_141030"),
             last_applied_key: key("20250103_141521"),
         });
         assert_that!(problems[0].key).is_equal_to(key("20250103_141030"));
