@@ -1,0 +1,7 @@
+
+Verifying migrations against database "playground/test"...
+
+* migration 20250103_141521 has changed - current checksum: [..], applied checksum: [..]
+
+Found 1 problematic migration.
+

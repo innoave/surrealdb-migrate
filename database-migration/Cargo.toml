@@ -23,6 +23,7 @@ test-dsl = []
 [dependencies]
 chrono.workspace = true
 crc32fast.workspace = true
+enumset.workspace = true
 indexmap.workspace = true
 serde.workspace = true
 serde_with.workspace = true

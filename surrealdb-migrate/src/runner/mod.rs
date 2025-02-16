@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
 use database_migration::action::{
-    ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
+    Checks, ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
 use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
@@ -248,6 +248,14 @@ impl MigrationRunner {
     }
 
     pub async fn verify(&self, db: &DbConnection) -> Result<Verified, Error> {
+        self.verify_checks(Checks::all(), db).await
+    }
+
+    pub async fn verify_checks(
+        &self,
+        checks: Checks,
+        db: &DbConnection,
+    ) -> Result<Verified, Error> {
         let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
         let mut migrations = mig_dir
             .list_all_migrations()?
@@ -266,7 +274,7 @@ impl MigrationRunner {
             .map(|exec| (exec.key, exec))
             .collect::<IndexMap<_, _>>();
 
-        let verify = Verify::default();
+        let verify = Verify::from(checks);
         let out_of_order_migrations =
             verify.list_out_of_order(&script_contents, &executed_migrations);
         let changed_migrations =
