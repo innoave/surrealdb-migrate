@@ -6,6 +6,7 @@ mod dummy_extern_uses {
     use chrono as _;
     use crc32fast as _;
     use database_migration as _;
+    use enumset as _;
     use indexmap as _;
     use proptest as _;
     use serde as _;

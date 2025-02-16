@@ -59,6 +59,7 @@ mod migrate_cmd;
 mod revert_cmd;
 mod runner;
 mod tables;
+mod verify_cmd;
 
 use crate::args::{Args, Command};
 use clap::Parser;
@@ -117,8 +118,9 @@ async fn run_command(
             let db = connect_to_database(&db_config).await?;
             list_cmd::run(args, runner_config, &db).await
         },
-        Command::Verify(_) => {
-            todo!()
+        Command::Verify(args) => {
+            let db = connect_to_database(&db_config).await?;
+            verify_cmd::run(args, runner_config, db_config, &db).await
         },
     }
 }

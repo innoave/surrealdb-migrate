@@ -7,6 +7,64 @@ use chrono::DateTime;
 use std::path::Path;
 use std::time::Duration;
 
+mod checks {
+    #![allow(clippy::iter_on_single_items)]
+
+    use super::*;
+
+    #[test]
+    fn checks_with_checksum_only() {
+        let checks = Checks::only(Check::Checksum);
+
+        assert_that!(checks.iter()).contains_exactly([Check::Checksum].into_iter());
+    }
+
+    #[test]
+    fn checks_with_order_only() {
+        let checks = Checks::only(Check::Order);
+
+        assert_that!(checks.iter()).contains_exactly([Check::Order].into_iter());
+    }
+
+    #[test]
+    fn a_check_can_be_converted_to_checks() {
+        let checks = Checks::from(Check::Checksum);
+
+        assert_that!(checks.iter()).contains_exactly([Check::Checksum].into_iter());
+    }
+
+    #[test]
+    fn none_checks_contains_no_check() {
+        let checks = Checks::none();
+
+        assert_that!(checks.iter()).is_empty();
+    }
+
+    #[test]
+    fn all_checks_contains_all_check_variants() {
+        let checks = Checks::all();
+
+        assert_that!(checks.iter()).contains_exactly([Check::Checksum, Check::Order].into_iter());
+    }
+
+    #[test]
+    fn check_variants_can_be_added() {
+        let checks = Check::Checksum + Check::Order;
+
+        assert_that!(checks.iter()).contains_exactly([Check::Checksum, Check::Order].into_iter());
+    }
+
+    #[test]
+    fn a_check_can_be_added_to_existing_checks() {
+        let mut checks = Checks::from(Check::Order);
+
+        checks += Check::Checksum;
+
+        assert_that!(checks.into_iter())
+            .contains_exactly([Check::Checksum, Check::Order].into_iter());
+    }
+}
+
 mod verify {
     use super::*;
 

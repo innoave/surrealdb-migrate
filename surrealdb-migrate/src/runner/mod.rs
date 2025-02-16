@@ -1,12 +1,12 @@
 use chrono::NaiveDateTime;
 use database_migration::action::{
-    ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
+    Checks, ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
 use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
-use database_migration::result::{Migrated, Reverted};
+use database_migration::result::{Migrated, Reverted, Verified};
 use database_migration_files::MigrationDirectory;
 use indexmap::IndexMap;
 use std::cmp::Reverse;
@@ -245,6 +245,49 @@ impl MigrationRunner {
         };
 
         Ok(max_remaining_migration.map_or_else(completely_or_nothing, Reverted::DownTo))
+    }
+
+    pub async fn verify(&self, db: &DbConnection) -> Result<Verified, Error> {
+        self.verify_checks(Checks::all(), db).await
+    }
+
+    pub async fn verify_checks(
+        &self,
+        checks: Checks,
+        db: &DbConnection,
+    ) -> Result<Verified, Error> {
+        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mut migrations = mig_dir
+            .list_all_migrations()?
+            .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| mig.kind.is_forward()))
+            .collect::<Result<Vec<_>, _>>()?;
+        if migrations.is_empty() {
+            return Ok(Verified::NoMigrationsFound);
+        }
+        migrations.sort_unstable_by_key(|mig| mig.key);
+        let script_contents = mig_dir.read_script_content_for_migrations(&migrations)?;
+
+        let existing_executions =
+            select_all_executions_sorted_by_key(&self.migrations_table, db).await?;
+        let executed_migrations = existing_executions
+            .into_iter()
+            .map(|exec| (exec.key, exec))
+            .collect::<IndexMap<_, _>>();
+
+        let verify = Verify::from(checks);
+        let out_of_order_migrations =
+            verify.list_out_of_order(&script_contents, &executed_migrations);
+        let changed_migrations =
+            verify.list_changed_after_execution(&script_contents, &executed_migrations);
+
+        let mut problematic_migrations = out_of_order_migrations;
+        problematic_migrations.extend(changed_migrations);
+
+        if problematic_migrations.is_empty() {
+            Ok(Verified::NoProblemsFound)
+        } else {
+            Ok(Verified::FoundProblems(problematic_migrations))
+        }
     }
 }
 

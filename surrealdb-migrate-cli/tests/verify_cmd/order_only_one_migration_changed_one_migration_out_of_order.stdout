@@ -1,0 +1,7 @@
+
+Verifying migrations against database "playground/test"...
+
+* migration 20250103_141030 is out of order - last applied migration is 20250103_141521
+
+Found 1 problematic migration.
+

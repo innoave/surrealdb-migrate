@@ -1,7 +1,7 @@
 
 Reverting database "playground/test"...
 
-20250103_140521: create some quotes (down) applied
+20250103_141521: create some quotes (down) applied
 20250103_140520: define quote table (down) applied
 
 Successfully reverted database "playground/test" completely.
