@@ -16,6 +16,7 @@ license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.81.0"
 repository = "https://github.com/innoave/surrealdb-migrate"
+readme = "README.md"
 
 [workspace.dependencies]
 # workspace dependencies
