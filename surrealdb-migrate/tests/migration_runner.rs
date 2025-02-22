@@ -6,11 +6,6 @@ use crate::fixtures::db::{
 };
 use assert_fs::TempDir;
 use assertor::*;
-use database_migration::checksum::hash_migration_script;
-use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
-use database_migration::migration::{Execution, Migration, MigrationKind, Problem};
-use database_migration::result::{Migrated, Reverted, Verified};
-use database_migration::test_dsl::{datetime, key};
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
@@ -19,8 +14,13 @@ use std::io::read_to_string;
 use std::iter::once;
 use std::path::Path;
 use std::time::Duration;
+use surrealdb_migrate::checksum::hash_migration_script;
 use surrealdb_migrate::config::RunnerConfig;
+use surrealdb_migrate::config::DEFAULT_MIGRATIONS_TABLE;
+use surrealdb_migrate::migration::{Execution, Migration, MigrationKind, Problem};
+use surrealdb_migrate::result::{Migrated, Reverted, Verified};
 use surrealdb_migrate::runner::MigrationRunner;
+use surrealdb_migrate::test_dsl::{datetime, key};
 use surrealdb_migrate_db_client::insert_migration_execution;
 
 #[tokio::test]
