@@ -7,12 +7,12 @@ use crate::examples_database::{
     start_surrealdb_testcontainer,
 };
 use anyhow::Context;
-use database_migration::config::DbAuthLevel;
 use std::collections::HashMap;
 use std::path::Path;
-use surrealdb_migrate::config::RunnerConfig;
+use surrealdb_migrate::config::{DbAuthLevel, RunnerConfig};
+use surrealdb_migrate::db_client::connect_to_database;
 use surrealdb_migrate::runner::MigrationRunner;
-use surrealdb_migrate_db_client::{connect_to_database, select_all_executions_sorted_by_key};
+use surrealdb_migrate_db_client::select_all_executions_sorted_by_key;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
