@@ -51,7 +51,7 @@ dotenvy = "0.15"
 proptest = { version = "1", default-features = false, features = ["std"] }
 serial_test = "3"
 snapbox = "0.6"
-testcontainers-modules = "0.11"
+testcontainers-modules = "0.12"
 version-sync = { version = "0.9", default-features = false, features = ["markdown_deps_updated", "html_root_url_updated"] }
 
 [workspace.lints.rust]
