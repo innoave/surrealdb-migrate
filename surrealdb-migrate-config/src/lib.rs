@@ -108,7 +108,7 @@ use serde::de::{Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
 use std::env;
-use std::fmt::Formatter;
+use std::fmt::{Formatter, Write as _};
 use std::path::Path;
 
 pub const CONFIG_DIR_ENVIRONMENT_VAR: &str = "SURREALDB_MIGRATE_CONFIG_DIR";
@@ -179,19 +179,19 @@ fn read_environment() -> String {
     if !migration.is_empty() {
         environment_toml.push_str("[migration]\n");
         for (key, val) in migration {
-            environment_toml.push_str(&format!("{key} = \"{val}\"\n"));
+            let _ = writeln!(environment_toml, "{key} = \"{val}\"");
         }
     }
     if !files.is_empty() {
         environment_toml.push_str("[files]\n");
         for (key, val) in files {
-            environment_toml.push_str(&format!("{key} = \"{val}\"\n"));
+            let _ = writeln!(environment_toml, "{key} = \"{val}\"");
         }
     }
     if !database.is_empty() {
         environment_toml.push_str("[database]\n");
         for (key, val) in database {
-            environment_toml.push_str(&format!("{key} = \"{val}\"\n"));
+            let _ = writeln!(environment_toml, "{key} = \"{val}\"");
         }
     }
     environment_toml
