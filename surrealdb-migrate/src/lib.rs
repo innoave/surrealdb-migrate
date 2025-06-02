@@ -90,11 +90,11 @@ pub use database_migration_files as files;
 pub use surrealdb_migrate_config as settings;
 pub mod db_client {
     #[doc(inline)]
-    pub use surrealdb_migrate_db_client::connect_to_database;
-    #[doc(inline)]
     pub use surrealdb_migrate_db_client::DbConnection;
     #[doc(inline)]
     pub use surrealdb_migrate_db_client::DbError;
+    #[doc(inline)]
+    pub use surrealdb_migrate_db_client::connect_to_database;
 }
 
 // test code snippets in the README.md

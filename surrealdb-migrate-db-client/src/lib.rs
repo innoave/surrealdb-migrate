@@ -10,10 +10,10 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::time::Instant;
-use surrealdb::engine::any::{connect, Any};
+use surrealdb::engine::any::{Any, connect};
 use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
-use surrealdb::{sql, Surreal};
+use surrealdb::{Surreal, sql};
 
 pub const SURREALDB_CONTAINER_IMAGE_TAG: &str = "v2.3";
 

@@ -8,7 +8,7 @@ use crate::fixtures::db::{
 };
 use assertor::*;
 use chrono::DateTime;
-use database_migration::checksum::{hash_migration_script, Checksum};
+use database_migration::checksum::{Checksum, hash_migration_script};
 use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
 use database_migration::error::Error;
 use database_migration::migration::{
@@ -132,8 +132,8 @@ async fn find_migrations_table_info_in_database_with_migrations_table_existing()
 }
 
 #[tokio::test]
-async fn find_migrations_table_info_in_database_with_migrations_table_existing_but_with_different_name(
-) {
+async fn find_migrations_table_info_in_database_with_migrations_table_existing_but_with_different_name()
+ {
     let db_server = start_surrealdb_testcontainer().await;
     let config = client_config_for_testcontainer(&db_server).await;
     let db = connect_to_test_database_as_database_user(config).await;

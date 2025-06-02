@@ -2,7 +2,7 @@ use crate::args::VerifyArgs;
 use crate::runner::runner;
 use color_eyre::Report;
 use surrealdb_migrate::action::{Check, Checks};
-use surrealdb_migrate::config::{DbClientConfig, RunnerConfig, MIGRATION_KEY_FORMAT_STR};
+use surrealdb_migrate::config::{DbClientConfig, MIGRATION_KEY_FORMAT_STR, RunnerConfig};
 use surrealdb_migrate::db_client::DbConnection;
 use surrealdb_migrate::migration::{Problem, ProblematicMigration};
 use surrealdb_migrate::result::Verified;

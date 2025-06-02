@@ -87,7 +87,7 @@ impl Iterator for MigDirIter<'_> {
                             }
                         },
                         Err(err) => {
-                            return Some(Err(Error::ScanningMigrationDirectory(err.to_string())))
+                            return Some(Err(Error::ScanningMigrationDirectory(err.to_string())));
                         },
                     }
                     let file_path = self.base_dir.join(entry.file_name());

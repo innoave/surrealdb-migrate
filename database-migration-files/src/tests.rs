@@ -228,10 +228,12 @@ fn create_migration_file_for_new_migration() {
         script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
     }));
 
-    assert_that!(migration
-        .expect("failed to create new migration file")
-        .script_path
-        .exists())
+    assert_that!(
+        migration
+            .expect("failed to create new migration file")
+            .script_path
+            .exists()
+    )
     .is_true();
 }
 
@@ -258,10 +260,12 @@ fn create_migration_file_for_new_migration_with_empty_title() {
         script_path: migrations_folder.join("20250115_201642.up.surql"),
     }));
 
-    assert_that!(migration
-        .expect("failed to create new migration file")
-        .script_path
-        .exists())
+    assert_that!(
+        migration
+            .expect("failed to create new migration file")
+            .script_path
+            .exists()
+    )
     .is_true();
 }
 
@@ -288,10 +292,12 @@ fn create_migration_file_for_down_migration() {
         script_path: migrations_folder.join("20250115_201642_create_some_table.down.surql"),
     }));
 
-    assert_that!(migration
-        .expect("failed to create new migration file")
-        .script_path
-        .exists())
+    assert_that!(
+        migration
+            .expect("failed to create new migration file")
+            .script_path
+            .exists()
+    )
     .is_true();
 }
 
@@ -318,10 +324,12 @@ fn create_migration_file_for_down_migration_with_empty_title() {
         script_path: migrations_folder.join("20250115_201642.down.surql"),
     }));
 
-    assert_that!(migration
-        .expect("failed to create new migration file")
-        .script_path
-        .exists())
+    assert_that!(
+        migration
+            .expect("failed to create new migration file")
+            .script_path
+            .exists()
+    )
     .is_true();
 }
 
@@ -348,10 +356,12 @@ fn create_migration_file_for_new_migration_file_already_existing() {
         script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
     }));
 
-    assert_that!(existing_migration
-        .expect("existing file not created")
-        .script_path
-        .exists())
+    assert_that!(
+        existing_migration
+            .expect("existing file not created")
+            .script_path
+            .exists()
+    )
     .is_true();
 
     let result = migration_files.create_new_migration(new_migration);

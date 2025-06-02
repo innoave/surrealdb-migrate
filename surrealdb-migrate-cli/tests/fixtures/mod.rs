@@ -1,7 +1,7 @@
 pub mod db;
 pub mod files;
 
-use snapbox::cmd::{cargo_bin, Command};
+use snapbox::cmd::{Command, cargo_bin};
 
 pub fn load_environment_variables() {
     let _env_file =
