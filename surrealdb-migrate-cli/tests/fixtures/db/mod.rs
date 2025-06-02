@@ -2,6 +2,7 @@ use super::load_environment_variables;
 use std::env;
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
 use surrealdb_migrate::db_client::{connect_to_database, DbConnection};
+use surrealdb_migrate_db_client::SURREALDB_CONTAINER_IMAGE_TAG;
 use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -27,7 +28,7 @@ pub fn db_password() -> String {
 #[allow(dead_code)]
 pub async fn start_surrealdb_testcontainer() -> ContainerAsync<SurrealDb> {
     SurrealDb::default()
-        .with_tag("v2.1")
+        .with_tag(SURREALDB_CONTAINER_IMAGE_TAG)
         .start()
         .await
         .expect("failed to start SurrealDB testcontainer")

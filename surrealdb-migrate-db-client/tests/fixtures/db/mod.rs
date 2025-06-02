@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::env;
 use surrealdb_migrate_db_client::{
     connect_to_database, define_migrations_table, DbConnection, DbError,
+    SURREALDB_CONTAINER_IMAGE_TAG,
 };
 use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
@@ -29,7 +30,7 @@ pub fn db_password() -> String {
 
 pub async fn start_surrealdb_testcontainer() -> ContainerAsync<SurrealDb> {
     SurrealDb::default()
-        .with_tag("v2.1")
+        .with_tag(SURREALDB_CONTAINER_IMAGE_TAG)
         .start()
         .await
         .expect("failed to start SurrealDb testcontainer")

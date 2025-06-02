@@ -253,7 +253,7 @@ async fn insert_migration_execution_with_same_key_as_existing_one() {
     let result =
         insert_migration_execution(migration, execution, DEFAULT_MIGRATIONS_TABLE, &db).await;
 
-    assert_that!(result).err().is_equal_to(Error::DbQuery("There was a problem with the database: Database record `migrations:20250103_153309` already exists".into()));
+    assert_that!(result).err().is_equal_to(Error::DbQuery("There was a problem with the database: Database record `migrations:⟨20250103_153309⟩` already exists".into()));
 }
 
 #[tokio::test]
