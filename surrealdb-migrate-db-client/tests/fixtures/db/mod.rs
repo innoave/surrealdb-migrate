@@ -1,12 +1,12 @@
 use crate::fixtures::load_environment_variables;
-use database_migration::config::{DbAuthLevel, DbClientConfig, DEFAULT_MIGRATIONS_TABLE};
+use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, DbAuthLevel, DbClientConfig};
 use std::collections::HashMap;
 use std::env;
 use surrealdb_migrate_db_client::{
-    connect_to_database, define_migrations_table, DbConnection, DbError,
-    SURREALDB_CONTAINER_IMAGE_TAG,
+    DbConnection, DbError, SURREALDB_CONTAINER_IMAGE_TAG, connect_to_database,
+    define_migrations_table,
 };
-use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
+use testcontainers_modules::surrealdb::{SURREALDB_PORT, SurrealDb};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 

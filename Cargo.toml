@@ -7,14 +7,14 @@ members = [
     "surrealdb-migrate",
     "surrealdb-migrate-cli",
 ]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
 version = "0.1.0"
 authors = ["haraldmaida"]
 license = "Apache-2.0"
-edition = "2021"
-rust-version = "1.81.0"
+edition = "2024"
+rust-version = "1.86.0"
 repository = "https://github.com/innoave/surrealdb-migrate"
 readme = "README.md"
 
@@ -49,7 +49,6 @@ assert_fs = "1"
 assertor = "0.0.3"
 dotenvy = "0.15"
 proptest = { version = "1", default-features = false, features = ["std"] }
-serial_test = "3"
 snapbox = "0.6"
 testcontainers-modules = "0.12"
 version-sync = { version = "0.9", default-features = false, features = ["markdown_deps_updated", "html_root_url_updated"] }
@@ -61,11 +60,6 @@ bare_trait_objects = "warn"
 deprecated = "warn"
 explicit_outlives_requirements = "warn"
 noop_method_call = "warn"
-rust_2018_idioms = { level = "warn", priority = -1 }
-rust_2021_incompatible_closure_captures = "warn"
-rust_2021_incompatible_or_patterns = "warn"
-rust_2021_prefixes_incompatible_syntax = "warn"
-rust_2021_prelude_collisions = "warn"
 single_use_lifetimes = "warn"
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"

@@ -8,7 +8,7 @@ use database_migration::test_dsl::{datetime, key};
 use std::path::Path;
 use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
-use surrealdb_migrate::config::{RunnerConfig, DEFAULT_MIGRATIONS_TABLE};
+use surrealdb_migrate::config::{DEFAULT_MIGRATIONS_TABLE, RunnerConfig};
 use surrealdb_migrate::migration::{Execution, Migration, MigrationKind};
 use surrealdb_migrate::runner::MigrationRunner;
 use surrealdb_migrate_db_client::insert_migration_execution;

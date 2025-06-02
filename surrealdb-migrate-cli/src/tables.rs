@@ -1,7 +1,7 @@
 use cli_table::format::Justify;
 use cli_table::{Cell, CellStruct, Table, TableDisplay};
-use color_eyre::eyre::WrapErr;
 use color_eyre::Report;
+use color_eyre::eyre::WrapErr;
 use surrealdb_migrate::config::MIGRATION_KEY_FORMAT_STR;
 use surrealdb_migrate::migration::{Execution, Migration};
 

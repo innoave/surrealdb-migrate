@@ -101,13 +101,14 @@
 //! [surrealdb-migrate.default.toml]: https://github.com/innoave/surrealdb-migrate/blob/main/surrealdb-migrate-config/resources/surrealdb-migrate.default.toml
 //! [`surrealdb-migrate`]: https://docs.rs/surrealdb-migrate/0.1.0
 
+mod env;
+
 use config::{Config, File, FileFormat};
 use database_migration::config::{DbAuthLevel, DbClientConfig, RunnerConfig};
 use database_migration::error::Error;
 use serde::de::{Unexpected, Visitor};
 use serde::{Deserialize, Deserializer};
 use std::collections::HashMap;
-use std::env;
 use std::fmt::{Formatter, Write as _};
 use std::path::Path;
 

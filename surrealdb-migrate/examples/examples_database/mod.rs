@@ -5,9 +5,9 @@
 use anyhow::Context;
 use std::env;
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
-use surrealdb_migrate::db_client::{connect_to_database, DbConnection};
+use surrealdb_migrate::db_client::{DbConnection, connect_to_database};
 use surrealdb_migrate_db_client::SURREALDB_CONTAINER_IMAGE_TAG;
-use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
+use testcontainers_modules::surrealdb::{SURREALDB_PORT, SurrealDb};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
 

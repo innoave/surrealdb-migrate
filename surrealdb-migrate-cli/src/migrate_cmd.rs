@@ -1,9 +1,9 @@
 use crate::args::MigrateArgs;
 use crate::runner::runner;
 use chrono::NaiveDateTime;
-use color_eyre::eyre::eyre;
 use color_eyre::Report;
-use surrealdb_migrate::config::{DbClientConfig, RunnerConfig, MIGRATION_KEY_FORMAT_STR};
+use color_eyre::eyre::eyre;
+use surrealdb_migrate::config::{DbClientConfig, MIGRATION_KEY_FORMAT_STR, RunnerConfig};
 use surrealdb_migrate::db_client::DbConnection;
 use surrealdb_migrate::result::Migrated;
 
@@ -72,6 +72,7 @@ pub async fn run(
     Ok(())
 }
 
+#[allow(clippy::let_and_return)]
 const fn apply_command_args_to_runner_config<'a>(
     runner_config: RunnerConfig<'a>,
     args: &MigrateArgs,

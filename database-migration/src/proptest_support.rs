@@ -14,7 +14,7 @@ pub fn any_checksum() -> impl Strategy<Value = Checksum> {
 }
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-fn days_in_month(year: i32, month: u32) -> u32 {
+const fn days_in_month(year: i32, month: u32) -> u32 {
     let current_month =
         NaiveDate::from_ymd_opt(year, month, 1).expect("year or month out of range");
     let (next_year, next_month) = match month {

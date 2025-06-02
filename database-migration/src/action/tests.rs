@@ -213,8 +213,8 @@ mod verify {
     }
 
     #[test]
-    fn list_out_of_order_with_ignore_order_option_second_and_fourth_migration_out_of_four_are_applied(
-    ) {
+    fn list_out_of_order_with_ignore_order_option_second_and_fourth_migration_out_of_four_are_applied()
+     {
         let defined = vec![
             ScriptContent {
                 key: key("20250109_115959"),

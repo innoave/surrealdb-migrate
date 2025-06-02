@@ -63,8 +63,8 @@ mod verify_cmd;
 
 use crate::args::{Args, Command};
 use clap::Parser;
-use color_eyre::eyre::WrapErr;
 use color_eyre::Report;
+use color_eyre::eyre::WrapErr;
 use simplelog::{ConfigBuilder, LevelFilter, SimpleLogger};
 use std::path::Path;
 use surrealdb_migrate::config::{DbClientConfig, RunnerConfig};

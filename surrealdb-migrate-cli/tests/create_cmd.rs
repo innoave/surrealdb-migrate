@@ -87,7 +87,7 @@ fn create_migration_with_given_key_and_a_given_title() {
     assert_that!(migrations_folder.is_dir()).is_true();
     let mig_files = list_filenames_in_dir(&migrations_folder).collect::<Vec<_>>();
     assert_that!(mig_files).contains_exactly(vec![
-        "20250126_120033_add_some_more_quotes.up.surql".to_string()
+        "20250126_120033_add_some_more_quotes.up.surql".to_string(),
     ]);
 }
 

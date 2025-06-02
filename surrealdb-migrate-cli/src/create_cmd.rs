@@ -1,8 +1,8 @@
 use crate::args::CreateArgs;
 use chrono::{NaiveDateTime, Utc};
-use color_eyre::eyre::{ContextCompat, WrapErr};
 use color_eyre::Report;
-use surrealdb_migrate::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
+use color_eyre::eyre::{ContextCompat, WrapErr};
+use surrealdb_migrate::config::{MIGRATION_KEY_FORMAT_STR, RunnerConfig};
 use surrealdb_migrate::definition::MigrationFilenameStrategy;
 use surrealdb_migrate::files::MigrationDirectory;
 use surrealdb_migrate::migration::{MigrationKind, NewMigration};

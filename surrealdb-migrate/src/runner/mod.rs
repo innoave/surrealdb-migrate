@@ -2,7 +2,7 @@ use chrono::NaiveDateTime;
 use database_migration::action::{
     Checks, ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
-use database_migration::config::{RunnerConfig, MIGRATION_KEY_FORMAT_STR};
+use database_migration::config::{MIGRATION_KEY_FORMAT_STR, RunnerConfig};
 use database_migration::error::Error;
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
@@ -15,9 +15,9 @@ use std::path::PathBuf;
 #[cfg(feature = "config")]
 use surrealdb_migrate_config::Settings;
 use surrealdb_migrate_db_client::{
-    apply_migration_in_transaction, delete_migration_execution, find_max_applied_migration_key,
-    insert_migration_execution, revert_migration_in_transaction, select_all_executions,
-    select_all_executions_sorted_by_key, DbConnection,
+    DbConnection, apply_migration_in_transaction, delete_migration_execution,
+    find_max_applied_migration_key, insert_migration_execution, revert_migration_in_transaction,
+    select_all_executions, select_all_executions_sorted_by_key,
 };
 
 pub struct MigrationRunner {

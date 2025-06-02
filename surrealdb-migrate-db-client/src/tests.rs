@@ -16,8 +16,7 @@ mod extract_table_definition_version {
 
     #[test]
     fn from_comment_version_10_42() {
-        let definition =
-            "DEFINE TABLE migrations SCHEMAFULL TYPE NORMAL COMMENT 'version:10.42' PERMISSIONS FULL";
+        let definition = "DEFINE TABLE migrations SCHEMAFULL TYPE NORMAL COMMENT 'version:10.42' PERMISSIONS FULL";
 
         let version = extract_table_definition_version(definition);
 
@@ -26,8 +25,7 @@ mod extract_table_definition_version {
 
     #[test]
     fn from_comment_with_no_version_attribute() {
-        let definition =
-            "DEFINE TABLE migrations SCHEMAFULL TYPE NORMAL COMMENT 'some comment:10.42' PERMISSIONS FULL";
+        let definition = "DEFINE TABLE migrations SCHEMAFULL TYPE NORMAL COMMENT 'some comment:10.42' PERMISSIONS FULL";
 
         let version = extract_table_definition_version(definition);
 
