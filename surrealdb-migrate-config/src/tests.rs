@@ -1,7 +1,6 @@
 use super::*;
 use assertor::*;
 use database_migration::config::{DbAuthLevel, DbClientConfig, RunnerConfig};
-use serial_test::serial;
 
 #[test]
 fn default_settings_are_as_defined() {
@@ -32,7 +31,6 @@ fn default_settings_are_as_defined() {
 }
 
 #[test]
-#[serial]
 fn overwrite_settings_from_environment_variables() {
     env::set_var("SURREALDB_MIGRATE_CONFIG_DIR", "fixtures/custom_config_dir");
 
@@ -86,7 +84,6 @@ fn overwrite_settings_from_environment_variables() {
 }
 
 #[test]
-#[serial]
 fn load_settings_from_custom_config_directory() {
     env::set_var("SURREALDB_MIGRATE_CONFIG_DIR", "fixtures/custom_config_dir");
 
