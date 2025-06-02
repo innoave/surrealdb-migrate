@@ -15,6 +15,8 @@ use surrealdb::opt::auth;
 use surrealdb::opt::auth::Jwt;
 use surrealdb::{sql, Surreal};
 
+pub const SURREALDB_CONTAINER_IMAGE_TAG: &str = "v2.3";
+
 const DEFINE_MIGRATIONS_TABLE: &str = include_str!("../surql/define_migrations_table.surql");
 
 const TABLE_VERSION_KEY: &str = "version:";

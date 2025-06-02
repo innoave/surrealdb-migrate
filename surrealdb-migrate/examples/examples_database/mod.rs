@@ -6,6 +6,7 @@ use anyhow::Context;
 use std::env;
 use surrealdb_migrate::config::{DbAuthLevel, DbClientConfig};
 use surrealdb_migrate::db_client::{connect_to_database, DbConnection};
+use surrealdb_migrate_db_client::SURREALDB_CONTAINER_IMAGE_TAG;
 use testcontainers_modules::surrealdb::{SurrealDb, SURREALDB_PORT};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
 use testcontainers_modules::testcontainers::{ContainerAsync, ImageExt};
@@ -36,7 +37,7 @@ pub fn load_environment_variables() -> Result<(), anyhow::Error> {
 
 pub async fn start_surrealdb_testcontainer() -> Result<ContainerAsync<SurrealDb>, anyhow::Error> {
     SurrealDb::default()
-        .with_tag("v2.1")
+        .with_tag(SURREALDB_CONTAINER_IMAGE_TAG)
         .start()
         .await
         .context("failed to start SurrealDB testcontainer")

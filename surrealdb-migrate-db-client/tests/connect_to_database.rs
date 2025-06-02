@@ -21,7 +21,7 @@ async fn test_surrealdb_version() {
     let db_version = db.version().await.expect("failed to get SurrealDB version");
 
     assert_that!(db_version.major).is_equal_to(2);
-    assert_that!(db_version.minor).is_equal_to(1);
+    assert_that!(db_version.minor).is_equal_to(3);
 }
 
 #[tokio::test]

@@ -39,7 +39,7 @@ log = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
 simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }
-surrealdb = { version = "2.1", default-features = false }
+surrealdb = { version = "2.3", default-features = false }
 thiserror = "2"
 tokio = { version = "1", features = ["macros"] }
 
@@ -51,7 +51,7 @@ dotenvy = "0.15"
 proptest = { version = "1", default-features = false, features = ["std"] }
 serial_test = "3"
 snapbox = "0.6"
-testcontainers-modules = "0.11"
+testcontainers-modules = "0.12"
 version-sync = { version = "0.9", default-features = false, features = ["markdown_deps_updated", "html_root_url_updated"] }
 
 [workspace.lints.rust]
