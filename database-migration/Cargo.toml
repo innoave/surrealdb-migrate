@@ -34,7 +34,7 @@ thiserror.workspace = true
 proptest = { workspace = true, optional = true, default-features = false, features = ["std"] }
 
 [dev-dependencies]
-assertor.workspace = true
+asserting.workspace = true
 proptest = { workspace = true, default-features = true }
 version-sync.workspace = true
 

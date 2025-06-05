@@ -47,6 +47,7 @@ tokio = { version = "1", features = ["macros"] }
 # dev-dependencies
 anyhow = "1"
 assert_fs = "1"
+asserting = "0.7"
 assertor = "0.0.3"
 dotenvy = "0.15"
 proptest = { version = "1", default-features = false, features = ["std"] }

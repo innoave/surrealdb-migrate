@@ -2,7 +2,7 @@
 // Rust issue [#95513](https://github.com/rust-lang/rust/issues/95513) is fixed
 #[cfg(test)]
 mod dummy_extern_uses {
-    use assertor as _;
+    use asserting as _;
     use chrono as _;
     use crc32fast as _;
     use database_migration as _;

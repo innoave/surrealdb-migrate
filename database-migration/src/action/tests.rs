@@ -2,7 +2,7 @@ use super::*;
 use crate::checksum::Checksum;
 use crate::migration::MigrationKind;
 use crate::test_dsl::{applicable_migrations, executed_migrations, key};
-use assertor::*;
+use asserting::prelude::*;
 use chrono::DateTime;
 use std::path::Path;
 use std::time::Duration;
@@ -16,42 +16,42 @@ mod checks {
     fn checks_with_checksum_only() {
         let checks = Checks::only(Check::Checksum);
 
-        assert_that!(checks.iter()).contains_exactly([Check::Checksum].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Checksum]);
     }
 
     #[test]
     fn checks_with_order_only() {
         let checks = Checks::only(Check::Order);
 
-        assert_that!(checks.iter()).contains_exactly([Check::Order].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Order]);
     }
 
     #[test]
     fn a_check_can_be_converted_to_checks() {
         let checks = Checks::from(Check::Checksum);
 
-        assert_that!(checks.iter()).contains_exactly([Check::Checksum].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Checksum]);
     }
 
     #[test]
     fn none_checks_contains_no_check() {
         let checks = Checks::none();
 
-        assert_that!(checks.iter()).is_empty();
+        assert_that!(checks.iter().next()).is_none();
     }
 
     #[test]
     fn all_checks_contains_all_check_variants() {
         let checks = Checks::all();
 
-        assert_that!(checks.iter()).contains_exactly([Check::Checksum, Check::Order].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Checksum, Check::Order]);
     }
 
     #[test]
     fn check_variants_can_be_added() {
         let checks = Check::Checksum + Check::Order;
 
-        assert_that!(checks.iter()).contains_exactly([Check::Checksum, Check::Order].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Checksum, Check::Order]);
     }
 
     #[test]
@@ -60,8 +60,7 @@ mod checks {
 
         checks += Check::Checksum;
 
-        assert_that!(checks.into_iter())
-            .contains_exactly([Check::Checksum, Check::Order].into_iter());
+        assert_that!(checks).contains_exactly_in_any_order([Check::Checksum, Check::Order]);
     }
 }
 
@@ -124,7 +123,7 @@ mod verify {
 
         let problematic = verify.list_out_of_order(&defined, &executed);
 
-        assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
+        assert_that!(problematic).contains_exactly_in_any_order(vec![ProblematicMigration {
             key: key("20250109_125900"),
             kind: MigrationKind::Up,
             script_path: Path::new("migrations/20250109_125900_create_name_set_two.surql").into(),
@@ -190,7 +189,7 @@ mod verify {
 
         let problematic = verify.list_out_of_order(&defined, &executed);
 
-        assert_that!(problematic).contains_exactly_in_order(vec![
+        assert_that!(problematic).contains_exactly([
             ProblematicMigration {
                 key: key("20250109_115959"),
                 kind: MigrationKind::Up,
@@ -480,7 +479,7 @@ mod verify {
 
         let problematic = verify.list_changed_after_execution(&defined, &executed);
 
-        assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
+        assert_that!(problematic).contains_exactly(vec![ProblematicMigration {
             key: key("20250109_125900"),
             kind: MigrationKind::Up,
             script_path: Path::new("migrations/20250109_125900_create_name_set_one.surql").into(),
@@ -613,7 +612,7 @@ mod verify {
 
         let problematic = verify.list_changed_after_execution(&defined, &executed);
 
-        assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
+        assert_that!(problematic).contains_exactly(vec![ProblematicMigration {
             key: key("20250109_125900"),
             kind: MigrationKind::Up,
             script_path: Path::new("migrations/20250109_125900_create_name_set_one.surql").into(),
@@ -725,7 +724,7 @@ mod verify {
 
         let problematic = verify.list_changed_after_execution(&defined, &executed);
 
-        assert_that!(problematic).contains_exactly_in_order(vec![ProblematicMigration {
+        assert_that!(problematic).contains_exactly(vec![ProblematicMigration {
             key: key("20250110_090059"),
             kind: MigrationKind::Up,
             script_path: Path::new("migrations/20250110_090059_create_name_set_two.surql").into(),
@@ -755,15 +754,14 @@ mod migrate {
         let migrate = Migrate::default();
         let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([ApplicableMigration {
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Up,
                 script_content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
                 checksum: Checksum(0x_08C11ABD),
-            }])
-            .iter(),
-        );
+            },
+        ]));
     }
 
     #[test]
@@ -797,15 +795,14 @@ mod migrate {
         let migrate = Migrate::default();
         let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([ApplicableMigration {
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
                 key: key("20250110_090059"),
                 kind: MigrationKind::Up,
                 script_content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
                 checksum: Checksum(0x_DD081E07),
-            }])
-            .iter(),
-        );
+            },
+        ]));
     }
 
     #[test]
@@ -839,24 +836,20 @@ mod migrate {
         let migrate = Migrate::default();
         let applicable = migrate.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([
-                ApplicableMigration {
-                    key: key("20250109_125900"),
-                    kind: MigrationKind::Baseline,
-                    script_content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#
-                        .into(),
-                    checksum: Checksum(0x_08C11ABD),
-                },
-                ApplicableMigration {
-                    key: key("20250110_090059"),
-                    kind: MigrationKind::Up,
-                    script_content: r#"LET $data = ["Simon Says", "Lucy May"];"#.into(),
-                    checksum: Checksum(0x_AA0137FA),
-                },
-            ])
-            .iter(),
-        );
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
+                key: key("20250109_125900"),
+                kind: MigrationKind::Baseline,
+                script_content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
+                checksum: Checksum(0x_08C11ABD),
+            },
+            ApplicableMigration {
+                key: key("20250110_090059"),
+                kind: MigrationKind::Up,
+                script_content: r#"LET $data = ["Simon Says", "Lucy May"];"#.into(),
+                checksum: Checksum(0x_AA0137FA),
+            },
+        ]));
     }
 }
 
@@ -885,15 +878,14 @@ mod revert {
         let revert = Revert::default();
         let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([ApplicableMigration {
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Down,
                 script_content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
                 checksum: Checksum(0x_08C11ABD),
-            }])
-            .iter(),
-        );
+            },
+        ]));
     }
 
     #[test]
@@ -927,15 +919,14 @@ mod revert {
         let revert = Revert::default();
         let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([ApplicableMigration {
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
                 key: key("20250109_125900"),
                 kind: MigrationKind::Down,
                 script_content: r#"LET $data = ["J. Jonah Jameson", "James Earl Jones"];"#.into(),
                 checksum: Checksum(0x_08C11ABD),
-            }])
-            .iter(),
-        );
+            },
+        ]));
     }
 
     #[test]
@@ -994,14 +985,13 @@ mod revert {
         let revert = Revert::default();
         let applicable = revert.list_migrations_to_apply(&defined, &executed);
 
-        assert_that!(applicable.iter()).contains_exactly_in_order(
-            applicable_migrations([ApplicableMigration {
+        assert_that!(applicable).contains_exactly_in_any_order(applicable_migrations([
+            ApplicableMigration {
                 key: key("20250109_130000"),
                 kind: MigrationKind::Down,
                 script_content: r#"LET $data = ["Alice Sulton", "Tamara Jackson"];"#.into(),
                 checksum: Checksum(0x_DD081E07),
-            }])
-            .iter(),
-        );
+            },
+        ]));
     }
 }
