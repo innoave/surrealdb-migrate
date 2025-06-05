@@ -138,6 +138,7 @@ pub struct FilesSettings {
     pub script_extension: String,
     pub up_script_extension: String,
     pub down_script_extension: String,
+    pub exclude: String,
 }
 
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
@@ -268,6 +269,7 @@ impl Settings {
     pub fn runner_config(&self) -> RunnerConfig<'_> {
         RunnerConfig {
             migrations_folder: Path::new(&self.files.migrations_folder).into(),
+            excluded_files: self.files.exclude.parse().unwrap_or_else(|err| panic!("failed to create default `RunnerConfig`: {err} -- THIS IS AN IMPLEMENTATION ERROR! Please file a bug.")),
             migrations_table: (&self.database.migrations_table).into(),
             ignore_checksum: self.migration.ignore_checksum,
             ignore_order: self.migration.ignore_order,

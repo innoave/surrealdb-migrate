@@ -6,6 +6,7 @@ ignore-order = true
 
 [files]
 migrations-folder = "database_migration/scripts"
+exclude = "**/.*"
 
 [database]
 migrations-table = "schema_version"

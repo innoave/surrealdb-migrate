@@ -36,6 +36,7 @@ crc32fast = "1"
 enumset = "1"
 indexmap = "2"
 log = "0.4"
+regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_with = "3"
 simplelog = { version = "0.12", default-features = false, features = ["local-offset"] }
@@ -99,6 +100,7 @@ opt-level = 3
 opt-level = 3
 
 [profile.dev.package.proptest]
+opt-level = 3
 overflow-checks = false
 
 [profile.dev.package."*"]

@@ -9,6 +9,7 @@ mod dummy_extern_uses {
     use enumset as _;
     use indexmap as _;
     use proptest as _;
+    use regex as _;
     use serde as _;
     use serde_with as _;
     use thiserror as _;

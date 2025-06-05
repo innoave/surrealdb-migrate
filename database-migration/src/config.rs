@@ -1,15 +1,18 @@
+use crate::definition::ExcludedFiles;
 use std::borrow::Cow;
 use std::path::Path;
 
 pub const DEFAULT_MIGRATIONS_FOLDER: &str = "migrations";
 pub const DEFAULT_MIGRATIONS_TABLE: &str = "migrations";
+pub const DEFAULT_EXCLUDED_FILES: &str = ".*|README*|TODO*";
 
 pub const MIGRATION_KEY_FORMAT_STR: &str = "%Y%m%d_%H%M%S";
 
 #[must_use]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct RunnerConfig<'a> {
     pub migrations_folder: Cow<'a, Path>,
+    pub excluded_files: ExcludedFiles,
     pub migrations_table: Cow<'a, str>,
     pub ignore_checksum: bool,
     pub ignore_order: bool,
@@ -17,8 +20,11 @@ pub struct RunnerConfig<'a> {
 
 impl Default for RunnerConfig<'_> {
     fn default() -> Self {
+        let excluded_files = ExcludedFiles::default();
+
         Self {
             migrations_folder: Path::new(DEFAULT_MIGRATIONS_FOLDER).into(),
+            excluded_files,
             migrations_table: DEFAULT_MIGRATIONS_TABLE.into(),
             ignore_checksum: false,
             ignore_order: false,

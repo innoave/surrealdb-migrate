@@ -1,6 +1,8 @@
 use super::*;
 use assertor::*;
-use database_migration::config::{DbAuthLevel, DbClientConfig, RunnerConfig};
+use database_migration::config::{
+    DEFAULT_EXCLUDED_FILES, DbAuthLevel, DbClientConfig, RunnerConfig,
+};
 
 #[test]
 fn default_settings_are_as_defined() {
@@ -16,6 +18,7 @@ fn default_settings_are_as_defined() {
             script_extension: ".surql".into(),
             up_script_extension: ".up.surql".into(),
             down_script_extension: ".down.surql".into(),
+            exclude: DEFAULT_EXCLUDED_FILES.into(),
         },
         database: DatabaseSettings {
             migrations_table: "migrations".into(),
@@ -40,6 +43,7 @@ fn overwrite_settings_from_environment_variables() {
         "SURMIG_FILES_MIGRATIONS_FOLDER",
         "environment/migration/scripts",
     );
+    env::set_var("SURMIG_FILES_EXCLUDE", ".keep|.gitignore|TODO.md");
     env::set_var("SURMIG_FILES_UP_SCRIPT_EXTENSION", ".surql");
     env::set_var("SURMIG_DATABASE_ADDRESS", "wss://localhost:8000");
     env::set_var("SURMIG_DATABASE_AUTH_LEVEL", "Namespace");
@@ -58,6 +62,7 @@ fn overwrite_settings_from_environment_variables() {
             script_extension: ".surql".into(),
             up_script_extension: ".surql".into(),
             down_script_extension: ".down.surql".into(),
+            exclude: ".keep|.gitignore|TODO.md".into(),
         },
         database: DatabaseSettings {
             migrations_table: "schema_version".into(),
@@ -74,6 +79,7 @@ fn overwrite_settings_from_environment_variables() {
     env::remove_var("SURMIG_MIGRATION_IGNORE_CHECKSUM");
     env::remove_var("SURMIG_MIGRATION_IGNORE_ORDER");
     env::remove_var("SURMIG_FILES_MIGRATIONS_FOLDER");
+    env::remove_var("SURMIG_FILES_EXCLUDE");
     env::remove_var("SURMIG_FILES_UP_SCRIPT_EXTENSION");
     env::remove_var("SURMIG_DATABASE_ADDRESS");
     env::remove_var("SURMIG_DATABASE_AUTH_LEVEL");
@@ -99,6 +105,7 @@ fn load_settings_from_custom_config_directory() {
             script_extension: ".surql".into(),
             up_script_extension: ".up.surql".into(),
             down_script_extension: ".down.surql".into(),
+            exclude: "**/.*".into(),
         },
         database: DatabaseSettings {
             migrations_table: "schema_version".into(),
@@ -124,6 +131,9 @@ fn get_runner_config_from_settings() {
 
     assert_that!(runner_config).is_equal_to(RunnerConfig {
         migrations_folder: Path::new("database_migration/migrations").into(),
+        excluded_files: ".keep|.*ignore|README*|TODO*|FIXME*"
+            .parse()
+            .unwrap_or_else(|err| panic!("invalid excluded files string: {err}")),
         migrations_table: "migration_executions".into(),
         ignore_checksum: true,
         ignore_order: false,
