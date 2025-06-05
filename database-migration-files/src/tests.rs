@@ -25,7 +25,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![
+    assert_that!(migrations).contains_exactly_in_any_order([
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
@@ -77,7 +77,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![
+    assert_that!(migrations).contains_exactly_in_any_order([
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
@@ -115,9 +115,8 @@ fn list_migrations_ignores_configured_filenames_empty_pattern_dot_keep_file() {
         .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![Err(Error::Definition(
-        DefinitionError::InvalidFilename,
-    ))]);
+    assert_that!(migrations)
+        .contains_exactly_in_any_order([Err(Error::Definition(DefinitionError::InvalidFilename))]);
 }
 
 #[test]
@@ -204,7 +203,7 @@ fn read_script_content_for_basic_migrations() {
         .read_script_content_for_migrations(migrations)
         .expect("failed to read script content");
 
-    assert_that!(script_contents).contains_exactly([
+    assert_that!(script_contents).contains_exactly_in_any_order([
         ScriptContent {
             key: key("20250103_140520"),
             kind: MigrationKind::Up,
