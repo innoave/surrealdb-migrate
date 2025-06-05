@@ -1,5 +1,5 @@
 use super::*;
-use assertor::*;
+use asserting::prelude::*;
 use database_migration::config::{
     DEFAULT_EXCLUDED_FILES, DbAuthLevel, DbClientConfig, RunnerConfig,
 };

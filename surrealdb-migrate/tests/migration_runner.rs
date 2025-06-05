@@ -5,13 +5,12 @@ use crate::fixtures::db::{
     start_surrealdb_testcontainer,
 };
 use assert_fs::TempDir;
-use assertor::*;
+use asserting::prelude::*;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs;
 use std::fs::File;
 use std::io::read_to_string;
-use std::iter::once;
 use std::path::Path;
 use std::time::Duration;
 use surrealdb_migrate::checksum::hash_migration_script;
@@ -98,7 +97,7 @@ async fn list_applied_migrations_from_a_database_with_two_migrations_applied() {
         .await
         .expect("failed to query list of applied migrations");
 
-    assert_that!(applied_migrations).contains_exactly_in_order(vec![
+    assert_that!(applied_migrations).contains_exactly([
         Execution {
             key: key("20250103_140520"),
             applied_rank: 1,
@@ -134,8 +133,7 @@ async fn run_migrations_on_empty_db() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys())
-        .contains_exactly(["migrations".to_string(), "quote".to_string()].iter());
+    assert_that!(tables_info.keys()).contains_exactly_in_any_order(["migrations", "quote"]);
 
     let quotes: Vec<HashMap<String, String>> = db
         .query("SELECT text FROM quote ORDER BY text")
@@ -144,14 +142,13 @@ async fn run_migrations_on_empty_db() {
         .take(0)
         .expect("did not get expected query result");
 
-    assert_that!(quotes.iter().map(|row| &row["text"])).contains_exactly_in_order(
+    assert_that!(quotes.iter().map(|row| &row["text"])).contains_exactly_in_any_order(
         [
-            "Behind every great man is a woman rolling her eyes. - Jim Carrey".to_string(),
-            "If you want a guarantee, buy a toaster. - Clint Eastwood".to_string(),
-            "It takes considerable knowledge just to realize the extent of your own ignorance. - Thomas Sowell".to_string(),
-            "don't seek happiness - create it".to_string(),
-        ]
-        .iter(),
+            "Behind every great man is a woman rolling her eyes. - Jim Carrey",
+            "If you want a guarantee, buy a toaster. - Clint Eastwood",
+            "It takes considerable knowledge just to realize the extent of your own ignorance. - Thomas Sowell",
+            "don't seek happiness - create it",
+        ],
     );
 }
 
@@ -170,7 +167,7 @@ async fn run_migrations_on_fully_migrated_db() {
     let tables_info = get_db_tables_info(&db).await;
 
     assert_that!(tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 
     let migrated = runner.migrate(&db).await.expect("failed to run migrations");
 
@@ -178,8 +175,7 @@ async fn run_migrations_on_fully_migrated_db() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys())
-        .contains_exactly(["migrations".to_string(), "quote".to_string()].iter());
+    assert_that!(tables_info.keys()).contains_exactly_in_any_order(["migrations", "quote"]);
 
     let quotes: Vec<HashMap<String, String>> = db
         .query("SELECT text FROM quote ORDER BY text")
@@ -188,14 +184,13 @@ async fn run_migrations_on_fully_migrated_db() {
         .take(0)
         .expect("did not get expected query result");
 
-    assert_that!(quotes.iter().map(|row| &row["text"])).contains_exactly_in_order(
+    assert_that!(quotes.iter().map(|row| &row["text"])).contains_exactly_in_any_order(
         [
-            "Behind every great man is a woman rolling her eyes. - Jim Carrey".to_string(),
-            "If you want a guarantee, buy a toaster. - Clint Eastwood".to_string(),
-            "It takes considerable knowledge just to realize the extent of your own ignorance. - Thomas Sowell".to_string(),
-            "don't seek happiness - create it".to_string(),
-        ]
-        .iter(),
+            "Behind every great man is a woman rolling her eyes. - Jim Carrey",
+            "If you want a guarantee, buy a toaster. - Clint Eastwood",
+            "It takes considerable knowledge just to realize the extent of your own ignorance. - Thomas Sowell",
+            "don't seek happiness - create it",
+        ],
     );
 }
 
@@ -218,8 +213,7 @@ async fn migrate_an_empty_db_up_to_migration_20250103_140520() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys())
-        .contains_exactly(["migrations".to_string(), "quote".to_string()].iter());
+    assert_that!(tables_info.keys()).contains_exactly_in_any_order(["migrations", "quote"]);
 
     let quotes: Vec<HashMap<String, String>> = db
         .query("SELECT text FROM quote ORDER BY text")
@@ -228,7 +222,7 @@ async fn migrate_an_empty_db_up_to_migration_20250103_140520() {
         .take(0)
         .expect("did not get expected query result");
 
-    assert_that!(quotes.iter().map(|row| &row["text"])).is_empty();
+    assert_that!(quotes.iter().map(|row| &row["text"]).next()).is_none();
 }
 
 #[tokio::test]
@@ -246,7 +240,7 @@ async fn revert_migrations_on_fully_migrated_db() {
     let tables_info = get_db_tables_info(&db).await;
 
     assert_that!(tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 
     let reverted = runner
         .revert(&db)
@@ -257,7 +251,7 @@ async fn revert_migrations_on_fully_migrated_db() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys()).contains_exactly(once(&DEFAULT_MIGRATIONS_TABLE.to_string()));
+    assert_that!(tables_info.keys()).contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE]);
 }
 
 #[tokio::test]
@@ -272,7 +266,7 @@ async fn revert_migrations_on_empty_db() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys()).is_empty();
+    assert_that!(tables_info.keys().next()).is_none();
 
     let reverted = runner
         .revert(&db)
@@ -283,7 +277,7 @@ async fn revert_migrations_on_empty_db() {
 
     let tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(tables_info.keys()).is_empty();
+    assert_that!(tables_info.keys().next()).is_none();
 }
 
 #[tokio::test]
@@ -301,7 +295,7 @@ async fn revert_a_fully_migrated_db_down_to_migration_20250103_140520() {
     let tables_info = get_db_tables_info(&db).await;
 
     assert_that!(tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 
     let reverted = runner
         .revert_to(key("20250103_140520"), &db)
@@ -313,7 +307,7 @@ async fn revert_a_fully_migrated_db_down_to_migration_20250103_140520() {
     let tables_info = get_db_tables_info(&db).await;
 
     assert_that!(tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 }
 
 #[tokio::test]
@@ -417,7 +411,7 @@ async fn verify_fully_migrated_database_one_migration_out_of_order() {
     let result = runner.verify(&db).await;
 
     if let Ok(Verified::FoundProblems(problems)) = result {
-        assert_that!(problems[0].problem).is_equal_to(Problem::OutOfOrder {
+        assert_that!(&problems[0].problem).is_equal_to(&Problem::OutOfOrder {
             last_applied_key: key("20250103_141521"),
         });
         assert_that!(problems[0].key).is_equal_to(key("20250103_141030"));
@@ -491,7 +485,7 @@ async fn verify_fully_migrated_database_one_migration_changed() {
     let result = runner.verify(&db).await;
 
     if let Ok(Verified::FoundProblems(problems)) = result {
-        assert_that!(problems[0].problem).is_equal_to(Problem::ChecksumMismatch {
+        assert_that!(&problems[0].problem).is_equal_to(&Problem::ChecksumMismatch {
             definition_checksum,
             execution_checksum,
         });
@@ -573,7 +567,7 @@ async fn verify_fully_migrated_database_one_migration_changed_and_one_out_of_ord
     let result = runner.verify(&db).await;
 
     if let Ok(Verified::FoundProblems(problems)) = result {
-        assert_that!(problems[0].problem).is_equal_to(Problem::OutOfOrder {
+        assert_that!(&problems[0].problem).is_equal_to(&Problem::OutOfOrder {
             last_applied_key: key("20250103_141521"),
         });
         assert_that!(problems[0].key).is_equal_to(key("20250103_141030"));
@@ -581,7 +575,7 @@ async fn verify_fully_migrated_database_one_migration_changed_and_one_out_of_ord
         assert_that!(problems[0].script_path.file_name().and_then(OsStr::to_str))
             .is_equal_to(Some("20250103_141030_out_of_order_migration.surql"));
 
-        assert_that!(problems[1].problem).is_equal_to(Problem::ChecksumMismatch {
+        assert_that!(&problems[1].problem).is_equal_to(&Problem::ChecksumMismatch {
             definition_checksum,
             execution_checksum,
         });

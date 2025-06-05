@@ -5,7 +5,7 @@ use crate::fixtures::db::{
     start_surrealdb_testcontainer,
 };
 use crate::fixtures::load_environment_variables;
-use assertor::*;
+use asserting::prelude::*;
 use database_migration::config::DbAuthLevel;
 use fixtures::db::initialize_database;
 use surrealdb_migrate_db_client::connect_to_database;

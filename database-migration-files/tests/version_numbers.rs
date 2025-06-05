@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod dummy_extern_uses {
     use assert_fs as _;
-    use assertor as _;
+    use asserting as _;
     use database_migration as _;
     use database_migration_files as _;
 }

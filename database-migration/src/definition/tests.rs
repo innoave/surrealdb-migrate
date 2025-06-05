@@ -4,7 +4,7 @@ use super::*;
 use crate::migration::MigrationKind;
 use crate::proptest_support::{any_direction, any_key, any_title};
 use crate::test_dsl::key;
-use assertor::*;
+use asserting::prelude::*;
 use proptest::prelude::*;
 use std::sync::LazyLock;
 
@@ -17,7 +17,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -31,7 +31,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -45,7 +45,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -59,7 +59,7 @@ mod str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Down,
@@ -77,7 +77,7 @@ mod string {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -96,7 +96,7 @@ mod os_str {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -115,7 +115,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -129,7 +129,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -143,7 +143,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Down,
@@ -157,7 +157,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "define some table".into(),
             kind: MigrationKind::Up,
@@ -171,7 +171,7 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_ok(Migration {
+        assert_that!(migration).ok().is_equal_to(Migration {
             key: key("20250103_140830"),
             title: "".into(),
             kind: MigrationKind::Up,
@@ -186,7 +186,8 @@ mod path {
         let migration = path.parse_migration();
 
         assert_that!(migration)
-            .has_err(DefinitionError::InvalidDate("input is out of range".into()));
+            .err()
+            .is_equal_to(DefinitionError::InvalidDate("input is out of range".into()));
     }
 
     #[test]
@@ -195,9 +196,11 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_err(DefinitionError::InvalidTime(
-            "input contains invalid characters".into(),
-        ));
+        assert_that!(migration)
+            .err()
+            .is_equal_to(DefinitionError::InvalidTime(
+                "input contains invalid characters".into(),
+            ));
     }
 
     #[test]
@@ -206,7 +209,9 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_err(DefinitionError::AmbiguousDirection);
+        assert_that!(migration)
+            .err()
+            .is_equal_to(DefinitionError::AmbiguousDirection);
     }
 
     #[test]
@@ -215,7 +220,9 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_err(DefinitionError::InvalidFilename);
+        assert_that!(migration)
+            .err()
+            .is_equal_to(DefinitionError::InvalidFilename);
     }
 
     #[test]
@@ -224,7 +231,9 @@ mod path {
 
         let migration = path.parse_migration();
 
-        assert_that!(migration).has_err(DefinitionError::InvalidFilename);
+        assert_that!(migration)
+            .err()
+            .is_equal_to(DefinitionError::InvalidFilename);
     }
 }
 

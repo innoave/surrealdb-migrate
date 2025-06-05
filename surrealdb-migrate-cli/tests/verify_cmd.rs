@@ -3,7 +3,7 @@ use crate::fixtures::db::{
 };
 use crate::fixtures::surmig;
 use assert_fs::TempDir;
-use assertor::*;
+use asserting::prelude::*;
 use database_migration::test_dsl::{datetime, key};
 use std::fs;
 use std::fs::read_to_string;

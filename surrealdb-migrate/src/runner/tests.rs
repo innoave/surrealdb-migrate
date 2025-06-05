@@ -1,5 +1,5 @@
 use super::*;
-use assertor::*;
+use asserting::prelude::*;
 
 mod migration_runner {
     use super::*;
@@ -45,7 +45,7 @@ mod migration_runner {
             .list_defined_migrations(MigrationKind::is_forward)
             .expect("failed to list defined migrations");
 
-        assert_that!(defined_migrations).contains_exactly_in_order(vec![
+        assert_that!(defined_migrations).contains_exactly([
             Migration {
                 key: key("20250103_140520"),
                 title: "define quote table".into(),

@@ -140,7 +140,7 @@ fn logger_config() -> simplelog::Config {
 #[cfg(test)]
 mod dummy_extern_uses {
     use assert_fs as _;
-    use assertor as _;
+    use asserting as _;
     use database_migration as _;
     use dotenvy as _;
     use snapbox as _;

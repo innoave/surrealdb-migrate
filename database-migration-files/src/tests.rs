@@ -2,7 +2,7 @@
 
 use super::*;
 use assert_fs::TempDir;
-use assertor::*;
+use asserting::prelude::*;
 use database_migration::definition::MigrationFilenameStrategy;
 use database_migration::error::{DefinitionError, Error};
 use database_migration::migration::{Migration, MigrationKind};
@@ -25,7 +25,7 @@ fn list_all_migrations_in_basic_migrations_dir() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![
+    assert_that!(migrations).contains_exactly_in_any_order([
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
@@ -77,7 +77,7 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
         .expect("failed to scan migration directory")
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![
+    assert_that!(migrations).contains_exactly_in_any_order([
         Ok(Migration {
             key: key("20250103_140520"),
             title: "define quote table".into(),
@@ -115,9 +115,8 @@ fn list_migrations_ignores_configured_filenames_empty_pattern_dot_keep_file() {
         .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
         .collect::<Vec<_>>();
 
-    assert_that!(migrations).contains_exactly(vec![Err(Error::Definition(
-        DefinitionError::InvalidFilename,
-    ))]);
+    assert_that!(migrations)
+        .contains_exactly_in_any_order([Err(Error::Definition(DefinitionError::InvalidFilename))]);
 }
 
 #[test]
@@ -204,7 +203,7 @@ fn read_script_content_for_basic_migrations() {
         .read_script_content_for_migrations(migrations)
         .expect("failed to read script content");
 
-    assert_that!(script_contents).contains_exactly_in_order(vec![
+    assert_that!(script_contents).contains_exactly_in_any_order([
         ScriptContent {
             key: key("20250103_140520"),
             kind: MigrationKind::Up,
@@ -313,20 +312,16 @@ fn create_migration_file_for_new_migration() {
 
     let migration = migration_files.create_new_migration(new_migration);
 
-    assert_that!(migration).is_equal_to(Ok(Migration {
-        key: key("20250115_201642"),
-        title: "create some table".into(),
-        kind: MigrationKind::Up,
-        script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
-    }));
-
-    assert_that!(
-        migration
-            .expect("failed to create new migration file")
-            .script_path
-            .exists()
-    )
-    .is_true();
+    assert_that!(migration)
+        .ok()
+        .is_equal_to(Migration {
+            key: key("20250115_201642"),
+            title: "create some table".into(),
+            kind: MigrationKind::Up,
+            script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
+        })
+        .extracting(|mig| mig.script_path.exists())
+        .is_true();
 }
 
 #[test]
@@ -345,20 +340,16 @@ fn create_migration_file_for_new_migration_with_empty_title() {
 
     let migration = migration_files.create_new_migration(new_migration);
 
-    assert_that!(migration).is_equal_to(Ok(Migration {
-        key: key("20250115_201642"),
-        title: "".into(),
-        kind: MigrationKind::Up,
-        script_path: migrations_folder.join("20250115_201642.up.surql"),
-    }));
-
-    assert_that!(
-        migration
-            .expect("failed to create new migration file")
-            .script_path
-            .exists()
-    )
-    .is_true();
+    assert_that!(migration)
+        .ok()
+        .is_equal_to(Migration {
+            key: key("20250115_201642"),
+            title: "".into(),
+            kind: MigrationKind::Up,
+            script_path: migrations_folder.join("20250115_201642.up.surql"),
+        })
+        .extracting(|mig| mig.script_path.exists())
+        .is_true();
 }
 
 #[test]
@@ -377,20 +368,16 @@ fn create_migration_file_for_down_migration() {
 
     let migration = migration_files.create_new_migration(new_migration);
 
-    assert_that!(migration).is_equal_to(Ok(Migration {
-        key: key("20250115_201642"),
-        title: "create some table".into(),
-        kind: MigrationKind::Down,
-        script_path: migrations_folder.join("20250115_201642_create_some_table.down.surql"),
-    }));
-
-    assert_that!(
-        migration
-            .expect("failed to create new migration file")
-            .script_path
-            .exists()
-    )
-    .is_true();
+    assert_that!(migration)
+        .ok()
+        .is_equal_to(Migration {
+            key: key("20250115_201642"),
+            title: "create some table".into(),
+            kind: MigrationKind::Down,
+            script_path: migrations_folder.join("20250115_201642_create_some_table.down.surql"),
+        })
+        .extracting(|mig| mig.script_path.exists())
+        .is_true();
 }
 
 #[test]
@@ -409,20 +396,16 @@ fn create_migration_file_for_down_migration_with_empty_title() {
 
     let migration = migration_files.create_new_migration(new_migration);
 
-    assert_that!(migration).is_equal_to(Ok(Migration {
-        key: key("20250115_201642"),
-        title: "".into(),
-        kind: MigrationKind::Down,
-        script_path: migrations_folder.join("20250115_201642.down.surql"),
-    }));
-
-    assert_that!(
-        migration
-            .expect("failed to create new migration file")
-            .script_path
-            .exists()
-    )
-    .is_true();
+    assert_that!(migration)
+        .ok()
+        .is_equal_to(Migration {
+            key: key("20250115_201642"),
+            title: "".into(),
+            kind: MigrationKind::Down,
+            script_path: migrations_folder.join("20250115_201642.down.surql"),
+        })
+        .extracting(|mig| mig.script_path.exists())
+        .is_true();
 }
 
 #[test]
@@ -441,20 +424,16 @@ fn create_migration_file_for_new_migration_file_already_existing() {
 
     let existing_migration = migration_files.create_new_migration(new_migration.clone());
 
-    assert_that!(existing_migration).is_equal_to(Ok(Migration {
-        key: key("20250115_201642"),
-        title: "create some table".into(),
-        kind: MigrationKind::Up,
-        script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
-    }));
-
-    assert_that!(
-        existing_migration
-            .expect("existing file not created")
-            .script_path
-            .exists()
-    )
-    .is_true();
+    assert_that!(existing_migration)
+        .ok()
+        .is_equal_to(Migration {
+            key: key("20250115_201642"),
+            title: "create some table".into(),
+            kind: MigrationKind::Up,
+            script_path: migrations_folder.join("20250115_201642_create_some_table.up.surql"),
+        })
+        .extracting(|mig| mig.script_path.exists())
+        .is_true();
 
     let result = migration_files.create_new_migration(new_migration);
 
@@ -471,7 +450,7 @@ fn create_migration_file_for_new_migration_folder_does_not_exist() {
 
     let new_migration = NewMigration {
         key: key("20250115_201642"),
-        title: "create some table".to_string(),
+        title: "create some table".into(),
         kind: MigrationKind::Up,
     };
 

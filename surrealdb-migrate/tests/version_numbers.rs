@@ -4,7 +4,7 @@
 mod dummy_extern_uses {
     use anyhow as _;
     use assert_fs as _;
-    use assertor as _;
+    use asserting as _;
     use chrono as _;
     use color_eyre as _;
     use database_migration as _;

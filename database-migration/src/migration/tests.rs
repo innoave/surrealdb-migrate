@@ -1,6 +1,6 @@
 use super::*;
 use crate::proptest_support::any_migration_kind;
-use assertor::*;
+use asserting::prelude::*;
 use proptest::prelude::*;
 
 mod migration_kind {

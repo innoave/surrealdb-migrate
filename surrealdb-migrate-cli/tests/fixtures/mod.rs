@@ -17,7 +17,7 @@ pub fn surmig() -> Command {
 #[cfg(test)]
 mod dummy_extern_uses {
     use assert_fs as _;
-    use assertor as _;
+    use asserting as _;
     use chrono as _;
     use clap as _;
     use cli_table as _;

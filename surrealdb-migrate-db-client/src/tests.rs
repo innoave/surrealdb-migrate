@@ -1,5 +1,5 @@
 use super::*;
-use assertor::*;
+use asserting::prelude::*;
 
 mod extract_table_definition_version {
     use super::*;

@@ -6,7 +6,7 @@ use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user, get_db_tables_info,
     start_surrealdb_testcontainer,
 };
-use assertor::*;
+use asserting::prelude::*;
 use chrono::DateTime;
 use database_migration::checksum::{Checksum, hash_migration_script};
 use database_migration::config::{DEFAULT_MIGRATIONS_TABLE, MIGRATION_KEY_FORMAT_STR};
@@ -51,7 +51,7 @@ async fn define_migrations_table_in_empty_database() {
 
     let db_tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(db_tables_info).contains_key("my_migrations".to_string());
+    assert_that!(db_tables_info).contains_key("my_migrations");
 }
 
 #[tokio::test]

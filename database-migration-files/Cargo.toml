@@ -18,7 +18,7 @@ categories = ["database"]
 database-migration.workspace = true
 
 [dev-dependencies]
-assertor.workspace = true
+asserting.workspace = true
 assert_fs.workspace = true
 database-migration = { workspace = true, features = ["test-dsl"] }
 version-sync.workspace = true
