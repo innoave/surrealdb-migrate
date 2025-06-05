@@ -4,7 +4,7 @@ use super::*;
 use assert_fs::TempDir;
 use assertor::*;
 use database_migration::definition::MigrationFilenameStrategy;
-use database_migration::error::Error;
+use database_migration::error::{DefinitionError, Error};
 use database_migration::migration::{Migration, MigrationKind};
 use database_migration::test_dsl::key;
 use std::path::Path;
@@ -16,7 +16,9 @@ const BASIC_MIGRATION_CONTENT2: &str =
 
 #[test]
 fn list_all_migrations_in_basic_migrations_dir() {
-    let migration_directory = MigrationDirectory::new(Path::new("../fixtures/basic/migrations"));
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory =
+        MigrationDirectory::new(Path::new("../fixtures/basic/migrations"), &excluded_files);
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -47,8 +49,11 @@ fn list_all_migrations_in_basic_migrations_dir() {
 
 #[test]
 fn list_all_migrations_in_non_existing_directory() {
-    let migration_directory =
-        MigrationDirectory::new(Path::new("../fixtures/not_existing/migrations"));
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(
+        Path::new("../fixtures/not_existing/migrations"),
+        &excluded_files,
+    );
 
     let migrations = migration_directory.list_all_migrations();
 
@@ -61,8 +66,11 @@ fn list_all_migrations_in_non_existing_directory() {
 
 #[test]
 fn list_all_migrations_in_migrations_dir_with_subdirectory() {
-    let migration_directory =
-        MigrationDirectory::new(Path::new("../fixtures/with_subdir/migrations"));
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(
+        Path::new("../fixtures/with_subdir/migrations"),
+        &excluded_files,
+    );
 
     let migrations = migration_directory
         .list_all_migrations()
@@ -92,9 +100,88 @@ fn list_all_migrations_in_migrations_dir_with_subdirectory() {
 }
 
 #[test]
+fn list_migrations_ignores_configured_filenames_empty_pattern_dot_keep_file() {
+    let temp_dir = TempDir::new().unwrap_or_else(|err| panic!("could not create temp dir: {err}"));
+    let migrations_folder = temp_dir.path();
+
+    fs::write(migrations_folder.join(".keep"), "")
+        .unwrap_or_else(|err| panic!("could not write .keep file: {err}"));
+
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
+
+    let migrations = migration_directory
+        .list_all_migrations()
+        .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
+        .collect::<Vec<_>>();
+
+    assert_that!(migrations).contains_exactly(vec![Err(Error::Definition(
+        DefinitionError::InvalidFilename,
+    ))]);
+}
+
+#[test]
+fn list_migrations_ignores_configured_filenames_default_pattern_dot_keep_file() {
+    let temp_dir = TempDir::new().unwrap_or_else(|err| panic!("could not create temp dir: {err}"));
+    let migrations_folder = temp_dir.path();
+
+    fs::write(migrations_folder.join(".keep"), "")
+        .unwrap_or_else(|err| panic!("could not write .keep file: {err}"));
+
+    let excluded_files = ExcludedFiles::default();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
+
+    let migrations = migration_directory
+        .list_all_migrations()
+        .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
+        .collect::<Vec<_>>();
+
+    assert_that!(migrations).is_empty();
+}
+
+#[test]
+fn list_migrations_ignores_configured_filenames_default_pattern_readme_md_file() {
+    let temp_dir = TempDir::new().unwrap_or_else(|err| panic!("could not create temp dir: {err}"));
+    let migrations_folder = temp_dir.path();
+
+    fs::write(migrations_folder.join("README.md"), "")
+        .unwrap_or_else(|err| panic!("could not write .keep file: {err}"));
+
+    let excluded_files = ExcludedFiles::default();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
+
+    let migrations = migration_directory
+        .list_all_migrations()
+        .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
+        .collect::<Vec<_>>();
+
+    assert_that!(migrations).is_empty();
+}
+
+#[test]
+fn list_migrations_ignores_configured_filenames_default_pattern_todo_txt_file() {
+    let temp_dir = TempDir::new().unwrap_or_else(|err| panic!("could not create temp dir: {err}"));
+    let migrations_folder = temp_dir.path();
+
+    fs::write(migrations_folder.join("TODO.txt"), "")
+        .unwrap_or_else(|err| panic!("could not write .keep file: {err}"));
+
+    let excluded_files = ExcludedFiles::default();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
+
+    let migrations = migration_directory
+        .list_all_migrations()
+        .unwrap_or_else(|err| panic!("failed to list all migrations: {err}"))
+        .collect::<Vec<_>>();
+
+    assert_that!(migrations).is_empty();
+}
+
+#[test]
 fn read_script_content_for_basic_migrations() {
     let migrations_folder = Path::new("../fixtures/basic/migrations");
-    let migration_directory = MigrationDirectory::new(migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
 
     let migrations = &[
         Migration {
@@ -138,7 +225,8 @@ fn read_script_content_for_basic_migrations() {
 #[test]
 fn read_script_content_for_non_existing_migration() {
     let migrations_folder = Path::new("../fixtures/basic/migrations");
-    let migration_directory = MigrationDirectory::new(migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
 
     let migrations = Migration {
         key: key("20250103_140520"),
@@ -157,7 +245,8 @@ fn create_migrations_folder_if_not_existing_folder_does_not_exist() {
     let parent_dir = TempDir::new().expect("failed to create temp dir");
     let migrations_folder = parent_dir.join("migrations");
 
-    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(&migrations_folder, &excluded_files);
     let result = migration_directory.create_directory_if_not_existing();
 
     assert_that!(result).is_ok();
@@ -171,7 +260,8 @@ fn create_migrations_folder_if_not_existing_folder_already_exists() {
     fs::create_dir(&expected_folder).expect("failed to create existing migrations folder");
     let migrations_folder = parent_dir.join("my_migrations");
 
-    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(&migrations_folder, &excluded_files);
     let result = migration_directory.create_directory_if_not_existing();
 
     assert_that!(result).is_ok();
@@ -184,7 +274,8 @@ fn create_migrations_folder_if_not_existing_parent_folder_does_not_exist() {
     let parent_dir = temp_dir.path().join("package_dir");
     let migrations_folder = parent_dir.join("script_migrations");
 
-    let migration_directory = MigrationDirectory::new(&migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(&migrations_folder, &excluded_files);
     let result = migration_directory.create_directory_if_not_existing();
 
     assert_that!(result).is_ok();
@@ -194,7 +285,8 @@ fn create_migrations_folder_if_not_existing_parent_folder_does_not_exist() {
 #[test]
 fn get_migration_files_from_migrations_directory() {
     let migrations_folder = Path::new("../fixtures/basic/migrations");
-    let migration_directory = MigrationDirectory::new(migrations_folder);
+    let excluded_files = ExcludedFiles::empty();
+    let migration_directory = MigrationDirectory::new(migrations_folder, &excluded_files);
 
     let filename_strategy = MigrationFilenameStrategy::default();
     let migration_files = migration_directory.files(filename_strategy);

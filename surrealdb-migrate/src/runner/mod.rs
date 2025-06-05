@@ -3,6 +3,7 @@ use database_migration::action::{
     Checks, ListChangedAfterExecution, ListOutOfOrder, Migrate, MigrationsToApply, Revert, Verify,
 };
 use database_migration::config::{MIGRATION_KEY_FORMAT_STR, RunnerConfig};
+use database_migration::definition::ExcludedFiles;
 use database_migration::error::Error;
 use database_migration::migration::{Execution, Migration, MigrationKind};
 use database_migration::repository::{ListMigrations, ReadScriptContent};
@@ -22,6 +23,7 @@ use surrealdb_migrate_db_client::{
 
 pub struct MigrationRunner {
     migrations_folder: PathBuf,
+    excluded_files: ExcludedFiles,
     migrations_table: String,
     ignore_checksum: bool,
     ignore_order: bool,
@@ -31,6 +33,7 @@ impl MigrationRunner {
     pub fn new(config: RunnerConfig<'_>) -> Self {
         Self {
             migrations_folder: config.migrations_folder.into(),
+            excluded_files: config.excluded_files,
             migrations_table: config.migrations_table.into(),
             ignore_checksum: config.ignore_checksum,
             ignore_order: config.ignore_order,
@@ -46,10 +49,11 @@ impl MigrationRunner {
     where
         P: Fn(&MigrationKind) -> bool,
     {
-        let mut migrations = MigrationDirectory::new(self.migrations_folder.as_path())
-            .list_all_migrations()?
-            .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| predicate(&mig.kind)))
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut migrations =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files)
+                .list_all_migrations()?
+                .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| predicate(&mig.kind)))
+                .collect::<Result<Vec<_>, _>>()?;
         migrations.sort_unstable_by_key(|mig| mig.key);
         Ok(migrations)
     }
@@ -69,7 +73,8 @@ impl MigrationRunner {
     }
 
     pub async fn migrate(&self, db: &DbConnection) -> Result<Migrated, Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mig_dir =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files);
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| mig.kind.is_forward()))
@@ -87,7 +92,8 @@ impl MigrationRunner {
         max_key: NaiveDateTime,
         db: &DbConnection,
     ) -> Result<Migrated, Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mig_dir =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files);
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| {
@@ -162,7 +168,8 @@ impl MigrationRunner {
     }
 
     pub async fn revert(&self, db: &DbConnection) -> Result<Reverted, Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mig_dir =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files);
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| {
@@ -184,7 +191,8 @@ impl MigrationRunner {
         max_key: NaiveDateTime,
         db: &DbConnection,
     ) -> Result<Reverted, Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mig_dir =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files);
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| {
@@ -256,7 +264,8 @@ impl MigrationRunner {
         checks: Checks,
         db: &DbConnection,
     ) -> Result<Verified, Error> {
-        let mig_dir = MigrationDirectory::new(self.migrations_folder.as_path());
+        let mig_dir =
+            MigrationDirectory::new(self.migrations_folder.as_path(), &self.excluded_files);
         let mut migrations = mig_dir
             .list_all_migrations()?
             .filter(|maybe_mig| maybe_mig.as_ref().map_or(true, |mig| mig.kind.is_forward()))

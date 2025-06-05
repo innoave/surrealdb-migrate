@@ -45,6 +45,22 @@ pub enum DefinitionError {
     MissingDate,
     #[error("definition does not contain a time")]
     MissingTime,
-    #[error("definition does not specify a filename")]
-    NoFilename,
+    #[error("filename of definition is invalid")]
+    InvalidFilename,
+}
+
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+pub enum FilePatternError {
+    #[error("invalid characters '{0:?}' in filename pattern")]
+    InvalidCharacter(Vec<char>),
+    #[error("invalid pattern: {0}")]
+    InvalidPattern(String),
+    #[error("an empty pattern together with OR ('|') is not allowed")]
+    EmptySubPatternNotAllowed,
+}
+
+impl From<FilePatternError> for Error {
+    fn from(value: FilePatternError) -> Self {
+        Self::Configuration(value.to_string())
+    }
 }

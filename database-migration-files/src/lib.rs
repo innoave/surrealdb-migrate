@@ -1,7 +1,7 @@
 #![doc(html_root_url = "https://docs.rs/database-migration-files/0.1.0")]
 
 use database_migration::checksum::hash_migration_script;
-use database_migration::definition::{GetFilename, ParseMigration};
+use database_migration::definition::{ExcludedFiles, GetFilename, ParseMigration};
 use database_migration::error::Error;
 use database_migration::migration::{Migration, NewMigration, ScriptContent};
 use database_migration::repository::{CreateNewMigration, ListMigrations, ReadScriptContent};
@@ -11,14 +11,18 @@ use std::fs::File;
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Clone)]
 pub struct MigrationDirectory<'a> {
     path: &'a Path,
+    excluded_files: &'a ExcludedFiles,
 }
 
 impl<'a> MigrationDirectory<'a> {
-    pub const fn new(path: &'a Path) -> Self {
-        Self { path }
+    pub const fn new(path: &'a Path, excluded_files: &'a ExcludedFiles) -> Self {
+        Self {
+            path,
+            excluded_files,
+        }
     }
 
     pub fn create_directory_if_not_existing(&self) -> Result<(), Error> {
@@ -34,15 +38,15 @@ impl<'a> MigrationDirectory<'a> {
     }
 }
 
-impl<'a> ListMigrations for MigrationDirectory<'a> {
-    type Iter = MigDirIter<'a>;
+impl ListMigrations for MigrationDirectory<'_> {
+    type Iter = MigDirIter;
 
     fn list_all_migrations(&self) -> Result<Self::Iter, Error> {
         fs::read_dir(self.path)
             .map_err(|err| Error::ScanningMigrationDirectory(err.to_string()))
             .map(|dir_iter| MigDirIter {
-                base_dir: self.path,
                 dir_iter,
+                excluded_files: self.excluded_files.clone(),
             })
     }
 }
@@ -62,13 +66,12 @@ impl ReadScriptContent for MigrationDirectory<'_> {
     }
 }
 
-#[derive(Debug)]
-pub struct MigDirIter<'a> {
-    base_dir: &'a Path,
+pub struct MigDirIter {
     dir_iter: fs::ReadDir,
+    excluded_files: ExcludedFiles,
 }
 
-impl Iterator for MigDirIter<'_> {
+impl Iterator for MigDirIter {
     type Item = Result<Migration, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -90,7 +93,10 @@ impl Iterator for MigDirIter<'_> {
                             return Some(Err(Error::ScanningMigrationDirectory(err.to_string())));
                         },
                     }
-                    let file_path = self.base_dir.join(entry.file_name());
+                    let file_path = entry.path();
+                    if self.excluded_files.matches(&file_path) {
+                        continue;
+                    }
                     Some(file_path.parse_migration().map_err(Error::from))
                 },
                 Err(err) => Some(Err(Error::ScanningMigrationDirectory(err.to_string()))),

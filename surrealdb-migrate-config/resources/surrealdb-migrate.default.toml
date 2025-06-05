@@ -15,6 +15,12 @@ script-extension = ".surql"
 up-script-extension = ".up.surql"
 # Filename extendsion of backward migration scripts (revert scripts).
 down-script-extension = ".down.surql"
+# Filename or path of files to be excluded when scanning the migrations folder
+# for migrations. Multiple patterns can be separated by the '|' character.
+# Allowed wildcards:
+#     * ... zero or many characters except the path separator '/'
+#    ** ... zero or many characters including the path separator '/'
+exclude = ".*|README*|TODO*"
 
 [database]
 # The name of the database table, where the migrations are tracked.

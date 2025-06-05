@@ -10,7 +10,7 @@ use surrealdb_migrate::repository::CreateNewMigration;
 
 #[allow(clippy::needless_pass_by_value)]
 pub fn run(args: CreateArgs, config: RunnerConfig<'_>) -> Result<(), Report> {
-    let mig_dir = MigrationDirectory::new(&config.migrations_folder);
+    let mig_dir = MigrationDirectory::new(&config.migrations_folder, &config.excluded_files);
     mig_dir.create_directory_if_not_existing()?;
 
     let key = args
