@@ -83,7 +83,7 @@ const fn display_ordering(mig1: MigrationKind, mig2: MigrationKind) -> Ordering 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use assertor::*;
+    use asserting::prelude::*;
 
     mod display_ordering {
         use super::*;
