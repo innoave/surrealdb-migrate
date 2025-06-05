@@ -33,7 +33,7 @@ surrealdb.workspace = true
 
 [dev-dependencies]
 database-migration = { workspace = true, features = ["test-dsl"] }
-assertor.workspace = true
+asserting.workspace = true
 dotenvy.workspace = true
 testcontainers-modules = { workspace = true, features = ["surrealdb"] }
 tokio.workspace = true

@@ -4,7 +4,7 @@ use crate::fixtures::db::{
     client_config_for_testcontainer, connect_to_test_database_as_database_user,
     define_default_migrations_table, get_db_tables_info, start_surrealdb_testcontainer,
 };
-use assertor::*;
+use asserting::prelude::*;
 use chrono::Utc;
 use database_migration::checksum::hash_migration_script;
 use database_migration::config::DEFAULT_MIGRATIONS_TABLE;
@@ -12,7 +12,6 @@ use database_migration::error::Error;
 use database_migration::migration::{ApplicableMigration, Migration, MigrationKind};
 use database_migration::test_dsl::key;
 use std::fs;
-use std::iter::once;
 use std::path::PathBuf;
 use std::time::Duration;
 use surrealdb_migrate_db_client::{
@@ -34,7 +33,7 @@ async fn apply_migration_in_transaction_schema_migration() {
 
     let migration = Migration {
         key,
-        title: "define quote table".to_string(),
+        title: "define quote table".into(),
         kind: MigrationKind::Up,
         script_path: PathBuf::from(
             "../fixtures/basic/migrations/20250103_140520_define_quote_table.surql",
@@ -55,11 +54,10 @@ async fn apply_migration_in_transaction_schema_migration() {
         apply_migration_in_transaction(&migration, "some.user", DEFAULT_MIGRATIONS_TABLE, &db)
             .await;
 
-    assert_that!(result).is_ok();
-    let execution = result.expect("unreachable");
+    let execution = result.expect("apply migrations not ok");
     assert_that!(execution.key).is_equal_to(key);
     assert_that!(execution.applied_rank).is_equal_to(1);
-    assert_that!(execution.applied_by).is_equal_to("some.user".to_string());
+    assert_that!(execution.applied_by).is_equal_to("some.user");
     assert_that!(execution.applied_at).is_at_least(started_at);
     assert_that!(execution.checksum).is_equal_to(checksum);
     assert_that!(execution.execution_time).is_greater_than(Duration::from_millis(0));
@@ -67,7 +65,7 @@ async fn apply_migration_in_transaction_schema_migration() {
     let db_tables_info = get_db_tables_info(&db).await;
 
     assert_that!(db_tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 }
 
 #[tokio::test]
@@ -122,8 +120,7 @@ async fn apply_migration_in_transaction_schema_migration_with_script_error() {
 
     let db_tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(db_tables_info.keys())
-        .contains_exactly(once(&DEFAULT_MIGRATIONS_TABLE.to_string()));
+    assert_that!(db_tables_info.keys()).contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE]);
 }
 
 #[tokio::test]
@@ -174,8 +171,7 @@ async fn revert_migration_in_transaction_schema_migration() {
     let started_at = Utc::now();
     let result = revert_migration_in_transaction(&migration, "some.user", &db).await;
 
-    assert_that!(result).is_ok();
-    let reversion = result.expect("unreachable");
+    let reversion = result.expect("revert migrations not ok");
     assert_that!(reversion.key).is_equal_to(mig_key);
     assert_that!(reversion.reverted_by).is_equal_to("some.user".to_string());
     assert_that!(reversion.reverted_at).is_at_least(started_at);
@@ -183,8 +179,7 @@ async fn revert_migration_in_transaction_schema_migration() {
 
     let db_tables_info = get_db_tables_info(&db).await;
 
-    assert_that!(db_tables_info.keys())
-        .contains_exactly(once(&DEFAULT_MIGRATIONS_TABLE.to_string()));
+    assert_that!(db_tables_info.keys()).contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE]);
 }
 
 #[tokio::test]
@@ -252,5 +247,5 @@ async fn revert_migration_in_transaction_schema_migration_with_script_error() {
     let db_tables_info = get_db_tables_info(&db).await;
 
     assert_that!(db_tables_info.keys())
-        .contains_exactly([DEFAULT_MIGRATIONS_TABLE.to_string(), "quote".to_string()].iter());
+        .contains_exactly_in_any_order([DEFAULT_MIGRATIONS_TABLE, "quote"]);
 }
