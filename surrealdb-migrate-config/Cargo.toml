@@ -24,6 +24,7 @@ serde.workspace = true
 
 [dev-dependencies]
 asserting.workspace = true
+fakeenv.workspace = true
 
 [lints]
 workspace = true
