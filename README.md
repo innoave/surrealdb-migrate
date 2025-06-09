@@ -122,7 +122,7 @@ Milestone 0.1 (first public release):
 
 Planned features:
 
-* [ ] CLI: Verify applied migrations against defined ones, to detect changed migrations and
+* [X] CLI: Verify applied migrations against defined ones, to detect changed migrations and
   out-of-order migrations
 * [ ] Traversing subfolders of the migrations-directory
 * [ ] Optional `down`-subfolders for holding backward migrations
