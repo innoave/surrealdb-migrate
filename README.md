@@ -127,7 +127,7 @@ Planned features:
 * [ ] Traversing subfolders of the migrations-directory
 * [ ] Optional `down`-subfolders for holding backward migrations
 * [ ] Separated `up`- und `down`-subfolders for organizing forward- and backward-migrations
-* [ ] Ignore configured filenames (pattern) when scanning the migrations-directory
+* [X] Ignore configured filenames (pattern) when scanning the migrations-directory
 * [ ] Dry run for migrate and revert
 * [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
 * [ ] Additional command line options for most (maybe all) configuration settings
