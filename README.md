@@ -62,7 +62,7 @@ Add the dependency to the `Cargo.toml` file of your project:
 
 ```toml
 [dependencies]
-surrealdb-migrate = "0.1"
+surrealdb-migrate = "0.2"
 ```
 
 Example on how to run migrations assuming they are stored in a `my_database/migrations` folder:
@@ -104,9 +104,7 @@ async fn main() -> Result<(), anyhow::Error> {
 See the [API docs][docs-url] for more details on how to use this crate. A fully working example
 can be found in the [examples](surrealdb-migrate/examples) folder of `surrealdb-migrate`.
 
-## Features and functionality
-
-Milestone 0.1 (first public release):
+## Features
 
 * [X] Read migrations from the filesystem
 * [X] Store migration executions in the migrations table in the database
@@ -119,16 +117,18 @@ Milestone 0.1 (first public release):
 * [X] Configure lib and CLI using environment variables
 * [X] Configure lib and CLI using configuration file (TOML)
 * [X] Command line application (CLI)
+* [X] CLI: Verify applied migrations against defined ones, to detect changed migrations and
+  out-of-order migrations
+* [X] Traversing subfolders of the migrations-directory
+* [X] Ignore configured filenames (pattern) when scanning the migrations-directory
+
+See the [CHANGELOG](CHANGELOG.md) for what has changed with each release.
 
 Planned features:
 
-* [X] CLI: Verify applied migrations against defined ones, to detect changed migrations and
-  out-of-order migrations
-* [ ] Traversing subfolders of the migrations-directory
 * [ ] Optional `down`-subfolders for holding backward migrations
 * [ ] Separated `up`- und `down`-subfolders for organizing forward- and backward-migrations
-* [X] Ignore configured filenames (pattern) when scanning the migrations-directory
-* [ ] Dry run for migrate and revert
+* [ ] Dry run for migrate and revert actions/commands
 * [ ] Clean a database (remove all tables, indexes, relations, ...) (optional: opt-in)
 * [ ] Additional command line options for most (maybe all) configuration settings
 
@@ -153,10 +153,10 @@ Non functional goals:
 ## Defining migrations
 
 A migration is identified by a key and a title and whether it is a forward migration (up) or
-a backward migration (down). For a complete migration definition we also need a migration script to
+a backward migration (down). For a complete migration definition, we also need a migration script to
 describe what has to be changed in the database.
 
-The key of a migration is built from a date and a time, when the migration was created. A
+The key of a migration is built from a date and a time when the migration was created. A
 migration script is any [SurrealQL] script.
 
 Flat folder structure:
@@ -185,7 +185,7 @@ migrations/
 
 ### Order of migrations
 
-Migrations are applied in the order of their keys (= timestamps). A migrations with an earlier
+Migrations are applied in the order of their keys (= timestamps). A migration with an earlier
 timestamp is applied before another migration with a later timestamp. If a migration with an earlier
 timestamp is added after a migration with a later timestamp has been applied already, this is
 considered an out-of-order migration.
@@ -200,7 +200,7 @@ by specifying command line flag `--ignore-order`. (See [configuration](#configur
 Each migration script is executed in one database transaction. This should prevent situations where
 a failing migration script causes an inconsistent state of the database.
 
-If a migration script fails and leaves the database in an inconsistent state it is up to the user
+If a migration script fails and leaves the database in an inconsistent state, it is up to the user
 to revert the failed migration manually or by applying a down-script.
 
 ### Tracking the status of migrations
@@ -220,10 +220,10 @@ The status of a migration is tracked by their execution:
 * execution time
 
 SurrealDB-Migrate records executed migrations in a dedicated migrations-table in the database. The
-default name of the migrations-table is `migrations`. The user can configure a custom name for this
+default name of the migrations-table is `migrations`. The user can configure a custom name for the
 migrations-table by settings the parameter `migrations-table = "schema_version"` or setting the
-environment variable `SURMIG_DATABASE_MIGRATIONS_TABLE=schema_version`. If both, the parameter in
-the configuration file and the environment variable, are set the value of the environment variable
+environment variable `SURMIG_DATABASE_MIGRATIONS_TABLE=schema_version`. If both the parameter in
+the configuration file and the environment variable are set, the value of the environment variable
 overrides the value specified in the configuration file.
 
 ### Modified migrations
@@ -236,8 +236,8 @@ when it has been applied.
 The checksum for the defined migration is calculated every time the 'migrate' operation is executed.
 If this checksum does not match with the checksum stored when this checksum has been applied, the
 'migrate' operation is aborted with an error message. The user can examine whether the migration
-has changed accidentally or was modified on purpose and take actions to assure the database is in a
-consistent state and remains consistent, when the new migrations are applied.
+has changed accidentally or was modified on purpose and take actions to ensure that the database is
+in a consistent state and remains consistent when the new migrations are applied.
 
 The check for changed migrations can be switched off by setting the parameter
 `ignore-checksum = true` in the configuration file, by setting the environment variable
@@ -294,7 +294,7 @@ Options of the command line tool overwrite related settings of environment varia
 configuration file. There are options that are applicable for all subcommands and options that are
 available only for a specific subcommand.
 
-To get details about options that are available for all subcommands specify the `--help` option
+To get details about options that are available for all subcommands, specify the `--help` option
 without any subcommand like so:
 
 ```console

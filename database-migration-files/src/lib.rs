@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/database-migration-files/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/database-migration-files/0.2.0")]
 
 use database_migration::checksum::hash_migration_script;
 use database_migration::definition::{ExcludedFiles, GetFilename, ParseMigration};

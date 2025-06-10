@@ -68,7 +68,7 @@
 //!
 //! [run_migrations]: https://github.com/innoave/surrealdb-migrate/blob/main/surrealdb-migrate/examples/run_migrations.rs
 //! [SurrealDB]: https://surrealdb.com
-#![doc(html_root_url = "https://docs.rs/surrealdb-migrate/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/surrealdb-migrate/0.2.0")]
 
 // imports for crate level doc
 #[allow(unused_imports)]

@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/database-migration/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/database-migration/0.2.0")]
 
 pub mod action;
 pub mod checksum;
