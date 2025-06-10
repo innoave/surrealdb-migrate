@@ -101,7 +101,10 @@ jobs:
     name: Integration-Test
     runs-on: ubuntu-latest
     needs:
-      - unit-test
+      - fmt
+      - clippy
+      - msrv
+      - doc
     strategy:
       fail-fast: false
       matrix:
