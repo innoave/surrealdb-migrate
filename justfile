@@ -6,8 +6,14 @@ alias b := build
 alias c := check
 alias cc := code-coverage
 alias l := lint
+alias la := lint-all-features
+alias ld := lint-default
 alias t := test
+alias ta := test-all-features
+alias td := test-default
 alias tl := test-lib
+alias tla := test-lib-all-features
+alias tld := test-lib-default
 
 # list recipies
 default:
@@ -23,14 +29,41 @@ check:
 
 # linting code using Clippy
 lint:
+    just lint-default
+    just lint-all-features
+
+# linting code using Clippy with default features
+lint-default:
+    cargo clippy --workspace --all-targets
+
+# linting code using Clippy with all features enabled
+lint-all-features:
     cargo clippy --workspace --all-targets --all-features
 
 # run all tests
 test:
+    just test-default
+    just test-all-features
+
+# run all tests with default features
+test-default:
+    cargo test
+
+# run all tests for all features
+test-all-features:
     cargo test --all-features
 
 # run unit tests only
 test-lib:
+    just test-lib-default
+    just test-lib-all-features
+
+# run unit tests with default features
+test-lib-default:
+    cargo test --lib --bins
+
+# run unit tests for all features
+test-lib-all-features:
     cargo test --all-features --lib --bins
 
 # run the cli-tests only
