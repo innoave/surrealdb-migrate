@@ -6,6 +6,7 @@ mod dummy_extern_uses {
     use asserting as _;
     use database_migration as _;
     use database_migration_files as _;
+    use walkdir as _;
 }
 
 #[test]

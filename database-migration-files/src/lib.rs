@@ -10,6 +10,7 @@ use std::fs::File;
 #[cfg(target_family = "windows")]
 use std::os::windows::fs::FileTypeExt;
 use std::path::Path;
+use walkdir::WalkDir;
 
 #[derive(Clone)]
 pub struct MigrationDirectory<'a> {
@@ -42,12 +43,17 @@ impl ListMigrations for MigrationDirectory<'_> {
     type Iter = MigDirIter;
 
     fn list_all_migrations(&self) -> Result<Self::Iter, Error> {
-        fs::read_dir(self.path)
-            .map_err(|err| Error::ScanningMigrationDirectory(err.to_string()))
-            .map(|dir_iter| MigDirIter {
-                dir_iter,
-                excluded_files: self.excluded_files.clone(),
-            })
+        if !self.path.exists() {
+            return Err(Error::ScanningMigrationDirectory(format!(
+                r#"migrations folder "{}" does not exist"#,
+                self.path.display()
+            )));
+        }
+        let walk_dir = WalkDir::new(self.path);
+        Ok(MigDirIter {
+            walker: walk_dir.into_iter(),
+            excluded_files: self.excluded_files.clone(),
+        })
     }
 }
 
@@ -66,8 +72,9 @@ impl ReadScriptContent for MigrationDirectory<'_> {
     }
 }
 
+#[derive(Debug)]
 pub struct MigDirIter {
-    dir_iter: fs::ReadDir,
+    walker: walkdir::IntoIter,
     excluded_files: ExcludedFiles,
 }
 
@@ -75,26 +82,20 @@ impl Iterator for MigDirIter {
     type Item = Result<Migration, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        for dir_entry in &mut self.dir_iter {
+        for dir_entry in &mut self.walker {
             return match dir_entry {
                 Ok(entry) => {
-                    match entry.file_type() {
-                        Ok(file_type) => {
-                            #[cfg(target_family = "windows")]
-                            if file_type.is_dir() || file_type.is_symlink_dir() {
-                                continue;
-                            }
-                            #[cfg(not(target_family = "windows"))]
-                            if file_type.is_dir() {
-                                continue;
-                            }
-                        },
-                        Err(err) => {
-                            return Some(Err(Error::ScanningMigrationDirectory(err.to_string())));
-                        },
+                    let file_type = entry.file_type();
+                    #[cfg(target_family = "windows")]
+                    if file_type.is_dir() || file_type.is_symlink_dir() {
+                        continue;
+                    }
+                    #[cfg(not(target_family = "windows"))]
+                    if file_type.is_dir() {
+                        continue;
                     }
                     let file_path = entry.path();
-                    if self.excluded_files.matches(&file_path) {
+                    if self.excluded_files.matches(file_path) {
                         continue;
                     }
                     Some(file_path.parse_migration().map_err(Error::from))
@@ -106,7 +107,7 @@ impl Iterator for MigDirIter {
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        self.dir_iter.size_hint()
+        self.walker.size_hint()
     }
 }
 
