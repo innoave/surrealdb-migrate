@@ -43,6 +43,7 @@ simplelog = { version = "0.12", default-features = false, features = ["local-off
 surrealdb = { version = "2.3", default-features = false }
 thiserror = "2"
 tokio = { version = "1", features = ["macros"] }
+walkdir = "2"
 
 # dev-dependencies
 anyhow = "1"

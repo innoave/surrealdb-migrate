@@ -17,6 +17,9 @@ categories = ["database"]
 # workspace dependencies
 database-migration.workspace = true
 
+# 3rd party dependencies
+walkdir.workspace = true
+
 [dev-dependencies]
 asserting.workspace = true
 assert_fs.workspace = true
