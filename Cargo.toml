@@ -53,7 +53,7 @@ dotenvy = "0.15"
 fakeenv = { version = "0.1", default-features = false, features = ["fake"] }
 proptest = { version = "1", default-features = false, features = ["std"] }
 snapbox = "0.6"
-testcontainers-modules = "0.12"
+testcontainers-modules = "0.13"
 version-sync = { version = "0.9", default-features = false, features = ["markdown_deps_updated", "html_root_url_updated"] }
 
 [workspace.lints.rust]
