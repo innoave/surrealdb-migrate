@@ -81,14 +81,14 @@ async fn main() -> Result<(), Report> {
         Settings::load_from_dir(Path::new(&dir))
     })?;
 
-    let runner_config = args
-        .migrations_folder
-        .map_or(settings.runner_config(), |mfd| {
-            settings.runner_config().with_migrations_folder(mfd)
-        });
-    let db_config = args.db_address.map_or(settings.db_client_config(), |dba| {
-        settings.db_client_config().with_address(dba)
-    });
+    let runner_config = args.migrations_folder.map_or_else(
+        || settings.runner_config(),
+        |mfd| settings.runner_config().with_migrations_folder(mfd),
+    );
+    let db_config = args.db_address.map_or_else(
+        || settings.db_client_config(),
+        |dba| settings.db_client_config().with_address(dba),
+    );
 
     run_command(args.command, runner_config, db_config).await?;
 
