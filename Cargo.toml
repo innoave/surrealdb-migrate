@@ -48,7 +48,7 @@ walkdir = "2"
 # dev-dependencies
 anyhow = "1"
 assert_fs = "1"
-asserting = "0.10"
+asserting = "0.12"
 dotenvy = "0.15"
 fakeenv = { version = "0.1", default-features = false, features = ["fake"] }
 proptest = { version = "1", default-features = false, features = ["std"] }
